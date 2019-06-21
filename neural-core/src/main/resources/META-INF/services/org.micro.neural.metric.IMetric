@@ -1,0 +1,6 @@
+org.micro.neural.metric.ClassLoadMetric
+org.micro.neural.metric.CpuUsageMetric
+org.micro.neural.metric.GarbageCollectorMetric
+org.micro.neural.metric.MemoryUsageMetric
+org.micro.neural.metric.OperatingSystemMetrice
+org.micro.neural.metric.ThreadStatesMetric

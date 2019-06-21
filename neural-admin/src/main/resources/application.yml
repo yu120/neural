@@ -1,0 +1,10 @@
+server:
+  port: 9999
+  context-path: /
+
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    mode: HTML5
+    encoding: UTF-8
+    content-type: text/html
