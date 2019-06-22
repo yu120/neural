@@ -14,4 +14,11 @@ public interface IEventType {
      */
     String getMessage();
 
+    /**
+     * The event name
+     *
+     * @return event name
+     */
+    String name();
+
 }

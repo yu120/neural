@@ -1,10 +1,21 @@
 package org.micro.neural.config.event;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.common.URL;
+import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.store.StorePool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
@@ -21,6 +32,8 @@ public enum EventProcessor {
 
     private StorePool storePool = StorePool.getInstance();
     private ExecutorService eventExecutor = null;
+    private EventConfig eventConfig;
+    private Logger eventLog;
 
     /**
      * The initialize
@@ -28,10 +41,13 @@ public enum EventProcessor {
     public void initialize(URL url) {
         log.debug("The starting of event");
 
+
         // parse parameters
-        EventConfig eventConfig = url.getObj(EventConfig.class);
+        this.eventConfig = url.getObj(EventConfig.class);
+        // build event log
+        this.eventLog = LoggerFactory.getLogger(eventConfig.getLogName());
         // build thread pool
-        this.eventExecutor = buildExecutorService(eventConfig);
+        this.eventExecutor = buildExecutorService();
         // add shutdown Hook
         Runtime.getRuntime().addShutdownHook(new Thread(this::destroy));
     }
@@ -50,10 +66,21 @@ public enum EventProcessor {
 
         eventExecutor.submit(() -> {
             try {
-                if (storePool.getStore() != null) {
-                    storePool.getStore();
+                if (EventConfig.CollectStrategy.LOG == eventConfig.getCollectStrategy()) {
+                    List<Object> argList = new ArrayList<>();
+                    if (args != null && args.length > 0) {
+                        argList = Arrays.asList(args);
+                    }
+                    System.out.println();
+
+                    EventCollect eventCollect = new EventCollect(module, eventType.name(), argList);
+                    eventLog.info("{}", eventConfig.isJsonLog() ?
+                            SerializeUtils.serialize(eventCollect) : eventCollect.toString());
+                } else if (EventConfig.CollectStrategy.REDIS == eventConfig.getCollectStrategy()) {
+                    if (storePool.getStore() != null) {
+                        storePool.getStore();
+                    }
                 }
-                log.info("The module[{}],eventType[{}], args[{}]", module, eventType, args);
             } catch (Exception e) {
                 log.error("The module[" + module + "] eventType[" + eventType + "] is exception", e);
             }
@@ -63,10 +90,13 @@ public enum EventProcessor {
     /**
      * The build ExecutorService
      *
-     * @param eventConfig {@link EventConfig}
      * @return {@link ExecutorService}
      */
-    private ExecutorService buildExecutorService(EventConfig eventConfig) {
+    private ExecutorService buildExecutorService() {
+        if (eventConfig == null) {
+            return null;
+        }
+
         // build thread pool
         ThreadFactoryBuilder subscribeBuilder = new ThreadFactoryBuilder();
         subscribeBuilder.setDaemon(true);
@@ -90,6 +120,16 @@ public enum EventProcessor {
         if (null != eventExecutor) {
             eventExecutor.shutdown();
         }
+    }
+
+    @Data
+    @ToString
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EventCollect implements Serializable {
+        private String module;
+        private String eventType;
+        private List<Object> args;
     }
 
 }

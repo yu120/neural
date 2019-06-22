@@ -41,11 +41,38 @@ public class EventConfig implements Serializable {
      * The thread name
      */
     private String threadName = "neural-event";
+    /**
+     * The log name
+     */
+    private String logName = "neural-event-log";
 
+    /**
+     * The print log data format
+     */
+    private boolean jsonLog = false;
+    /**
+     * The collect strategy, default is {@link CollectStrategy#LOG}
+     */
+    private CollectStrategy collectStrategy;
     /**
      * The thread rejected strategy of event, default is {@link RejectedStrategy#DISCARD_OLDEST_POLICY}
      */
     private RejectedStrategy rejectedStrategy = RejectedStrategy.DISCARD_OLDEST_POLICY;
+
+    /**
+     * Event Collect Strategy
+     *
+     * @author lry
+     */
+    @Getter
+    @AllArgsConstructor
+    public enum CollectStrategy {
+
+        // ===
+
+        LOG, REDIS;
+
+    }
 
     /**
      * Event Rejected Strategy
