@@ -19,7 +19,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.micro</groupId>
-                <artifactId>neural</artifactId>
+                <artifactId>neural-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

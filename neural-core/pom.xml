@@ -10,7 +10,7 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>neural</artifactId>
+    <artifactId>neural-core</artifactId>
     <packaging>jar</packaging>
 
     <properties>
