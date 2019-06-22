@@ -19,6 +19,9 @@ public enum EventProcessor {
 
     EVENT;
 
+    public static final String EVENT_THREAD_KEY = "event-thread";
+    public static final String EVENT_CAPACITY_KEY = "event-capacity";
+
     private StorePool storePool = StorePool.getInstance();
     private ExecutorService eventExecutor = null;
 
@@ -27,14 +30,22 @@ public enum EventProcessor {
      */
     public void initialize(URL url) {
         log.debug("The starting of event");
+
+        // parse parameters
+        int eventThread = url.getParameter(EVENT_THREAD_KEY, 1);
+        int eventCapacity = url.getParameter(EVENT_CAPACITY_KEY, 1000);
+        EventRejectedStrategy eventRejectedStrategy = url.getParameter(
+                EVENT_CAPACITY_KEY, EventRejectedStrategy.DISCARD_OLDEST_POLICY);
+
+        // build thread pool
         ThreadFactoryBuilder subscribeBuilder = new ThreadFactoryBuilder();
         subscribeBuilder.setDaemon(true);
         subscribeBuilder.setNameFormat("neural-event-processor");
         ThreadFactory subscribeThreadFactory = subscribeBuilder.build();
         this.eventExecutor = new ThreadPoolExecutor(
-                3, 3, 0L,
-                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1000),
-                subscribeThreadFactory, new ThreadPoolExecutor.DiscardOldestPolicy());
+                eventThread, eventThread, 0L,
+                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(eventCapacity),
+                subscribeThreadFactory, eventRejectedStrategy.getStrategy());
 
         // add shutdown Hook
         Runtime.getRuntime().addShutdownHook(new Thread(this::destroy));
