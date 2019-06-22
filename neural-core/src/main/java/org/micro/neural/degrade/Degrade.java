@@ -89,7 +89,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
                 dataMap.putAll(temp);
             });
         } catch (Exception e) {
-            EventProcessor.EVENT.notify(EventType.COLLECT_EXCEPTION);
+            EventProcessor.onEvent(EventType.COLLECT_EXCEPTION);
             log.error("The notify config is exception of degrade", e);
         }
 
@@ -107,7 +107,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
             Object mockData = mockData(ruleConfig.getMock(), ruleConfig.getClazz(), ruleConfig.getData());
             mockDataMap.put(identity, mockData);
         } catch (Exception e) {
-            EventProcessor.EVENT.notify(EventType.NOTIFY_EXCEPTION);
+            EventProcessor.onEvent(EventType.NOTIFY_EXCEPTION);
             log.error("The collect statistics is exception of degrade", e);
         }
     }

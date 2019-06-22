@@ -87,7 +87,7 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      */
     void notifyBroadcastEvent(LimiterGlobalConfig.EventType eventType) {
         try {
-            EventProcessor.EVENT.notify(eventType, model, limiterConfig, statistics.getStatisticsData());
+            EventProcessor.onEvent(eventType, model, limiterConfig, statistics.getStatisticsData());
         } catch (Exception e) {
             log.error("The notify broadcast event is exception", e);
         }

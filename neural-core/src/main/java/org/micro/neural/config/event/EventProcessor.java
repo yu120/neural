@@ -21,9 +21,9 @@ public enum EventProcessor {
 
     EVENT;
 
-    private EventConfig eventConfig;
-    private ExecutorService eventExecutor = null;
-    private ConcurrentMap<String, IEventListener> listeners = new ConcurrentHashMap<>();
+    private static EventConfig eventConfig;
+    private static ExecutorService eventExecutor = null;
+    private static ConcurrentMap<String, IEventListener> listeners = new ConcurrentHashMap<>();
 
     /**
      * The initialize
@@ -32,7 +32,7 @@ public enum EventProcessor {
         log.debug("The starting of event");
 
         // parse parameters
-        this.eventConfig = url.getObj("event", EventConfig.class);
+        eventConfig = url.getObj("event", EventConfig.class);
 
         // load event listener list
         List<IEventListener> eventListeners = ExtensionLoader.getLoader(IEventListener.class).getExtensions();
@@ -45,7 +45,7 @@ public enum EventProcessor {
         }
 
         // build thread pool
-        this.eventExecutor = buildExecutorService();
+        eventExecutor = buildExecutorService();
         // add shutdown Hook
         Runtime.getRuntime().addShutdownHook(new Thread(this::destroy));
     }
@@ -56,7 +56,7 @@ public enum EventProcessor {
      * @param eventType {@link IEventType}
      * @param args      args
      */
-    public void notify(IEventType eventType, Object... args) {
+    public static void onEvent(IEventType eventType, Object... args) {
         if (eventExecutor == null || listeners.isEmpty()) {
             return;
         }
@@ -101,7 +101,7 @@ public enum EventProcessor {
                 eventConfig.getRejected().getStrategy());
     }
 
-    private Map<String, Object> toMapParameters(IEventType eventType, Object... args) {
+    private static Map<String, Object> toMapParameters(IEventType eventType, Object... args) {
         List<Object> argList = new ArrayList<>();
         if (args != null && args.length > 0) {
             argList = Arrays.asList(args);

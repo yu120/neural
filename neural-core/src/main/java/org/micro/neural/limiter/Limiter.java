@@ -62,7 +62,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
                 dataMap.putAll(tempDataMap);
             });
         } catch (Exception e) {
-            EventProcessor.EVENT.notify(EventType.COLLECT_EXCEPTION);
+            EventProcessor.onEvent(EventType.COLLECT_EXCEPTION);
             log.error(EventType.COLLECT_EXCEPTION.getMessage(), e);
         }
 
@@ -82,7 +82,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
                 dataMap.putAll(tempDataMap);
             });
         } catch (Exception e) {
-            EventProcessor.EVENT.notify(EventType.COLLECT_EXCEPTION);
+            EventProcessor.onEvent(EventType.COLLECT_EXCEPTION);
             log.error(EventType.COLLECT_EXCEPTION.getMessage(), e);
         }
 
@@ -108,7 +108,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
 
             limiter.refresh(ruleConfig);
         } catch (Exception e) {
-            EventProcessor.EVENT.notify(EventType.NOTIFY_EXCEPTION);
+            EventProcessor.onEvent(EventType.NOTIFY_EXCEPTION);
             log.error(EventType.NOTIFY_EXCEPTION.getMessage(), e);
         }
     }
