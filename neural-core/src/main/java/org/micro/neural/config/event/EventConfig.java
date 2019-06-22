@@ -40,7 +40,7 @@ public class EventConfig implements Serializable {
     /**
      * The thread name
      */
-    private String threadName = "neural-event";
+    private String threadName = "neural-event-thread";
     /**
      * The log name
      */
@@ -53,7 +53,7 @@ public class EventConfig implements Serializable {
     /**
      * The collect strategy, default is {@link CollectStrategy#LOG}
      */
-    private CollectStrategy collectStrategy;
+    private CollectStrategy collectStrategy = CollectStrategy.LOG;
     /**
      * The thread rejected strategy of event, default is {@link RejectedStrategy#DISCARD_OLDEST_POLICY}
      */

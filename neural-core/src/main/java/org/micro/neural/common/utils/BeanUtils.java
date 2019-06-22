@@ -149,7 +149,13 @@ public class BeanUtils {
         for (Map.Entry<Class<?>[], BeanCovert<?>> entry : TYPES.entrySet()) {
             Class<?>[] types = entry.getKey();
             for (Class<?> type : types) {
-                if (type.equals(cl) || type.getName().equals(cl.getName())) {
+                if (type.isEnum()) {
+                    for (Object enumObj : cl.getEnumConstants()) {
+                        if (enumObj.toString().equals(String.valueOf(val))) {
+                            return enumObj;
+                        }
+                    }
+                } else if (type.equals(cl) || type.getName().equals(cl.getName())) {
                     return entry.getValue().covert(val);
                 }
             }
