@@ -1,4 +1,4 @@
-package org.micro.neural.event;
+package org.micro.neural.config.event;
 
 /**
  * The Event Type.

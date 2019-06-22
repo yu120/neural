@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.micro.neural.event.EventProcessor;
+import org.micro.neural.config.event.EventProcessor;
 import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.OriginalCall;
 import org.micro.neural.AbstractNeural;

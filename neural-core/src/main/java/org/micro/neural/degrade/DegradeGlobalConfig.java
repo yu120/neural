@@ -2,7 +2,7 @@ package org.micro.neural.degrade;
 
 import lombok.*;
 import org.micro.neural.config.GlobalConfig;
-import org.micro.neural.event.IEventType;
+import org.micro.neural.config.event.IEventType;
 
 import java.io.Serializable;
 

@@ -1,7 +1,7 @@
 package org.micro.neural.limiter.core;
 
 import lombok.Getter;
-import org.micro.neural.event.EventProcessor;
+import org.micro.neural.config.event.EventProcessor;
 import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.LimiterConfig;

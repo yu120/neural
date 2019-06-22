@@ -1,4 +1,4 @@
-package org.micro.neural.event;
+package org.micro.neural.config.event;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;

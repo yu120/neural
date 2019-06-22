@@ -1,7 +1,7 @@
 package org.micro.neural.degrade;
 
 import org.micro.neural.common.Constants;
-import org.micro.neural.event.EventProcessor;
+import org.micro.neural.config.event.EventProcessor;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.OriginalCall;

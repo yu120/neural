@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 import lombok.*;
 import org.micro.neural.common.Constants;
-import org.micro.neural.config.Statistics;
+import org.micro.neural.config.statistics.Statistics;
 import lombok.extern.slf4j.Slf4j;
 
 /**

@@ -1,4 +1,4 @@
-package org.micro.neural.config;
+package org.micro.neural.config.statistics;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -200,21 +200,21 @@ public class Statistics implements Serializable {
         }
 
         // statistics trade
-        map.put(String.format(Constants.REQUEST_KEY, identity, time), totalRequest);
-        map.put(String.format(Constants.SUCCESS_KEY, identity, time), totalSuccess);
-        map.put(String.format(Constants.FAILURE_KEY, identity, time), totalFailure);
+        map.put(String.format(StatisticsCategory.REQUEST_KEY, identity, time), totalRequest);
+        map.put(String.format(StatisticsCategory.SUCCESS_KEY, identity, time), totalSuccess);
+        map.put(String.format(StatisticsCategory.FAILURE_KEY, identity, time), totalFailure);
         // timeout/rejection
-        map.put(String.format(Constants.TIMEOUT_KEY, identity, time), totalTimeout);
-        map.put(String.format(Constants.REJECTION_KEY, identity, time), totalRejection);
+        map.put(String.format(StatisticsCategory.TIMEOUT_KEY, identity, time), totalTimeout);
+        map.put(String.format(StatisticsCategory.REJECTION_KEY, identity, time), totalRejection);
         // statistics elapsed
-        map.put(String.format(Constants.ELAPSED_KEY, identity, time), totalElapsed);
-        map.put(String.format(Constants.MAX_ELAPSED_KEY, identity, time), maxElapsed);
+        map.put(String.format(StatisticsCategory.ELAPSED_KEY, identity, time), totalElapsed);
+        map.put(String.format(StatisticsCategory.MAX_ELAPSED_KEY, identity, time), maxElapsed);
         // statistics concurrency
-        map.put(String.format(Constants.CONCURRENCY_KEY, identity, time), concurrency);
-        map.put(String.format(Constants.MAX_CONCURRENCY_KEY, identity, time), maxConcurrency);
+        map.put(String.format(StatisticsCategory.CONCURRENCY_KEY, identity, time), concurrency);
+        map.put(String.format(StatisticsCategory.MAX_CONCURRENCY_KEY, identity, time), maxConcurrency);
         // statistics concurrency
-        map.put(String.format(Constants.RATE_KEY, identity, time), rate);
-        map.put(String.format(Constants.MAX_RATE_KEY, identity, time), maxRate);
+        map.put(String.format(StatisticsCategory.RATE_KEY, identity, time), rate);
+        map.put(String.format(StatisticsCategory.MAX_RATE_KEY, identity, time), maxRate);
 
         return map;
     }
