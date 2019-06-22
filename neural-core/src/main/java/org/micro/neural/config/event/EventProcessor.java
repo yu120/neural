@@ -41,7 +41,6 @@ public enum EventProcessor {
     public void initialize(URL url) {
         log.debug("The starting of event");
 
-
         // parse parameters
         this.eventConfig = url.getObj(EventConfig.class);
         // build event log
@@ -78,7 +77,7 @@ public enum EventProcessor {
                             SerializeUtils.serialize(eventCollect) : eventCollect.toString());
                 } else if (EventConfig.CollectStrategy.REDIS == eventConfig.getCollectStrategy()) {
                     if (storePool.getStore() != null) {
-                        storePool.getStore();
+                        //TODO
                     }
                 }
             } catch (Exception e) {
