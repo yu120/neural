@@ -2,6 +2,8 @@ package org.micro.neural.config.event;
 
 import org.micro.neural.extension.SPI;
 
+import java.util.Map;
+
 /**
  * The Event Notify.
  *
@@ -20,9 +22,9 @@ public interface IEventListener {
     /**
      * The notify event
      *
-     * @param eventType {@link IEventType}
-     * @param args      args
+     * @param eventType  {@link IEventType}
+     * @param parameters parameter list
      */
-    void notify(IEventType eventType, Object... args);
+    void notify(IEventType eventType, Map<String, Object> parameters);
 
 }

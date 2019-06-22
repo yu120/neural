@@ -6,7 +6,7 @@ import org.micro.neural.common.URL;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.extension.ExtensionLoader;
 
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -68,7 +68,8 @@ public enum EventProcessor {
                     return;
                 }
 
-                eventListener.notify(eventType, args);
+                Map<String, Object> parameters = toMapParameters(eventType, args);
+                eventListener.notify(eventType, parameters);
             } catch (Exception e) {
                 log.error("The module[" + eventType.getModule() + "],type[" + eventType.name() + "] is exception", e);
             }
@@ -100,6 +101,19 @@ public enum EventProcessor {
                 eventConfig.getRejected().getStrategy());
     }
 
+    private Map<String, Object> toMapParameters(IEventType eventType, Object... args) {
+        List<Object> argList = new ArrayList<>();
+        if (args != null && args.length > 0) {
+            argList = Arrays.asList(args);
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("module", eventType.getModule());
+        parameters.put("event", eventType.name());
+        parameters.put("args", argList);
+        return parameters;
+    }
+
     /**
      * The destroy
      */
@@ -109,6 +123,5 @@ public enum EventProcessor {
             eventExecutor.shutdown();
         }
     }
-
 
 }

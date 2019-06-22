@@ -1,18 +1,11 @@
 package org.micro.neural.config.event;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.extension.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * The Log Event Notify.
@@ -33,28 +26,12 @@ public class LogEventListener implements IEventListener {
     }
 
     @Override
-    public void notify(IEventType eventType, Object... args) {
-        List<Object> argList = new ArrayList<>();
-        if (args != null && args.length > 0) {
-            argList = Arrays.asList(args);
-        }
-
-        EventCollect eventCollect = new EventCollect(eventType.getModule(), eventType.name(), argList);
+    public void notify(IEventType eventType, Map<String, Object> parameters) {
         if (eventConfig.isJsonLog()) {
-            eventLog.info("{}", SerializeUtils.serialize(eventCollect));
+            eventLog.info("{}", SerializeUtils.serialize(parameters));
         } else {
-            eventLog.info("{}", eventCollect.toString());
+            eventLog.info("{}", parameters.toString());
         }
-    }
-
-    @Data
-    @ToString
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class EventCollect implements Serializable {
-        private String module;
-        private String eventType;
-        private List<Object> args;
     }
 
 }
