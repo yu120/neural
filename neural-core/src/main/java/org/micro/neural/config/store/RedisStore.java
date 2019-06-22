@@ -34,7 +34,19 @@ public class RedisStore implements IStore {
 
     @Override
     public void initialize(URL url) {
-        RedisURI redisURI = RedisURI.Builder.redis(url.getHost(), url.getPort()).build();
+        RedisURI redisURI;
+        String category = url.getParameter(URL.CATEGORY_KEY, "redis");
+        if ("sentinel".equals(category)) {
+            redisURI = RedisURI.Builder.sentinel(url.getHost(), url.getPort()).build();
+        } else {
+            redisURI = RedisURI.Builder.redis(url.getHost(), url.getPort()).build();
+        }
+
+        String password = url.getParameter("password");
+        if (password != null && password.length() > 0) {
+            redisURI.setPassword(password);
+        }
+
         this.redisClient = RedisClient.create(redisURI);
         this.genericObjectPool = ConnectionPoolSupport.createGenericObjectPool(
                 () -> redisClient.connect(), new GenericObjectPoolConfig());

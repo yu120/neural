@@ -33,6 +33,11 @@ public final class URL implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    public static final String BACKUP_KEY = "backup";
+    public static final String GROUP_KEY = "group";
+    public static final String VERSION_KEY = "version";
+    public static final String CATEGORY_KEY = "category";
+
     private final String protocol;
     private final String username;
     private final String password;
@@ -264,7 +269,7 @@ public final class URL implements Serializable {
 
     public String getBackupAddress(int defaultPort) {
         StringBuilder address = new StringBuilder(appendDefaultPort(getAddress(), defaultPort));
-        String[] backups = getParameter("backup", new String[0]);
+        String[] backups = getParameter(BACKUP_KEY, new String[0]);
         if (backups != null && backups.length > 0) {
             for (String backup : backups) {
                 address.append(",");
@@ -278,7 +283,7 @@ public final class URL implements Serializable {
     public List<URL> getBackupUrls() {
         List<URL> urls = new ArrayList<>();
         urls.add(this);
-        String[] backups = getParameter("backup", new String[0]);
+        String[] backups = getParameter(BACKUP_KEY, new String[0]);
         if (backups != null && backups.length > 0) {
             for (String backup : backups) {
                 urls.add(this.setAddress(backup));
@@ -1093,12 +1098,12 @@ public final class URL implements Serializable {
         }
 
         StringBuilder buf = new StringBuilder();
-        String group = getParameter("group");
+        String group = getParameter(GROUP_KEY);
         if (group != null && group.length() > 0) {
             buf.append(group).append("/");
         }
         buf.append(inf);
-        String version = getParameter("version");
+        String version = getParameter(VERSION_KEY);
         if (version != null && version.length() > 0) {
             buf.append(":").append(version);
         }

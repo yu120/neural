@@ -33,6 +33,10 @@ import java.util.concurrent.*;
 @Slf4j
 public class StorePool implements IStoreListener {
 
+    public static final String SPACE_DEFAULT = "neural";
+    public static final String PULL_CONFIG_CYCLE_KEY = "pullConfigCycle";
+    public static final String STATISTIC_REPORT_CYCLE_KEY = "statisticReportCycle";
+
     private String space;
     private long pullConfigCycle;
     private long statisticReportCycle;
@@ -65,11 +69,11 @@ public class StorePool implements IStoreListener {
     }
 
     public void initialize(URL url) {
-        this.space = url.getPath();
-        this.pullConfigCycle = url.getParameter("pullConfigCycle", 5L);
-        this.statisticReportCycle = url.getParameter("statisticReportCycle", 5000L);
+        this.pullConfigCycle = url.getParameter(PULL_CONFIG_CYCLE_KEY, 5L);
+        this.statisticReportCycle = url.getParameter(STATISTIC_REPORT_CYCLE_KEY, 5000L);
+        this.space = url.getParameter(URL.GROUP_KEY);
         if (space == null || space.length() == 0) {
-            space = "neural";
+            space = SPACE_DEFAULT;
         }
         this.store = ExtensionLoader.getLoader(IStore.class).getExtension(url.getProtocol());
         store.initialize(url);
