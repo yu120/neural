@@ -1,0 +1,2 @@
+org.micro.neural.config.event.LogEventListener
+org.micro.neural.config.event.RedisEventListener

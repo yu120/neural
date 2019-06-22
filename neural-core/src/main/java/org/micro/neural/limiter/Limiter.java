@@ -20,8 +20,10 @@ import lombok.extern.slf4j.Slf4j;
  * @author lry
  **/
 @Slf4j
-@Extension("limiter")
+@Extension(Limiter.LIMITER)
 public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> {
+
+    public static final String LIMITER = "limiter";
 
     private final ConcurrentMap<String, ILimiter> limiters = new ConcurrentHashMap<>();
 
@@ -60,7 +62,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
                 dataMap.putAll(tempDataMap);
             });
         } catch (Exception e) {
-            EventProcessor.EVENT.notify(module, EventType.COLLECT_EXCEPTION);
+            EventProcessor.EVENT.notify(EventType.COLLECT_EXCEPTION);
             log.error(EventType.COLLECT_EXCEPTION.getMessage(), e);
         }
 
@@ -80,7 +82,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
                 dataMap.putAll(tempDataMap);
             });
         } catch (Exception e) {
-            EventProcessor.EVENT.notify(module, EventType.COLLECT_EXCEPTION);
+            EventProcessor.EVENT.notify(EventType.COLLECT_EXCEPTION);
             log.error(EventType.COLLECT_EXCEPTION.getMessage(), e);
         }
 
@@ -106,7 +108,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
 
             limiter.refresh(ruleConfig);
         } catch (Exception e) {
-            EventProcessor.EVENT.notify(module, EventType.NOTIFY_EXCEPTION);
+            EventProcessor.EVENT.notify(EventType.NOTIFY_EXCEPTION);
             log.error(EventType.NOTIFY_EXCEPTION.getMessage(), e);
         }
     }

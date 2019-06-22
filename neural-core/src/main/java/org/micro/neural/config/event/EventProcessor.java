@@ -1,20 +1,11 @@
 package org.micro.neural.config.event;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.common.URL;
-import org.micro.neural.common.utils.SerializeUtils;
-import org.micro.neural.config.store.StorePool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.micro.neural.extension.Extension;
+import org.micro.neural.extension.ExtensionLoader;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -30,10 +21,9 @@ public enum EventProcessor {
 
     EVENT;
 
-    private StorePool storePool = StorePool.getInstance();
-    private ExecutorService eventExecutor = null;
     private EventConfig eventConfig;
-    private Logger eventLog;
+    private ExecutorService eventExecutor = null;
+    private ConcurrentMap<String, IEventListener> listeners = new ConcurrentHashMap<>();
 
     /**
      * The initialize
@@ -42,9 +32,18 @@ public enum EventProcessor {
         log.debug("The starting of event");
 
         // parse parameters
-        this.eventConfig = url.getObj(EventConfig.class);
-        // build event log
-        this.eventLog = LoggerFactory.getLogger(eventConfig.getLogName());
+        this.eventConfig = url.getObj("event", EventConfig.class);
+
+        // load event listener list
+        List<IEventListener> eventListeners = ExtensionLoader.getLoader(IEventListener.class).getExtensions();
+        for (IEventListener eventListener : eventListeners) {
+            Extension extension = eventListener.getClass().getDeclaredAnnotation(Extension.class);
+            if (extension != null) {
+                eventListener.initialize(eventConfig);
+                listeners.put(extension.value(), eventListener);
+            }
+        }
+
         // build thread pool
         this.eventExecutor = buildExecutorService();
         // add shutdown Hook
@@ -54,34 +53,24 @@ public enum EventProcessor {
     /**
      * The notify event
      *
-     * @param module    module
      * @param eventType {@link IEventType}
      * @param args      args
      */
-    public void notify(String module, IEventType eventType, Object... args) {
-        if (eventExecutor == null) {
+    public void notify(IEventType eventType, Object... args) {
+        if (eventExecutor == null || listeners.isEmpty()) {
             return;
         }
 
         eventExecutor.submit(() -> {
             try {
-                if (EventConfig.CollectStrategy.LOG == eventConfig.getCollectStrategy()) {
-                    List<Object> argList = new ArrayList<>();
-                    if (args != null && args.length > 0) {
-                        argList = Arrays.asList(args);
-                    }
-                    System.out.println();
-
-                    EventCollect eventCollect = new EventCollect(module, eventType.name(), argList);
-                    eventLog.info("{}", eventConfig.isJsonLog() ?
-                            SerializeUtils.serialize(eventCollect) : eventCollect.toString());
-                } else if (EventConfig.CollectStrategy.REDIS == eventConfig.getCollectStrategy()) {
-                    if (storePool.getStore() != null) {
-                        //TODO
-                    }
+                IEventListener eventListener = listeners.get(eventConfig.getCollect());
+                if (eventListener == null) {
+                    return;
                 }
+
+                eventListener.notify(eventType, args);
             } catch (Exception e) {
-                log.error("The module[" + module + "] eventType[" + eventType + "] is exception", e);
+                log.error("The module[" + eventType.getModule() + "],type[" + eventType.name() + "] is exception", e);
             }
         });
     }
@@ -108,7 +97,7 @@ public enum EventProcessor {
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(eventConfig.getCapacity()),
                 eventThreadFactory,
-                eventConfig.getRejectedStrategy().getStrategy());
+                eventConfig.getRejected().getStrategy());
     }
 
     /**
@@ -121,14 +110,5 @@ public enum EventProcessor {
         }
     }
 
-    @Data
-    @ToString
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class EventCollect implements Serializable {
-        private String module;
-        private String eventType;
-        private List<Object> args;
-    }
 
 }

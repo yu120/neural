@@ -8,17 +8,24 @@ package org.micro.neural.config.event;
 public interface IEventType {
 
     /**
+     * The event type module
+     *
+     * @return event type module
+     */
+    String getModule();
+
+    /**
+     * The event type name
+     *
+     * @return event type name
+     */
+    String name();
+
+    /**
      * The event type message
      *
      * @return event type message
      */
     String getMessage();
-
-    /**
-     * The event name
-     *
-     * @return event name
-     */
-    String name();
 
 }

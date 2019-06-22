@@ -28,20 +28,21 @@ public class LimiterGlobalConfig extends GlobalConfig {
         /**
          * The rate exceed event of limiter
          */
-        RATE_EXCEED("The rate exceed event of limiter"),
+        RATE_EXCEED(Limiter.LIMITER, "The rate exceed event of limiter"),
         /**
          * The concurrent exceed event of limiter
          */
-        CONCURRENT_EXCEED("The concurrent exceed event of limiter"),
+        CONCURRENT_EXCEED(Limiter.LIMITER, "The concurrent exceed event of limiter"),
         /**
          * The notify config exception of limiter
          */
-        NOTIFY_EXCEPTION("The notify config is exception of limiter"),
+        NOTIFY_EXCEPTION(Limiter.LIMITER, "The notify config is exception of limiter"),
         /**
          * The collect statistics exception of limiter
          */
-        COLLECT_EXCEPTION("The collect statistics is exception of limiter");
+        COLLECT_EXCEPTION(Limiter.LIMITER, "The collect statistics is exception of limiter");
 
+        String module;
         String message;
 
     }

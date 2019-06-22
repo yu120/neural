@@ -22,8 +22,10 @@ import java.util.concurrent.ConcurrentMap;
  * @author lry
  */
 @Slf4j
-@Extension("degrade")
+@Extension(Degrade.DEGRADE)
 public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> {
+
+    public static final String DEGRADE = "degrade";
 
     private volatile Map<String, Object> mockDataMap = new HashMap<>();
     private final ConcurrentMap<String, DegradeStatistics> degradeStatistics = new ConcurrentHashMap<>();
@@ -87,7 +89,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
                 dataMap.putAll(temp);
             });
         } catch (Exception e) {
-            EventProcessor.EVENT.notify(module, EventType.COLLECT_EXCEPTION);
+            EventProcessor.EVENT.notify(EventType.COLLECT_EXCEPTION);
             log.error("The notify config is exception of degrade", e);
         }
 
@@ -105,7 +107,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
             Object mockData = mockData(ruleConfig.getMock(), ruleConfig.getClazz(), ruleConfig.getData());
             mockDataMap.put(identity, mockData);
         } catch (Exception e) {
-            EventProcessor.EVENT.notify(module, EventType.NOTIFY_EXCEPTION);
+            EventProcessor.EVENT.notify(EventType.NOTIFY_EXCEPTION);
             log.error("The collect statistics is exception of degrade", e);
         }
     }

@@ -51,28 +51,13 @@ public class EventConfig implements Serializable {
      */
     private boolean jsonLog = false;
     /**
-     * The collect strategy, default is {@link CollectStrategy#LOG}
+     * The collect strategy, default is 'log', optional: log/redis
      */
-    private CollectStrategy collectStrategy = CollectStrategy.LOG;
+    private String collect = "log";
     /**
      * The thread rejected strategy of event, default is {@link RejectedStrategy#DISCARD_OLDEST_POLICY}
      */
-    private RejectedStrategy rejectedStrategy = RejectedStrategy.DISCARD_OLDEST_POLICY;
-
-    /**
-     * Event Collect Strategy
-     *
-     * @author lry
-     */
-    @Getter
-    @AllArgsConstructor
-    public enum CollectStrategy {
-
-        // ===
-
-        LOG, REDIS;
-
-    }
+    private RejectedStrategy rejected = RejectedStrategy.DISCARD_OLDEST_POLICY;
 
     /**
      * Event Rejected Strategy

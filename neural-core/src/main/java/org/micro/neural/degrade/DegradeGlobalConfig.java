@@ -76,12 +76,13 @@ public class DegradeGlobalConfig extends GlobalConfig implements Serializable {
         /**
          * The notification mock data exception of degrade
          */
-        NOTIFY_EXCEPTION("The notify config is exception of degrade"),
+        NOTIFY_EXCEPTION(Degrade.DEGRADE, "The notify config is exception of degrade"),
         /**
          * The collect statistics exception of degrade
          */
-        COLLECT_EXCEPTION("The collect statistics is exception of degrade");
+        COLLECT_EXCEPTION(Degrade.DEGRADE, "The collect statistics is exception of degrade");
 
+        String module;
         String message;
 
     }
