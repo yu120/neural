@@ -26,7 +26,7 @@ public class EventConfig implements Serializable {
     /**
      * The thread max num of event
      */
-    private Integer maxThread = 5;
+    private Integer maxThread = 3;
     /**
      * when the number of threads is greater than the core,
      * this is the maximum time that excess idle threads
@@ -37,30 +37,15 @@ public class EventConfig implements Serializable {
      * The thread capacity of event
      */
     private Integer capacity = 1000;
+    /**
+     * The thread name
+     */
+    private String threadName = "neural-event";
 
     /**
      * The thread rejected strategy of event, default is {@link RejectedStrategy#DISCARD_OLDEST_POLICY}
      */
     private RejectedStrategy rejectedStrategy = RejectedStrategy.DISCARD_OLDEST_POLICY;
-    /**
-     * The thread pool executor, default is {@link ThreadExecutor#FIXED}
-     */
-    private ThreadExecutor threadExecutor = ThreadExecutor.FIXED;
-
-    /**
-     * Event Rejected Strategy
-     *
-     * @author lry
-     */
-    @Getter
-    @AllArgsConstructor
-    public enum ThreadExecutor {
-
-        // ====
-
-        CACHED, FIXED, STEALING;
-
-    }
 
     /**
      * Event Rejected Strategy

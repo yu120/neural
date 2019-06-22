@@ -70,24 +70,16 @@ public enum EventProcessor {
         // build thread pool
         ThreadFactoryBuilder subscribeBuilder = new ThreadFactoryBuilder();
         subscribeBuilder.setDaemon(true);
-        subscribeBuilder.setNameFormat("neural-event-processor");
+        subscribeBuilder.setNameFormat(eventConfig.getThreadName());
         ThreadFactory eventThreadFactory = subscribeBuilder.build();
-        switch (eventConfig.getThreadExecutor()) {
-            case CACHED:
-                return new ThreadPoolExecutor(eventConfig.getCoreThread(), eventConfig.getMaxThread(),
-                        eventConfig.getKeepAliveTime(), TimeUnit.SECONDS, new SynchronousQueue<>(),
-                        eventThreadFactory, eventConfig.getRejectedStrategy().getStrategy());
-            case FIXED:
-                return new ThreadPoolExecutor(
-                        eventConfig.getCoreThread(), eventConfig.getCoreThread(), 0L,
-                        TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(eventConfig.getCapacity()),
-                        eventThreadFactory, eventConfig.getRejectedStrategy().getStrategy());
-            case STEALING:
-                return new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
-                        ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
-            default:
-                throw new IllegalArgumentException("Illegal thread executor");
-        }
+        return new ThreadPoolExecutor(
+                eventConfig.getCoreThread(),
+                eventConfig.getMaxThread(),
+                eventConfig.getKeepAliveTime(),
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(eventConfig.getCapacity()),
+                eventThreadFactory,
+                eventConfig.getRejectedStrategy().getStrategy());
     }
 
     /**
