@@ -23,7 +23,7 @@ public interface IEventListener {
      * @param eventType {@link IEventType}
      * @param object    parameter
      */
-    void notify(IEventType eventType, Object object);
+    void onEvent(IEventType eventType, Object object);
 
     /**
      * The destroy store config

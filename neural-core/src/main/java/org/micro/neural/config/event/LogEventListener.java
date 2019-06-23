@@ -24,7 +24,7 @@ public class LogEventListener implements IEventListener {
     }
 
     @Override
-    public void notify(IEventType eventType, Object object) {
+    public void onEvent(IEventType eventType, Object object) {
         if (eventConfig.isJsonLog()) {
             eventLog.info("{}", SerializeUtils.serialize(object));
         } else {

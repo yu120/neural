@@ -21,7 +21,7 @@ public class RedisEventListener implements IEventListener {
     }
 
     @Override
-    public void notify(IEventType eventType, Object object) {
+    public void onEvent(IEventType eventType, Object object) {
 
     }
 

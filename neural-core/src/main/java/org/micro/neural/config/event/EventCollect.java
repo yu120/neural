@@ -73,7 +73,7 @@ public enum EventCollect {
                 }
 
                 Map<String, Object> parameters = toMapParameters(eventType, args);
-                eventListener.notify(eventType, parameters);
+                eventListener.onEvent(eventType, parameters);
             } catch (Exception e) {
                 log.error("The module[" + eventType.getModule() + "],type[" + eventType.name() + "] is exception", e);
             }
