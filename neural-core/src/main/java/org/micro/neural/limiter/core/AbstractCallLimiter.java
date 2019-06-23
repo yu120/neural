@@ -1,6 +1,7 @@
 package org.micro.neural.limiter.core;
 
 import org.micro.neural.OriginalCall;
+import org.micro.neural.config.event.EventCollect;
 import org.micro.neural.limiter.LimiterExcessException;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.limiter.LimiterGlobalConfig;
@@ -103,7 +104,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         log.warn("The {} exceed, [{}]-[{}]", eventType, limiterConfig, statistics);
 
         // the broadcast event of traffic exceed
-        super.notifyBroadcastEvent(eventType);
+        EventCollect.onEvent(eventType, limiterConfig, statistics.getStatisticsData());
 
         // the execute strategy with traffic exceed
         if (null != limiterConfig.getStrategy()) {

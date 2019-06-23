@@ -2,10 +2,8 @@ package org.micro.neural.limiter.core;
 
 import lombok.Getter;
 import org.micro.neural.config.GlobalConfig;
-import org.micro.neural.config.event.EventCollect;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.LimiterConfig;
-import org.micro.neural.limiter.LimiterGlobalConfig;
 import org.micro.neural.limiter.LimiterStatistics;
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,19 +67,6 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      */
     boolean isRateLimiter() {
         return limiterConfig.getRate() > 0L;
-    }
-
-    /**
-     * The notify for broadcast event
-     *
-     * @param eventType The notify Event Type
-     */
-    void notifyBroadcastEvent(LimiterGlobalConfig.EventType eventType) {
-        try {
-            EventCollect.onEvent(eventType, extension.value(), limiterConfig, statistics.getStatisticsData());
-        } catch (Exception e) {
-            log.error("The notify broadcast event is exception", e);
-        }
     }
 
 }
