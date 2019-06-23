@@ -13,6 +13,11 @@ import java.util.concurrent.TimeUnit;
  * 令牌桶限流器
  *
  * @author lry
+ * @link https://github.com/herosea/priority-rate-limiter
+ * @link https://github.com/lattebank/rate-limiter
+ * @link https://www.jianshu.com/p/c8cee1507ccc
+ * @link https://www.codercto.com/a/2539.html
+ * @link https://mp.weixin.qq.com/s?__biz=MzI0MTk0NTY5MA==&mid=2247483711&idx=1&sn=28780c8b26f24ac6314ff5c599bb622c&chksm=e9029c0ade75151c353cd6b720ce438b4342afd8ef3a7d03c61712554c6a000ac3646bbc3124&scene=38#wechat_redirect
  */
 @Slf4j
 @Data
