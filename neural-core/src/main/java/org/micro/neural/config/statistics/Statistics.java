@@ -15,6 +15,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.concurrent.atomic.LongAdder;
 
+import static org.micro.neural.config.statistics.StatisticsCategory.*;
+
 /**
  * The Statistics.
  *
@@ -199,21 +201,21 @@ public class Statistics implements Serializable {
         }
 
         // statistics trade
-        map.put(String.format(StatisticsCategory.REQUEST_KEY, identity, time), totalRequest);
-        map.put(String.format(StatisticsCategory.SUCCESS_KEY, identity, time), totalSuccess);
-        map.put(String.format(StatisticsCategory.FAILURE_KEY, identity, time), totalFailure);
+        map.put(String.format(STATISTICS, REQUEST_KEY, identity, time), totalRequest);
+        map.put(String.format(STATISTICS, SUCCESS_KEY, identity, time), totalSuccess);
+        map.put(String.format(STATISTICS, FAILURE_KEY, identity, time), totalFailure);
         // timeout/rejection
-        map.put(String.format(StatisticsCategory.TIMEOUT_KEY, identity, time), totalTimeout);
-        map.put(String.format(StatisticsCategory.REJECTION_KEY, identity, time), totalRejection);
+        map.put(String.format(STATISTICS, TIMEOUT_KEY, identity, time), totalTimeout);
+        map.put(String.format(STATISTICS, REJECTION_KEY, identity, time), totalRejection);
         // statistics elapsed
-        map.put(String.format(StatisticsCategory.ELAPSED_KEY, identity, time), totalElapsed);
-        map.put(String.format(StatisticsCategory.MAX_ELAPSED_KEY, identity, time), maxElapsed);
+        map.put(String.format(STATISTICS, ELAPSED_KEY, identity, time), totalElapsed);
+        map.put(String.format(STATISTICS, MAX_ELAPSED_KEY, identity, time), maxElapsed);
         // statistics concurrency
-        map.put(String.format(StatisticsCategory.CONCURRENCY_KEY, identity, time), concurrency);
-        map.put(String.format(StatisticsCategory.MAX_CONCURRENCY_KEY, identity, time), maxConcurrency);
+        map.put(String.format(STATISTICS, CONCURRENCY_KEY, identity, time), concurrency);
+        map.put(String.format(STATISTICS, MAX_CONCURRENCY_KEY, identity, time), maxConcurrency);
         // statistics concurrency
-        map.put(String.format(StatisticsCategory.RATE_KEY, identity, time), rate);
-        map.put(String.format(StatisticsCategory.MAX_RATE_KEY, identity, time), maxRate);
+        map.put(String.format(STATISTICS, RATE_KEY, identity, time), rate);
+        map.put(String.format(STATISTICS, MAX_RATE_KEY, identity, time), maxRate);
 
         return map;
     }
@@ -226,21 +228,21 @@ public class Statistics implements Serializable {
     public Map<String, Long> getStatisticsData() {
         Map<String, Long> map = new HashMap<>();
         // statistics trade
-        map.put("request", requestCounter.longValue());
-        map.put("success", successCounter.longValue());
-        map.put("failure", failureCounter.longValue());
+        map.put(REQUEST_KEY, requestCounter.longValue());
+        map.put(SUCCESS_KEY, successCounter.longValue());
+        map.put(FAILURE_KEY, failureCounter.longValue());
         // timeout/rejection
-        map.put("timeout", timeoutCounter.longValue());
-        map.put("rejection", rejectionCounter.longValue());
+        map.put(TIMEOUT_KEY, timeoutCounter.longValue());
+        map.put(REJECTION_KEY, rejectionCounter.longValue());
         // statistics elapsed
-        map.put("elapsed", elapsedCounter.longValue());
-        map.put("maxElapsed", maxElapsedCounter.longValue());
+        map.put(ELAPSED_KEY, elapsedCounter.longValue());
+        map.put(MAX_ELAPSED_KEY, maxElapsedCounter.longValue());
         // statistics concurrency
-        map.put("concurrency", concurrencyCounter.longValue());
-        map.put("maxConcurrency", maxConcurrencyCounter.longValue());
+        map.put(CONCURRENCY_KEY, concurrencyCounter.longValue());
+        map.put(MAX_CONCURRENCY_KEY, maxConcurrencyCounter.longValue());
         // statistics rate
-        map.put("rate", rateCounter.longValue());
-        map.put("maxRate", maxRateCounter.longValue());
+        map.put(RATE_KEY, rateCounter.longValue());
+        map.put(MAX_RATE_KEY, maxRateCounter.longValue());
 
         return map;
     }
