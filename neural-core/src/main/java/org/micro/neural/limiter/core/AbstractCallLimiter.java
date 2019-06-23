@@ -86,7 +86,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         }
 
         // the skip non check RateLimiter or success or exception or other
-        return doOriginalCallWrapper(originalCall);
+        return statistics.wrapperOriginalCall(originalCall);
     }
 
     /**
@@ -122,31 +122,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         }
 
         // the wrapper of original call
-        return doOriginalCallWrapper(originalCall);
-    }
-
-    /**
-     * The wrapper of original call
-     *
-     * @param originalCall The original call interface
-     * @return The original call result
-     * @throws Throwable throw original call exception
-     */
-    private Object doOriginalCallWrapper(OriginalCall originalCall) throws Throwable {
-        // increment traffic
-        statistics.incrementTraffic();
-        long startTime = System.currentTimeMillis();
-
-        try {
-            return originalCall.call();
-        } catch (Throwable t) {
-            // total exception traffic
-            statistics.exceptionTraffic(t);
-            throw t;
-        } finally {
-            // decrement traffic
-            statistics.decrementTraffic(startTime);
-        }
+        return statistics.wrapperOriginalCall(originalCall);
     }
 
     /**
@@ -167,7 +143,6 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      * @return The excess of limiting
      */
     protected abstract Acquire tryAcquireRateLimiter();
-
 
     /**
      * The Excess of Limiter.

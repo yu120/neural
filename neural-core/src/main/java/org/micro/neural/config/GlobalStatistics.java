@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.micro.neural.OriginalCall;
 
 import java.io.Serializable;
 import java.util.Calendar;
@@ -93,9 +94,34 @@ public class GlobalStatistics implements Serializable {
     }
 
     /**
+     * The wrapper of original call
+     *
+     * @param originalCall The original call interface
+     * @return The original call result
+     * @throws Throwable throw original call exception
+     */
+    public Object wrapperOriginalCall(OriginalCall originalCall) throws Throwable {
+        long startTime = System.currentTimeMillis();
+
+        try {
+            // increment traffic
+            incrementTraffic();
+            // original call
+            return originalCall.call();
+        } catch (Throwable t) {
+            // total exception traffic
+            exceptionTraffic(t);
+            throw t;
+        } finally {
+            // decrement traffic
+            decrementTraffic(startTime);
+        }
+    }
+
+    /**
      * The total increment of statistical traffic
      */
-    public void incrementTraffic() {
+    private void incrementTraffic() {
         try {
             // increment concurrency times
             concurrencyCounter.increment();
@@ -116,7 +142,7 @@ public class GlobalStatistics implements Serializable {
      *
      * @param t {@link Throwable}
      */
-    public void exceptionTraffic(Throwable t) {
+    private void exceptionTraffic(Throwable t) {
         try {
             // total all failure times
             failureCounter.increment();
@@ -137,7 +163,7 @@ public class GlobalStatistics implements Serializable {
      *
      * @param startTime start time
      */
-    public void decrementTraffic(long startTime) {
+    private void decrementTraffic(long startTime) {
         try {
             long elapsed = System.currentTimeMillis() - startTime;
             // total all elapsed

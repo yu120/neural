@@ -71,7 +71,13 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
             return doDegradeCallWrapper(identity, degradeConfig.getStrategy(), originalCall);
         }
 
-        return doOriginalCallWrapper(identity, originalCall);
+        // the wrapper of original call
+        DegradeStatistics statistics = degradeStatistics.get(identity);
+        if (statistics == null) {
+            return originalCall.call();
+        }
+
+        return statistics.wrapperOriginalCall(originalCall);
     }
 
     @Override
@@ -107,33 +113,6 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
         } catch (Exception e) {
             EventCollect.onEvent(EventType.NOTIFY_EXCEPTION);
             log.error("The collect statistics is exception of degrade", e);
-        }
-    }
-
-    /**
-     * The do original call wrapper
-     *
-     * @param identity     {@link org.micro.neural.config.RuleConfig}
-     * @param originalCall {@link OriginalCall}
-     * @return invoke return object
-     * @throws Throwable throw exception
-     */
-    private Object doOriginalCallWrapper(String identity, OriginalCall originalCall) throws Throwable {
-        DegradeStatistics statistics = degradeStatistics.get(identity);
-
-        // increment traffic
-        statistics.incrementTraffic();
-        long startTime = System.currentTimeMillis();
-
-        try {
-            return originalCall.call();
-        } catch (Throwable t) {
-            // total exception traffic
-            statistics.exceptionTraffic(t);
-            throw t;
-        } finally {
-            // decrement traffic
-            statistics.decrementTraffic(startTime);
         }
     }
 
