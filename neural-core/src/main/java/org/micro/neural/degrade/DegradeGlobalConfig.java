@@ -17,7 +17,7 @@ import org.micro.neural.config.event.IEventType;
 public class DegradeGlobalConfig extends GlobalConfig {
 
     private static final long serialVersionUID = 3023172841450527624L;
-    public static final String DEGRADE = "degrade";
+    public static final String IDENTITY = "degrade";
 
     /**
      * The degrade level
@@ -75,11 +75,11 @@ public class DegradeGlobalConfig extends GlobalConfig {
         /**
          * The notification mock data exception of degrade
          */
-        NOTIFY_EXCEPTION(DEGRADE, "The notify config is exception of degrade"),
+        NOTIFY_EXCEPTION(IDENTITY, "The notify config is exception of degrade"),
         /**
          * The collect statistics exception of degrade
          */
-        COLLECT_EXCEPTION(DEGRADE, "The collect statistics is exception of degrade");
+        COLLECT_EXCEPTION(IDENTITY, "The collect statistics is exception of degrade");
 
         String module;
         String message;

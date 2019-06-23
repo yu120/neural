@@ -15,7 +15,7 @@ import org.micro.neural.config.event.IEventType;
 public class LimiterGlobalConfig extends GlobalConfig {
 
     private static final long serialVersionUID = -4103412814609503453L;
-    public static final String LIMITER = "limiter";
+    public static final String IDENTITY = "limiter";
 
     /**
      * The Limiter Type.
@@ -29,19 +29,19 @@ public class LimiterGlobalConfig extends GlobalConfig {
         /**
          * The rate exceed event of limiter
          */
-        RATE_EXCEED(LIMITER, "The rate exceed event of limiter"),
+        RATE_EXCEED(IDENTITY, "The rate exceed event of limiter"),
         /**
          * The concurrent exceed event of limiter
          */
-        CONCURRENT_EXCEED(LIMITER, "The concurrent exceed event of limiter"),
+        CONCURRENT_EXCEED(IDENTITY, "The concurrent exceed event of limiter"),
         /**
          * The notify config exception of limiter
          */
-        NOTIFY_EXCEPTION(LIMITER, "The notify config is exception of limiter"),
+        NOTIFY_EXCEPTION(IDENTITY, "The notify config is exception of limiter"),
         /**
          * The collect statistics exception of limiter
          */
-        COLLECT_EXCEPTION(LIMITER, "The collect statistics is exception of limiter");
+        COLLECT_EXCEPTION(IDENTITY, "The collect statistics is exception of limiter");
 
         String module;
         String message;

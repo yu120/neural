@@ -36,7 +36,7 @@ public enum EventCollect {
         log.debug("The starting of event");
 
         // parse parameters
-        eventConfig = url.getObj("event", EventConfig.class);
+        eventConfig = url.getObj(EventConfig.IDENTITY, EventConfig.class);
 
         // load event listener list
         List<IEventListener> eventListeners = ExtensionLoader.getLoader(IEventListener.class).getExtensions();

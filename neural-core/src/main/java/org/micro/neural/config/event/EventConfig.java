@@ -18,6 +18,7 @@ import java.util.concurrent.*;
 public class EventConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    public static final String IDENTITY = "event";
 
     /**
      * The thread core num of event
