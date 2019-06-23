@@ -17,7 +17,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
 
     @Override
     public Object doOriginalCall(OriginalCall originalCall) throws Throwable {
-        if (super.isNonProcess()) {
+        if (super.checkDisable()) {
             // the don't need limiting
             return originalCall.call();
         }
@@ -37,8 +37,8 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      * @throws Throwable throw original call exception
      */
     private Object doConcurrencyOriginalCall(OriginalCall originalCall) throws Throwable {
-        // the check concurrency limiting
-        if (super.isConcurrencyLimiter()) {
+        // the check concurrency limiting exceed
+        if (super.checkConcurrencyExceed()) {
             // try acquire concurrency
             switch (tryAcquireConcurrency()) {
                 case FAILURE:
@@ -70,7 +70,8 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      * @throws Throwable throw original call exception
      */
     private Object doRateOriginalCall(OriginalCall originalCall) throws Throwable {
-        if (super.isRateLimiter()) {
+        // the check rate limiting exceed
+        if (super.checkRateExceed()) {
             switch (tryAcquireRateLimiter()) {
                 case FAILURE:
                     // the rate exceed

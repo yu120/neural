@@ -43,7 +43,7 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      *
      * @return true indicates that it does not need to be handled
      */
-    boolean isNonProcess() {
+    boolean checkDisable() {
         if (null == limiterConfig) {
             return true;
         }
@@ -52,20 +52,20 @@ public abstract class AbstractCheckLimiter implements ILimiter {
     }
 
     /**
-     * The check the need for concurrency limiting
+     * The check the need for concurrency limiting exceed
      *
      * @return true indicates that it need to be concurrency handled
      */
-    boolean isConcurrencyLimiter() {
+    boolean checkConcurrencyExceed() {
         return limiterConfig.getConcurrency() > 0L;
     }
 
     /**
-     * The check the need for rate limiting
+     * The check the need for rate limiting exceed
      *
      * @return true indicates that it need to be rate handled
      */
-    boolean isRateLimiter() {
+    boolean checkRateExceed() {
         return limiterConfig.getRate() > 0L;
     }
 
