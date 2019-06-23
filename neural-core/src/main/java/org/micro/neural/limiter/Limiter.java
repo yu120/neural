@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.micro.neural.config.GlobalConfig;
-import org.micro.neural.config.event.EventProcessor;
+import org.micro.neural.config.event.EventCollect;
 import org.micro.neural.OriginalCall;
 import org.micro.neural.AbstractNeural;
 import org.micro.neural.extension.Extension;
@@ -63,7 +63,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
                 dataMap.putAll(tempDataMap);
             });
         } catch (Exception e) {
-            EventProcessor.onEvent(EventType.COLLECT_EXCEPTION);
+            EventCollect.onEvent(EventType.COLLECT_EXCEPTION);
             log.error(EventType.COLLECT_EXCEPTION.getMessage(), e);
         }
 
@@ -83,7 +83,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
                 dataMap.putAll(tempDataMap);
             });
         } catch (Exception e) {
-            EventProcessor.onEvent(EventType.COLLECT_EXCEPTION);
+            EventCollect.onEvent(EventType.COLLECT_EXCEPTION);
             log.error(EventType.COLLECT_EXCEPTION.getMessage(), e);
         }
 
@@ -101,7 +101,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
 
             limiter.refresh(ruleConfig);
         } catch (Exception e) {
-            EventProcessor.onEvent(EventType.NOTIFY_EXCEPTION);
+            EventCollect.onEvent(EventType.NOTIFY_EXCEPTION);
             log.error(EventType.NOTIFY_EXCEPTION.getMessage(), e);
         }
     }

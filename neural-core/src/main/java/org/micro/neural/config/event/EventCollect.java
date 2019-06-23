@@ -10,16 +10,20 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * The Event Processor.
+ * The Event Collect.
  *
  * @author lry
  **/
 @Slf4j
-public enum EventProcessor {
+public enum EventCollect {
 
     // ====
 
     EVENT;
+
+    private static final String MODULE_KEY = "module";
+    private static final String EVENT_KEY = "event";
+    private static final String ARGS_KEY = "args";
 
     private static EventConfig eventConfig;
     private static ExecutorService eventExecutor = null;
@@ -108,9 +112,9 @@ public enum EventProcessor {
         }
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("module", eventType.getModule());
-        parameters.put("event", eventType.name());
-        parameters.put("args", argList);
+        parameters.put(MODULE_KEY, eventType.getModule());
+        parameters.put(EVENT_KEY, eventType.name());
+        parameters.put(ARGS_KEY, argList);
         return parameters;
     }
 

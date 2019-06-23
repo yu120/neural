@@ -1,7 +1,7 @@
 package org.micro.neural.degrade;
 
 import org.micro.neural.common.Constants;
-import org.micro.neural.config.event.EventProcessor;
+import org.micro.neural.config.event.EventCollect;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.OriginalCall;
@@ -89,7 +89,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
                 dataMap.putAll(temp);
             });
         } catch (Exception e) {
-            EventProcessor.onEvent(EventType.COLLECT_EXCEPTION);
+            EventCollect.onEvent(EventType.COLLECT_EXCEPTION);
             log.error("The notify config is exception of degrade", e);
         }
 
@@ -107,7 +107,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
             Object mockData = mockData(ruleConfig.getMock(), ruleConfig.getClazz(), ruleConfig.getData());
             mockDataMap.put(identity, mockData);
         } catch (Exception e) {
-            EventProcessor.onEvent(EventType.NOTIFY_EXCEPTION);
+            EventCollect.onEvent(EventType.NOTIFY_EXCEPTION);
             log.error("The collect statistics is exception of degrade", e);
         }
     }
