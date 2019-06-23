@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * The limiter based on memory implementation.
+ * The limiter based on memory implementation(second level).
  *
  * @author lry
  */
