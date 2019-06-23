@@ -33,52 +33,52 @@ public class Statistics implements Serializable {
     /**
      * The total request counter in the current time window: Calculation QPS
      */
-    protected LongAdder requestCounter = new LongAdder();
+    protected final LongAdder requestCounter = new LongAdder();
 
     /**
      * The total success counter in the current time window: Calculation TPS
      */
-    protected LongAdder successCounter = new LongAdder();
+    protected final LongAdder successCounter = new LongAdder();
     /**
      * The total failure counter in the current time window
      */
-    protected LongAdder failureCounter = new LongAdder();
+    protected final LongAdder failureCounter = new LongAdder();
 
     /**
      * The total timeout counter in the current time window
      */
-    protected LongAdder timeoutCounter = new LongAdder();
+    protected final LongAdder timeoutCounter = new LongAdder();
     /**
      * The total rejection counter in the current time window
      */
-    protected LongAdder rejectionCounter = new LongAdder();
+    protected final LongAdder rejectionCounter = new LongAdder();
 
     /**
      * The total elapsed counter in the current time window
      */
-    protected LongAdder elapsedCounter = new LongAdder();
+    protected final LongAdder elapsedCounter = new LongAdder();
     /**
      * The max elapsed counter in the current time window
      */
-    protected LongAccumulator maxElapsedCounter = new LongAccumulator(Long::max, 0);
+    protected final LongAccumulator maxElapsedCounter = new LongAccumulator(Long::max, 0);
 
     /**
      * The total concurrency exceed counter in the current time window
      */
-    protected LongAdder concurrencyCounter = new LongAdder();
+    protected final LongAdder concurrencyCounter = new LongAdder();
     /**
      * The max concurrency counter in the current time window
      */
-    protected LongAccumulator maxConcurrencyCounter = new LongAccumulator(Long::max, 0);
+    protected final LongAccumulator maxConcurrencyCounter = new LongAccumulator(Long::max, 0);
 
     /**
      * The total rate counter in the current time window
      */
-    protected LongAdder rateCounter = new LongAdder();
+    protected final LongAdder rateCounter = new LongAdder();
     /**
      * The max rate counter in the current time window
      */
-    protected LongAccumulator maxRateCounter = new LongAccumulator(Long::max, 0);
+    protected final LongAccumulator maxRateCounter = new LongAccumulator(Long::max, 0);
 
     /**
      * The total request of statistical traffic

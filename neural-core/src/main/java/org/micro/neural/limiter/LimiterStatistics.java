@@ -4,10 +4,11 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
-import org.micro.neural.common.Constants;
 import org.micro.neural.config.statistics.Statistics;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+
+import static org.micro.neural.config.statistics.StatisticsCategory.*;
 
 /**
  * The statistics of Limiter.
@@ -27,11 +28,11 @@ public class LimiterStatistics extends Statistics implements Serializable {
     /**
      * The total concurrency exceed counter in the current time window
      */
-    private LongAdder concurrencyExceedCounter = new LongAdder();
+    private final LongAdder concurrencyExceedCounter = new LongAdder();
     /**
      * The total rate exceed counter in the current time window
      */
-    private LongAdder rateExceedCounter = new LongAdder();
+    private final LongAdder rateExceedCounter = new LongAdder();
 
     /**
      * The total exceed of statistical traffic
@@ -56,21 +57,6 @@ public class LimiterStatistics extends Statistics implements Serializable {
     }
 
     /**
-     * The get statistics data
-     *
-     * @return statistics data map
-     */
-    @Override
-    public Map<String, Long> getStatisticsData() {
-        Map<String, Long> map = super.getStatisticsData();
-        // statistics trade
-        map.put("concurrencyExceed", concurrencyExceedCounter.longValue());
-        map.put("rateExceed", rateExceedCounter.longValue());
-
-        return map;
-    }
-
-    /**
      * The get statistics and reset
      *
      * @return statistics data map
@@ -88,8 +74,23 @@ public class LimiterStatistics extends Statistics implements Serializable {
         }
 
         // statistics exceed
-        map.put(String.format(Constants.CONCURRENCY_EXCEED_KEY, identity, time), concurrencyExceed);
-        map.put(String.format(Constants.RATE_EXCEED_KEY, identity, time), rateExceed);
+        map.put(String.format(STATISTICS, CONCURRENCY_EXCEED_KEY, identity, time), concurrencyExceed);
+        map.put(String.format(STATISTICS, RATE_EXCEED_KEY, identity, time), rateExceed);
+
+        return map;
+    }
+
+    /**
+     * The get statistics data
+     *
+     * @return statistics data map
+     */
+    @Override
+    public Map<String, Long> getStatisticsData() {
+        Map<String, Long> map = super.getStatisticsData();
+        // statistics trade
+        map.put(CONCURRENCY_EXCEED_KEY, concurrencyExceedCounter.longValue());
+        map.put(RATE_EXCEED_KEY, rateExceedCounter.longValue());
 
         return map;
     }

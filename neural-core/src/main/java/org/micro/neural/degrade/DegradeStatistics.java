@@ -5,9 +5,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
 import lombok.*;
-import org.micro.neural.common.Constants;
 import org.micro.neural.config.statistics.Statistics;
 import lombok.extern.slf4j.Slf4j;
+
+import static org.micro.neural.config.statistics.StatisticsCategory.*;
 
 /**
  * The Degrade Statistics.
@@ -27,21 +28,7 @@ public class DegradeStatistics extends Statistics implements Serializable {
     /**
      * The total times degrade counter（ms）
      */
-    private LongAdder counter = new LongAdder();
-
-    /**
-     * The get statistics data
-     *
-     * @return statistics data map
-     */
-    @Override
-    public Map<String, Long> getStatisticsData() {
-        Map<String, Long> map = super.getStatisticsData();
-        // statistics trade
-        map.put("counter", counter.longValue());
-
-        return map;
-    }
+    private final LongAdder counter = new LongAdder();
 
     /**
      * The query statistics and reset
@@ -60,7 +47,21 @@ public class DegradeStatistics extends Statistics implements Serializable {
         }
 
         // statistics exceed
-        map.put(String.format(Constants.TOTAL_DEGRADE, identity, time), totalDegrade);
+        map.put(String.format(STATISTICS, DEGRADE_TIMES_KEY, identity, time), totalDegrade);
+
+        return map;
+    }
+
+    /**
+     * The get statistics data
+     *
+     * @return statistics data map
+     */
+    @Override
+    public Map<String, Long> getStatisticsData() {
+        Map<String, Long> map = super.getStatisticsData();
+        // statistics trade
+        map.put(DEGRADE_TIMES_KEY, counter.longValue());
 
         return map;
     }
