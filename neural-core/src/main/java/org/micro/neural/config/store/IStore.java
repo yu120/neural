@@ -63,11 +63,12 @@ public interface IStore {
      * The increment by lua script
      *
      * @param key          increment key
+     * @param category          0=increment, 1=decrement
      * @param maxThreshold max threshold
      * @param timeout      timeout(ms)
      * @return 0=exceed, other=current number
      */
-    Integer increment(String key, Long maxThreshold, Long timeout);
+    Integer concurrency(String key, Integer category, Long maxThreshold, Long timeout);
 
     /**
      * The pull config

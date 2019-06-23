@@ -21,7 +21,7 @@ public class RedisLimiter extends AbstractCallLimiter {
         IStore store = storePool.getStore();
 
         try {
-            Integer result = store.increment(limiterConfig.identity(),
+            Integer result = store.concurrency(limiterConfig.identity(), 0,
                     limiterConfig.getConcurrency(), limiterConfig.getConcurrencyTimeout());
             if (result == null) {
                 return Acquire.EXCEPTION;
@@ -38,7 +38,14 @@ public class RedisLimiter extends AbstractCallLimiter {
 
     @Override
     protected void releaseAcquireConcurrency() {
+        IStore store = storePool.getStore();
 
+        try {
+            store.concurrency(limiterConfig.identity(), 1,
+                    limiterConfig.getConcurrency(), limiterConfig.getConcurrencyTimeout());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     @Override

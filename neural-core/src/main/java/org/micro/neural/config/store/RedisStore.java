@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
@@ -38,7 +39,7 @@ import org.micro.neural.extension.Extension;
 public class RedisStore implements IStore {
 
     private RedisClient redisClient = null;
-    private GenericObjectPool<StatefulRedisConnection<String, String>> genericObjectPool;
+    private GenericObjectPool<StatefulRedisConnection<String, String>> objectPool;
     private final Map<IStoreListener, RedisPubSubAsyncCommands<String, String>> subscribed = new ConcurrentHashMap<>();
 
     private static String CONCURRENCY_SCRIPT = null;
@@ -71,14 +72,14 @@ public class RedisStore implements IStore {
         }
 
         this.redisClient = RedisClient.create(redisURI);
-        this.genericObjectPool = ConnectionPoolSupport.createGenericObjectPool(
+        this.objectPool = ConnectionPoolSupport.createGenericObjectPool(
                 () -> redisClient.connect(), new GenericObjectPoolConfig());
     }
 
     @Override
     public void batchUpOrAdd(long expire, Map<String, Long> data) {
         try {
-            try (StatefulRedisConnection<String, String> connection = genericObjectPool.borrowObject()) {
+            try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
                 RedisAsyncCommands<String, String> commands = connection.async();
                 for (Map.Entry<String, Long> entry : data.entrySet()) {
                     commands.incrby(entry.getKey(), entry.getValue());
@@ -93,7 +94,7 @@ public class RedisStore implements IStore {
     @Override
     public void add(String space, String key, Object data) {
         try {
-            try (StatefulRedisConnection<String, String> connection = genericObjectPool.borrowObject()) {
+            try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
                 RedisCommands<String, String> commands = connection.sync();
                 commands.hset(space, key, SerializeUtils.serialize(data));
             }
@@ -106,7 +107,7 @@ public class RedisStore implements IStore {
     public Set<String> searchKeys(String space, String keyword) {
         Set<String> keySet = new HashSet<>();
         try {
-            try (StatefulRedisConnection<String, String> connection = genericObjectPool.borrowObject()) {
+            try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
                 RedisCommands<String, String> commands = connection.sync();
                 List<String> keys = commands.hkeys(space);
                 if (keys == null || keys.isEmpty()) {
@@ -124,7 +125,7 @@ public class RedisStore implements IStore {
     @Override
     public <C> C query(String space, String key, Class<C> clz) {
         try {
-            try (StatefulRedisConnection<String, String> connection = genericObjectPool.borrowObject()) {
+            try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
                 RedisCommands<String, String> commands = connection.sync();
                 return SerializeUtils.deserialize(clz, commands.hget(space, key));
             }
@@ -134,15 +135,16 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public Integer increment(String key, Long maxThreshold, Long timeout) {
+    public Integer concurrency(String key, Integer category, Long maxThreshold, Long timeout) {
+        ScriptOutputType type = ScriptOutputType.INTEGER;
         String[] keys = new String[]{key};
-        String[] values = new String[]{String.valueOf(maxThreshold)};
+        String[] values = new String[]{String.valueOf(maxThreshold), String.valueOf(category)};
 
         try {
             Long borrowTimeout = Double.valueOf(timeout * 0.8).longValue();
-            try (StatefulRedisConnection<String, String> connection = genericObjectPool.borrowObject(borrowTimeout)) {
+            try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject(borrowTimeout)) {
                 RedisAsyncCommands<String, String> commands = connection.async();
-                RedisFuture<Integer> redisFuture = commands.eval(CONCURRENCY_SCRIPT, ScriptOutputType.INTEGER, keys, values);
+                RedisFuture<Integer> redisFuture = commands.eval(CONCURRENCY_SCRIPT, type, keys, values);
                 return redisFuture.get(timeout, TimeUnit.MILLISECONDS);
             }
         } catch (Exception e) {
@@ -153,7 +155,7 @@ public class RedisStore implements IStore {
     @Override
     public Map<String, String> pull(String key) {
         try {
-            try (StatefulRedisConnection<String, String> connection = genericObjectPool.borrowObject()) {
+            try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
                 RedisCommands<String, String> commands = connection.sync();
                 return commands.hgetall(key);
             }
@@ -165,7 +167,7 @@ public class RedisStore implements IStore {
     @Override
     public void publish(String channel, Object data) {
         try {
-            try (StatefulRedisConnection<String, String> connection = genericObjectPool.borrowObject()) {
+            try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
                 RedisCommands<String, String> commands = connection.sync();
                 commands.publish(channel, SerializeUtils.serialize(data));
             }
@@ -227,8 +229,8 @@ public class RedisStore implements IStore {
 
     @Override
     public void destroy() {
-        if (null != genericObjectPool) {
-            genericObjectPool.close();
+        if (null != objectPool) {
+            objectPool.close();
         }
         if (null != redisClient) {
             redisClient.shutdown();
