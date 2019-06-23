@@ -8,7 +8,7 @@ import org.micro.neural.config.statistics.Statistics;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
-import static org.micro.neural.config.statistics.StatisticsCategory.*;
+import static org.micro.neural.common.Constants.*;
 
 /**
  * The statistics of Limiter.

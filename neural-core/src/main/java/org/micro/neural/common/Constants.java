@@ -7,10 +7,33 @@ package org.micro.neural.common;
  **/
 public final class Constants {
 
-    public static final String SEQ = "-";
     public static final String SEPARATOR = ",";
     public static final String DELIMITER = ":";
     public static final String CHANNEL = "CHANNEL";
-    public static final String PUSH_STATISTICS = "push-statistics";
+
+    public static final String STATISTICS = "statistics:%s:%s:%s";
+
+    // ==== common statistics
+
+    public static final String REQUEST_KEY = "request";
+    public static final String SUCCESS_KEY = "success";
+    public static final String FAILURE_KEY = "failure";
+    public static final String TIMEOUT_KEY = "timeout";
+    public static final String REJECTION_KEY = "rejection";
+    public static final String ELAPSED_KEY = "elapsed";
+    public static final String MAX_ELAPSED_KEY = "max_elapsed";
+    public static final String CONCURRENCY_KEY = "concurrency";
+    public static final String MAX_CONCURRENCY_KEY = "max_concurrency";
+    public static final String RATE_KEY = "rate";
+    public static final String MAX_RATE_KEY = "max_rate";
+
+    // ==== limiter statistics
+
+    public static final String CONCURRENCY_EXCEED_KEY = "concurrency_exceed";
+    public static final String RATE_EXCEED_KEY = "rate_exceed";
+
+    // ==== degrade statistics
+
+    public static final String DEGRADE_TIMES_KEY = "degrade";
 
 }

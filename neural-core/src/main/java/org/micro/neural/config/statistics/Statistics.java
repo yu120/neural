@@ -15,7 +15,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.concurrent.atomic.LongAdder;
 
-import static org.micro.neural.config.statistics.StatisticsCategory.*;
+import static org.micro.neural.common.Constants.*;
 
 /**
  * The Statistics.

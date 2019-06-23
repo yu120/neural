@@ -4,8 +4,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.Neural;
 import org.micro.neural.common.URL;
-import org.micro.neural.common.Constants;
 import org.micro.neural.common.collection.ConcurrentHashSet;
+
+import static org.micro.neural.common.Constants.*;
+
 import org.micro.neural.config.*;
 import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.extension.ExtensionLoader;
@@ -98,11 +100,11 @@ public class StorePool implements IStoreListener {
     public void publish(String module, Object object) {
         String channel;
         if (object instanceof GlobalConfig) {
-            channel = Category.GLOBAL.name() + Constants.DELIMITER + space + Constants.DELIMITER + module;
+            channel = Category.GLOBAL.name() + DELIMITER + space + DELIMITER + module;
         } else if (object instanceof RuleConfig) {
             RuleConfig ruleConfig = (RuleConfig) object;
-            channel = Category.RULE.name() + Constants.DELIMITER + space +
-                    Constants.DELIMITER + module + Constants.DELIMITER + ruleConfig.identity();
+            channel = Category.RULE.name() + DELIMITER + space +
+                    DELIMITER + module + DELIMITER + ruleConfig.identity();
         } else {
             throw new IllegalArgumentException("Illegal object type");
         }
@@ -142,12 +144,12 @@ public class StorePool implements IStoreListener {
     private void pullConfigs() {
         List<String> remoteChannels = new ArrayList<>();
         // pull remote global configs
-        String remoteGlobalConfigKey = String.join(Constants.DELIMITER, Category.GLOBAL.name(), space);
+        String remoteGlobalConfigKey = String.join(DELIMITER, Category.GLOBAL.name(), space);
         Map<String, String> remoteGlobalConfigs = store.pull(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
         if (remoteGlobalConfigs != null && !remoteGlobalConfigs.isEmpty()) {
             for (Map.Entry<String, String> entry : remoteGlobalConfigs.entrySet()) {
-                String remoteGlobalChannel = String.join(Constants.DELIMITER, remoteGlobalConfigKey, Constants.CHANNEL, entry.getKey());
+                String remoteGlobalChannel = String.join(DELIMITER, remoteGlobalConfigKey, CHANNEL, entry.getKey());
                 remoteChannels.add(remoteGlobalChannel);
 
                 String module = entry.getKey();
@@ -159,15 +161,15 @@ public class StorePool implements IStoreListener {
         }
 
         // pull remote rule configs
-        String remoteRuleConfigKey = String.join(Constants.DELIMITER, Category.RULE.name(), space);
+        String remoteRuleConfigKey = String.join(DELIMITER, Category.RULE.name(), space);
         Map<String, String> remoteRuleConfigs = store.pull(remoteRuleConfigKey);
         log.debug("The rule config pull changed: {}", remoteRuleConfigs);
         if (remoteRuleConfigs != null && !remoteRuleConfigs.isEmpty()) {
             for (Map.Entry<String, String> entry : remoteRuleConfigs.entrySet()) {
-                String remoteRuleChannel = String.join(Constants.DELIMITER, remoteRuleConfigKey, Constants.CHANNEL, entry.getKey());
+                String remoteRuleChannel = String.join(DELIMITER, remoteRuleConfigKey, CHANNEL, entry.getKey());
                 remoteChannels.add(remoteRuleChannel);
 
-                int index = entry.getKey().indexOf(Constants.DELIMITER);
+                int index = entry.getKey().indexOf(DELIMITER);
                 String module = entry.getKey().substring(0, index);
                 Neural neural = neuralMap.get(module);
                 if (neural != null) {
@@ -205,14 +207,14 @@ public class StorePool implements IStoreListener {
             return;
         }
 
-        Category remoteCategory = Category.valueOf(channel.split(Constants.DELIMITER)[0]);
-        String remoteChannel = channel.substring(channel.indexOf(Constants.CHANNEL) + 8);
-        String module = remoteChannel.split(Constants.DELIMITER)[0];
+        Category remoteCategory = Category.valueOf(channel.split(DELIMITER)[0]);
+        String remoteChannel = channel.substring(channel.indexOf(CHANNEL) + 8);
+        String module = remoteChannel.split(DELIMITER)[0];
         Neural neural = neuralMap.get(module);
         if (neural != null) {
             String identity = null;
             if (Category.RULE == remoteCategory) {
-                identity = remoteChannel.substring(remoteChannel.indexOf(Constants.DELIMITER) + 1);
+                identity = remoteChannel.substring(remoteChannel.indexOf(DELIMITER) + 1);
             }
             neural.notify(remoteCategory, identity, data);
         }
@@ -230,9 +232,8 @@ public class StorePool implements IStoreListener {
 
         // start push statistics data executor
         log.debug("The {} executing push statistics data executor", space);
-        String pushStatisticsName = String.join(Constants.SEQ, space, Constants.PUSH_STATISTICS);
         ThreadFactoryBuilder pushBuilder = new ThreadFactoryBuilder();
-        ThreadFactory pushTreadFactory = pushBuilder.setDaemon(true).setNameFormat(pushStatisticsName).build();
+        ThreadFactory pushTreadFactory = pushBuilder.setDaemon(true).setNameFormat(space + "-push-statistics").build();
         this.pushStatisticsExecutor = Executors.newScheduledThreadPool(1, pushTreadFactory);
 
         // execute schedule push statistics by fixed rate
@@ -250,7 +251,7 @@ public class StorePool implements IStoreListener {
 
                     Map<String, Long> sendData = new HashMap<>();
                     for (Map.Entry<String, Long> tempEntry : statisticsData.entrySet()) {
-                        sendData.put(String.join(Constants.DELIMITER, space, tempEntry.getKey()), tempEntry.getValue());
+                        sendData.put(String.join(DELIMITER, space, tempEntry.getKey()), tempEntry.getValue());
                     }
 
                     // push statistics data to remote
