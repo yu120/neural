@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @param <V>
  * @author lry
  */
-public class LRUCache<K, V> extends LinkedHashMap<K, V> {
+public class LruCache<K, V> extends LinkedHashMap<K, V> {
 
     private static final long serialVersionUID = -5167631809472116969L;
 
@@ -21,11 +21,11 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     private final Lock lock = new ReentrantLock();
     private volatile int maxCapacity;
 
-    public LRUCache() {
+    public LruCache() {
         this(DEFAULT_MAX_CAPACITY);
     }
 
-    public LRUCache(int maxCapacity) {
+    public LruCache(int maxCapacity) {
         super(16, DEFAULT_LOAD_FACTOR, true);
         this.maxCapacity = maxCapacity;
     }
