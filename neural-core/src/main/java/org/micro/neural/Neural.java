@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * Neural
+ * The Neural.
  *
  * @author lry
  */
