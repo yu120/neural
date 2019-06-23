@@ -1,6 +1,7 @@
 package org.micro.neural.limiter.core;
 
 import lombok.Getter;
+import org.micro.neural.common.utils.BeanUtils;
 import org.micro.neural.config.GlobalConfig;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.LimiterConfig;
@@ -34,7 +35,7 @@ public abstract class AbstractCheckLimiter implements ILimiter {
             return true;
         }
 
-        this.limiterConfig = limiterConfig;
+        BeanUtils.copyProperties(limiterConfig, this.limiterConfig);
         return true;
     }
 

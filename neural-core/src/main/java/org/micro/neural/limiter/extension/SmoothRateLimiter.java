@@ -123,7 +123,7 @@ public abstract class SmoothRateLimiter extends AdjustableRateLimiter {
     abstract void doSetRate(double permitsPerSecond, double stableIntervalMicros);
 
     @Override
-    final double doGetRate() {
+    public final double doGetRate() {
         return SECONDS.toMicros(1L) / stableIntervalMicros;
     }
 
@@ -155,7 +155,7 @@ public abstract class SmoothRateLimiter extends AdjustableRateLimiter {
 
     abstract double coolDownIntervalMicros();
 
-    void reSync(long nowMicros) {
+    private void reSync(long nowMicros) {
         if (nowMicros > nextFreeTicketMicros) {
             double newPermits = (nowMicros - nextFreeTicketMicros) / coolDownIntervalMicros();
             storedPermits = min(maxPermits, storedPermits + newPermits);

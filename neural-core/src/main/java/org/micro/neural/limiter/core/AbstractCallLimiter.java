@@ -97,7 +97,8 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doStrategyProcess(LimiterGlobalConfig.EventType eventType, OriginalCall originalCall) throws Throwable {
+    private Object doStrategyProcess(LimiterGlobalConfig.EventType eventType,
+                                     OriginalCall originalCall) throws Throwable {
         // the total exceed of statistical traffic
         statistics.exceedTraffic(eventType);
 

@@ -18,16 +18,16 @@ import java.util.concurrent.TimeUnit;
  *
  * @author lry
  */
-public abstract class AdjustableRateLimiter {
+public class AdjustableRateLimiter {
 
-    public static final long TIME_GRIT = 1L;
-    protected volatile double timeGritSecond;
+    private static final long TIME_GRIT = 1L;
+    private volatile double timeGritSecond;
 
-    protected final double getTimeGritSecond() {
+    double getTimeGritSecond() {
         return timeGritSecond;
     }
 
-    private final void setTimeGritSecond(long timeGritSecond) {
+    private void setTimeGritSecond(long timeGritSecond) {
         this.timeGritSecond = SECONDS.toMicros(timeGritSecond);
     }
 
@@ -39,7 +39,15 @@ public abstract class AdjustableRateLimiter {
         return create(SleepingStopwatch.createFromSystemTimer(), permitsPerSecond, timeGritSecond);
     }
 
-    static AdjustableRateLimiter create(SleepingStopwatch stopwatch, double permitsPerSecond, long timeGritSecond) {
+    /**
+     * The create adjustable rate limiter
+     *
+     * @param stopwatch        {@link SleepingStopwatch}
+     * @param permitsPerSecond permits per second
+     * @param timeGritSecond   time grit second
+     * @return {@link AdjustableRateLimiter}
+     */
+    private static AdjustableRateLimiter create(SleepingStopwatch stopwatch, double permitsPerSecond, long timeGritSecond) {
         AdjustableRateLimiter adjustableRateLimiter = new SmoothBursty(stopwatch, 1.0);
         adjustableRateLimiter.setTimeGritSecond(timeGritSecond);
         adjustableRateLimiter.setRate(permitsPerSecond);
@@ -59,8 +67,19 @@ public abstract class AdjustableRateLimiter {
                 permitsPerSecond, warmUpPeriod, unit, 3.0, timeGritSecond);
     }
 
-    static AdjustableRateLimiter create(SleepingStopwatch stopwatch, double permitsPerSecond,
-                                        long warmUpPeriod, TimeUnit unit, double coldFactor, long timeGritSecond) {
+    /**
+     * The create adjustable rate limiter
+     *
+     * @param stopwatch        {@link SleepingStopwatch}
+     * @param permitsPerSecond permits per second
+     * @param warmUpPeriod     warm up period
+     * @param unit             {@link TimeUnit}
+     * @param coldFactor       cold factor
+     * @param timeGritSecond   time grit second
+     * @return {@link AdjustableRateLimiter}
+     */
+    private static AdjustableRateLimiter create(SleepingStopwatch stopwatch, double permitsPerSecond,
+                                                long warmUpPeriod, TimeUnit unit, double coldFactor, long timeGritSecond) {
         AdjustableRateLimiter adjustableRateLimiter = new SmoothWarmingUp(stopwatch, warmUpPeriod, unit, coldFactor);
         adjustableRateLimiter.setTimeGritSecond(timeGritSecond);
         adjustableRateLimiter.setRate(permitsPerSecond);
@@ -99,7 +118,9 @@ public abstract class AdjustableRateLimiter {
         }
     }
 
-    abstract void doSetRate(double permitsPerSecond, long nowMicros);
+    void doSetRate(double permitsPerSecond, long nowMicros) {
+
+    }
 
     public final double getRate() {
         synchronized (mutex()) {
@@ -107,19 +128,21 @@ public abstract class AdjustableRateLimiter {
         }
     }
 
-    abstract double doGetRate();
+    public double doGetRate() {
+        return 0;
+    }
 
-    public double acquire() {
+    double acquire() {
         return acquire(1);
     }
 
-    public double acquire(int permits) {
+    double acquire(int permits) {
         long microsToWait = reserve(permits);
         stopwatch.sleepMicrosUninterruptibly(microsToWait);
         return 1.0 * microsToWait / SECONDS.toMicros(1L);
     }
 
-    final long reserve(int permits) {
+    private long reserve(int permits) {
         checkPermits(permits);
         synchronized (mutex()) {
             return reserveAndGetWaitLength(permits, stopwatch.readMicros());
@@ -138,7 +161,7 @@ public abstract class AdjustableRateLimiter {
         return tryAcquire(1, 0, MICROSECONDS);
     }
 
-    public boolean tryAcquire(int permits, long timeout, TimeUnit unit) {
+    private boolean tryAcquire(int permits, long timeout, TimeUnit unit) {
         long timeoutMicros = max(unit.toMicros(timeout), 0);
         checkPermits(permits);
         long microsToWait;
@@ -164,7 +187,7 @@ public abstract class AdjustableRateLimiter {
         return queryEarliestAvailable(nowMicros) - timeoutMicros <= nowMicros;
     }
 
-    final long reserveAndGetWaitLength(int permits, long nowMicros) {
+    private long reserveAndGetWaitLength(int permits, long nowMicros) {
         long momentAvailable = reserveEarliestAvailable(permits, nowMicros);
         return max(momentAvailable - nowMicros, 0);
     }
@@ -173,33 +196,43 @@ public abstract class AdjustableRateLimiter {
      * The query earliest available
      *
      * @param nowMicros now micros
-     * @return
      */
-    abstract long queryEarliestAvailable(long nowMicros);
+    long queryEarliestAvailable(long nowMicros) {
+        return 0L;
+    }
 
     /**
      * The reserve earliest available
      *
-     * @param permits permits
+     * @param permits   permits
      * @param nowMicros now micros
-     * @return
      */
-    abstract long reserveEarliestAvailable(int permits, long nowMicros);
+    long reserveEarliestAvailable(int permits, long nowMicros) {
+        return 0L;
+    }
 
     @Override
     public String toString() {
         return String.format(Locale.ROOT, "RateLimiter[stableRate=%3.1fqps]", getRate());
     }
 
-    abstract static class SleepingStopwatch {
-        protected SleepingStopwatch() {
+    /**
+     *
+     */
+    static class SleepingStopwatch {
+
+        SleepingStopwatch() {
         }
 
-        protected abstract long readMicros();
+        protected long readMicros() {
+            return 0L;
+        }
 
-        protected abstract void sleepMicrosUninterruptibly(long micros);
+        protected void sleepMicrosUninterruptibly(long micros) {
 
-        public static final SleepingStopwatch createFromSystemTimer() {
+        }
+
+        static SleepingStopwatch createFromSystemTimer() {
             return new SleepingStopwatch() {
                 final Stopwatch stopwatch = Stopwatch.createStarted();
 

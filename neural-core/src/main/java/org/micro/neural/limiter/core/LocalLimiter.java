@@ -64,9 +64,7 @@ public class LocalLimiter extends AbstractCallLimiter {
 
     @Override
     protected void releaseAcquireConcurrency() {
-        if (null != semaphore) {
-            semaphore.release();
-        }
+        semaphore.release();
     }
 
     @Override
