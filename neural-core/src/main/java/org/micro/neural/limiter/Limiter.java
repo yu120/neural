@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.micro.neural.config.GlobalConfig;
 import org.micro.neural.config.event.EventProcessor;
-import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.OriginalCall;
 import org.micro.neural.AbstractNeural;
 import org.micro.neural.extension.Extension;
@@ -36,7 +36,8 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
     @Override
     public Object doWrapperCall(String identity, OriginalCall originalCall) throws Throwable {
         // The check global config of limiter
-        if (null == globalConfig || null == globalConfig.getEnable() || Switch.OFF == globalConfig.getEnable()) {
+        if (null == globalConfig || null == globalConfig.getEnable() ||
+                GlobalConfig.Switch.OFF == globalConfig.getEnable()) {
             return originalCall.call();
         }
 

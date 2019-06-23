@@ -66,8 +66,8 @@ public class MemoryLimiter extends AbstractCallLimiter {
     @Override
     protected Acquire tryAcquireRateLimiter() {
         try {
-            LongAdder number = loadingCache.get(System.currentTimeMillis() / 1000);
-            if (super.getLimiterConfig().getRate() > number.longValue()) {
+            LongAdder times = loadingCache.get(System.currentTimeMillis() / 1000);
+            if (super.getLimiterConfig().getRate() > times.longValue()) {
                 return Acquire.SUCCESS;
             }
         } catch (Exception e) {
