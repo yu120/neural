@@ -5,11 +5,11 @@ package org.micro.neural.limiter;
  *
  * @author lry
  */
-public class LimiterExcessException extends RuntimeException {
+public class LimiterExceedException extends RuntimeException {
 
     private static final long serialVersionUID = -8228538343786169063L;
 
-    public LimiterExcessException(String message) {
+    public LimiterExceedException(String message) {
         super(message);
     }
 

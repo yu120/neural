@@ -66,9 +66,9 @@ public class LimiterConfig extends RuleConfig {
          */
         FALLBACK("The fallback of limiter, when over flow"),
         /**
-         * The throw 'LimiterExcessException' exception of limiter, when over flow
+         * The throw 'LimiterExceedException' exception of limiter, when over flow
          */
-        EXCEPTION("The throw 'LimiterExcessException' exception of limiter, when over flow");
+        EXCEPTION("The throw 'LimiterExceedException' exception of limiter, when over flow");
 
         String message;
 

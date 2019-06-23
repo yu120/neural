@@ -2,7 +2,7 @@ package org.micro.neural.limiter.core;
 
 import org.micro.neural.OriginalCall;
 import org.micro.neural.config.event.EventCollect;
-import org.micro.neural.limiter.LimiterExcessException;
+import org.micro.neural.limiter.LimiterExceedException;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.limiter.LimiterGlobalConfig;
 
@@ -114,7 +114,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
                 case FALLBACK:
                     return originalCall.fallback();
                 case EXCEPTION:
-                    throw new LimiterExcessException(eventType.name());
+                    throw new LimiterExceedException(eventType.name());
                 case NON:
                     // the skip non case
                 default:

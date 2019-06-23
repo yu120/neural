@@ -4,7 +4,6 @@ import org.micro.neural.config.GlobalConfig;
 import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.config.RuleConfig;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -12,7 +11,7 @@ import java.util.Map;
  *
  * @author lry
  */
-public interface Neural<C extends RuleConfig, G extends GlobalConfig> extends Serializable {
+public interface Neural<C extends RuleConfig, G extends GlobalConfig> {
 
     /**
      * The get global config
