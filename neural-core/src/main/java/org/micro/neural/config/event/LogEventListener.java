@@ -5,8 +5,6 @@ import org.micro.neural.extension.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-
 /**
  * The Log Event Notify.
  *
@@ -26,11 +24,11 @@ public class LogEventListener implements IEventListener {
     }
 
     @Override
-    public void notify(IEventType eventType, Map<String, Object> parameters) {
+    public void notify(IEventType eventType, Object object) {
         if (eventConfig.isJsonLog()) {
-            eventLog.info("{}", SerializeUtils.serialize(parameters));
+            eventLog.info("{}", SerializeUtils.serialize(object));
         } else {
-            eventLog.info("{}", parameters.toString());
+            eventLog.info("{}", object.toString());
         }
     }
 

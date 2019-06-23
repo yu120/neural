@@ -3,8 +3,6 @@ package org.micro.neural.config.event;
 import org.micro.neural.config.store.StorePool;
 import org.micro.neural.extension.Extension;
 
-import java.util.Map;
-
 /**
  * The Redis Event Notify.
  *
@@ -23,7 +21,7 @@ public class RedisEventListener implements IEventListener {
     }
 
     @Override
-    public void notify(IEventType eventType, Map<String, Object> parameters) {
+    public void notify(IEventType eventType, Object object) {
 
     }
 
