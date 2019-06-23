@@ -59,6 +59,8 @@ public interface IStore {
      */
     <C> C query(String space, String key, Class<C> clz);
 
+    String get(String key);
+
     /**
      * The increment by lua script
      *

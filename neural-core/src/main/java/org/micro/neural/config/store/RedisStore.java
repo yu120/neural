@@ -23,6 +23,7 @@ import io.lettuce.core.support.ConnectionPoolSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.micro.neural.common.Constants;
 import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.extension.Extension;
@@ -128,6 +129,18 @@ public class RedisStore implements IStore {
             try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
                 RedisCommands<String, String> commands = connection.sync();
                 return SerializeUtils.deserialize(clz, commands.hget(space, key));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String get(String key) {
+        try {
+            try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
+                RedisCommands<String, String> commands = connection.sync();
+                return commands.get(key);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
