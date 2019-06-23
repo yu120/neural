@@ -36,7 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @author lry
  * @version 3.0
- * {@see https://gitee.com/yu120/sequence}
+ * @link https://gitee.com/yu120/sequence
  */
 public final class Snowflake {
 

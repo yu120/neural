@@ -1,5 +1,6 @@
 package org.micro.neural.common.micro;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.List;
@@ -9,19 +10,16 @@ import java.util.List;
  *
  * @author lry
  */
-public class Stack<E> {
+public class Stack<E> implements Serializable {
 
     private int mSize = 0;
 
     private List<E> mElements = new ArrayList<E>();
 
-    public Stack() {
-    }
-
     /**
      * push.
      *
-     * @param ele
+     * @param ele {@link E}
      */
     public void push(E ele) {
         if (mElements.size() > mSize) {
@@ -90,7 +88,7 @@ public class Stack<E> {
     /**
      * remove.
      *
-     * @param index
+     * @param index list index
      * @return element
      */
     public E remove(int index) {
