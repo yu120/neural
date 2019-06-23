@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * The UUID Plus.
+ * The Micro UUID Plus.
  * <br>
  * 注意:<br>
  * 1.支持获取36位String类型UUID.<br>
@@ -206,30 +206,30 @@ public enum MicroUUID {
     /**
      * 将长整型数值转换为指定的进制数（最大支持62进制，字母数字已经用尽）
      *
-     * @param i
-     * @param radix
-     * @return
+     * @param num   num
+     * @param radix radix
+     * @return string value
      */
-    private static String toString(long i, int radix) {
+    private static String toString(long num, int radix) {
         if (radix < MIN_RADIX || radix > MAX_RADIX) {
             radix = 10;
         }
         if (radix == 10) {
-            return Long.toString(i);
+            return Long.toString(num);
         }
 
         final int size = 65;
         int charPos = 64;
         char[] buf = new char[size];
-        boolean negative = (i < 0);
+        boolean negative = (num < 0);
         if (!negative) {
-            i = -i;
+            num = -num;
         }
-        while (i <= -radix) {
-            buf[charPos--] = DIGITS[(int) (-(i % radix))];
-            i = i / radix;
+        while (num <= -radix) {
+            buf[charPos--] = DIGITS[(int) (-(num % radix))];
+            num = num / radix;
         }
-        buf[charPos] = DIGITS[(int) (-i)];
+        buf[charPos] = DIGITS[(int) (-num)];
         if (negative) {
             buf[--charPos] = '-';
         }
@@ -243,13 +243,13 @@ public enum MicroUUID {
     }
 
     private static NumberFormatException forInputString(String s) {
-        return new NumberFormatException("For input string: \"" + s + "\"");
+        return new NumberFormatException("For input string: " + s);
     }
 
     private static class UUIDMaker {
 
         private final static String STR = "0123456789abcdefghijklmnopqrstuvwxyz";
-        private final static int PIXLEN = STR.length();
+        private final static int PIX_LEN = STR.length();
         private static volatile int pixOne = 0;
         private static volatile int pixTwo = 0;
         private static volatile int pixThree = 0;
@@ -266,16 +266,16 @@ public enum MicroUUID {
         private synchronized static String generate() {
             String hexString = Long.toHexString(System.currentTimeMillis());
             pixFour++;
-            if (pixFour == PIXLEN) {
+            if (pixFour == PIX_LEN) {
                 pixFour = 0;
                 pixThree++;
-                if (pixThree == PIXLEN) {
+                if (pixThree == PIX_LEN) {
                     pixThree = 0;
                     pixTwo++;
-                    if (pixTwo == PIXLEN) {
+                    if (pixTwo == PIX_LEN) {
                         pixTwo = 0;
                         pixOne++;
-                        if (pixOne == PIXLEN) {
+                        if (pixOne == PIX_LEN) {
                             pixOne = 0;
                         }
                     }
