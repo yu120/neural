@@ -6,10 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.LongAccumulator;
@@ -178,7 +175,7 @@ public class Statistics implements Serializable {
      * @return statistics data map
      */
     protected Map<String, Long> getAndReset(String identity, Long time) {
-        Map<String, Long> map = new HashMap<>();
+        Map<String, Long> map = new LinkedHashMap<>();
         // statistics trade
         long totalRequest = requestCounter.sumThenReset();
         long totalSuccess = successCounter.sumThenReset();
@@ -226,7 +223,7 @@ public class Statistics implements Serializable {
      * @return statistics data map
      */
     public Map<String, Long> getStatisticsData() {
-        Map<String, Long> map = new HashMap<>();
+        Map<String, Long> map = new LinkedHashMap<>();
         // statistics trade
         map.put(REQUEST_KEY, requestCounter.longValue());
         map.put(SUCCESS_KEY, successCounter.longValue());

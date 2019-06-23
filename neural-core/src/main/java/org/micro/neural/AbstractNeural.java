@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -29,19 +29,18 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
     private final Class<C> ruleClass;
     private final Class<G> globalClass;
 
-    protected final String module;
     protected volatile G globalConfig;
     protected volatile ConcurrentMap<String, C> configs = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
     public AbstractNeural() {
-        this.module = this.getClass().getAnnotation(Extension.class).value();
-
         Type type = this.getClass().getGenericSuperclass();
         Type[] args = ((ParameterizedType) type).getActualTypeArguments();
         this.ruleClass = (Class<C>) args[0];
         this.globalClass = (Class<G>) args[1];
-        StorePool.getInstance().register(module, this);
+
+        Extension extension = this.getClass().getAnnotation(Extension.class);
+        StorePool.getInstance().register(extension.value(), this);
     }
 
     @Override
@@ -67,12 +66,12 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
 
     @Override
     public Map<String, Long> collect() {
-        return new HashMap<>();
+        return new LinkedHashMap<>();
     }
 
     @Override
     public Map<String, Long> statistics() {
-        return new HashMap<>();
+        return new LinkedHashMap<>();
     }
 
     @Override
