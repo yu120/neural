@@ -32,8 +32,8 @@ public class ExtensionLoader<T> {
     private ClassLoader classLoader;
     private volatile boolean init = false;
     private static final String PREFIX_DEFAULT = "META-INF/";
-    private static final String PREFIX_NEURAL = "META-INF/neural/";
-    private static final String PREFIX_SERVICES = "META-INF/services/";
+    private static final String PREFIX_NEURAL = PREFIX_DEFAULT + "neural/";
+    private static final String PREFIX_SERVICES = PREFIX_DEFAULT + "services/";
     private ConcurrentMap<String, T> singletonInstances = null;
     private ConcurrentMap<String, Class<T>> extensionClasses = null;
     private static ConcurrentMap<Class<?>, ExtensionLoader<?>> extensionLoaders = new ConcurrentHashMap<>();
