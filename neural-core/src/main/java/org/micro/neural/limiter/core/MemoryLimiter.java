@@ -1,8 +1,7 @@
 package org.micro.neural.limiter.core;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.LimiterConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +19,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class MemoryLimiter extends AbstractCallLimiter {
 
     private final LongAdder concurrencyCounter = new LongAdder();
-    private final CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-    private LoadingCache<Long, LongAdder> loadingCache;
+    private Cache<Long, LongAdder> cache;
 
     @Override
     public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
@@ -30,21 +28,14 @@ public class MemoryLimiter extends AbstractCallLimiter {
         }
 
         // The core limiter granularity is SECOND
-        LimiterConfig config = super.getLimiterConfig();
-        if (null == config.getGranularity() || LimiterConfig.Unit.SEC != config.getUnit()) {
+        LimiterConfig config = super.limiterConfig;
+        if (null == limiterConfig.getGranularity() || LimiterConfig.Unit.SEC != config.getUnit()) {
             return false;
         }
 
+        CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
         cacheBuilder.expireAfterWrite(config.getRate(), TimeUnit.SECONDS);
-        if (null == loadingCache) {
-            loadingCache = cacheBuilder.build(new CacheLoader<Long, LongAdder>() {
-                @Override
-                public LongAdder load(Long currentTimeSeconds) throws Exception {
-                    return new LongAdder();
-                }
-            });
-        }
-
+        cache = cacheBuilder.build();
         return true;
     }
 
@@ -65,8 +56,12 @@ public class MemoryLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire tryAcquireRateLimiter() {
+        if (cache == null) {
+            return Acquire.SUCCESS;
+        }
+        
         try {
-            LongAdder times = loadingCache.get(System.currentTimeMillis() / 1000);
+            LongAdder times = cache.get(System.currentTimeMillis() / 1000, LongAdder::new);
             if (limiterConfig.getRate() > times.longValue()) {
                 return Acquire.SUCCESS;
             }
