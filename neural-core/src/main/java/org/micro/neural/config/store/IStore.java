@@ -59,7 +59,15 @@ public interface IStore {
      */
     <C> C query(String space, String key, Class<C> clz);
 
-    Integer increment(String key, Long maxThreshold);
+    /**
+     * The increment by lua script
+     *
+     * @param key          increment key
+     * @param maxThreshold max threshold
+     * @param timeout      timeout(ms)
+     * @return 0=exceed, other=current number
+     */
+    Integer increment(String key, Long maxThreshold, Long timeout);
 
     /**
      * The pull config

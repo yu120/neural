@@ -18,7 +18,8 @@ public class RedisLimiter extends AbstractCallLimiter {
     protected Acquire tryAcquireConcurrency() {
         IStore store = storePool.getStore();
         String identity = limiterConfig.identity();
-        Integer result = store.increment(identity, limiterConfig.getConcurrency());
+        Integer result = store.increment(identity,
+                limiterConfig.getConcurrency(), limiterConfig.getConcurrencyTimeout());
         if (result == null) {
             return Acquire.EXCEPTION;
         } else if (result == 0) {
