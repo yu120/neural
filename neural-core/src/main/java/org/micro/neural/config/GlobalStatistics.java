@@ -1,8 +1,6 @@
 package org.micro.neural.config;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.OriginalCall;
 
@@ -25,8 +23,6 @@ import static org.micro.neural.common.Constants.*;
  **/
 @Slf4j
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class GlobalStatistics implements Serializable {
 
     private static final long serialVersionUID = 2972356738274634556L;

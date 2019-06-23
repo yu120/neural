@@ -4,6 +4,7 @@ import org.micro.neural.common.URL;
 import org.micro.neural.extension.SPI;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,6 +58,8 @@ public interface IStore {
      * @return config object
      */
     <C> C query(String space, String key, Class<C> clz);
+
+    Integer increment(String key, Long maxThreshold);
 
     /**
      * The pull config

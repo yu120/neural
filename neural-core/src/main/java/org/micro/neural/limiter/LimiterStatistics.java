@@ -16,8 +16,6 @@ import static org.micro.neural.common.Constants.*;
  */
 @Data
 @Slf4j
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class LimiterStatistics extends GlobalStatistics {

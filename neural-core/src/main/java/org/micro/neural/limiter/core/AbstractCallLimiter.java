@@ -1,5 +1,7 @@
 package org.micro.neural.limiter.core;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.micro.neural.OriginalCall;
 import org.micro.neural.config.event.EventCollect;
 import org.micro.neural.limiter.LimiterExceedException;
@@ -150,22 +152,26 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      *
      * @author lry
      */
+    @Getter
+    @AllArgsConstructor
     public enum Acquire {
 
         /**
          * The success of limiter
          */
-        SUCCESS,
+        SUCCESS(0),
 
         /**
          * The failure of limiter
          */
-        FAILURE,
+        FAILURE(1),
 
         /**
          * The exception of limiter
          */
-        EXCEPTION
+        EXCEPTION(2);
+
+        private int value;
 
     }
 

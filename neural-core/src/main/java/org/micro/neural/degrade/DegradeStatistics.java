@@ -16,8 +16,6 @@ import static org.micro.neural.common.Constants.*;
  **/
 @Slf4j
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class DegradeStatistics extends GlobalStatistics {

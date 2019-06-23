@@ -1,10 +1,15 @@
 package org.micro.neural.config.store;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import io.lettuce.core.ScriptOutputType;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -31,6 +36,25 @@ public class RedisStore implements IStore {
     private RedisClient redisClient = null;
     private GenericObjectPool<StatefulRedisConnection<String, String>> genericObjectPool;
     private final Map<IStoreListener, RedisPubSubAsyncCommands<String, String>> subscribed = new ConcurrentHashMap<>();
+
+    private static String LIMITER_CONCURRENCY_SCRIPT = null;
+    private static String LIMITER_RATE_SCRIPT = null;
+
+    static {
+        try {
+            LIMITER_CONCURRENCY_SCRIPT = CharStreams.toString(new InputStreamReader(
+                    RedisStore.class.getResourceAsStream("/limiter_concurrency.lua"), Charsets.UTF_8));
+            LIMITER_RATE_SCRIPT = CharStreams.toString(new InputStreamReader(
+                    RedisStore.class.getResourceAsStream("/limiter_rate.lua"), Charsets.UTF_8));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(LIMITER_CONCURRENCY_SCRIPT);
+        System.out.println(LIMITER_RATE_SCRIPT);
+    }
 
     @Override
     public void initialize(URL url) {
@@ -104,6 +128,21 @@ public class RedisStore implements IStore {
             try (StatefulRedisConnection<String, String> connection = genericObjectPool.borrowObject()) {
                 RedisCommands<String, String> commands = connection.sync();
                 return SerializeUtils.deserialize(clz, commands.hget(space, key));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Integer increment(String key, Long maxThreshold) {
+        String[] keys = new String[]{key};
+        String[] values = new String[]{String.valueOf(maxThreshold)};
+
+        try {
+            try (StatefulRedisConnection<String, String> connection = genericObjectPool.borrowObject()) {
+                RedisCommands<String, String> commands = connection.sync();
+                return commands.eval(LIMITER_CONCURRENCY_SCRIPT, ScriptOutputType.INTEGER, keys, values);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
