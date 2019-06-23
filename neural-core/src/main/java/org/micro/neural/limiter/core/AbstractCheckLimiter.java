@@ -20,17 +20,13 @@ public abstract class AbstractCheckLimiter implements ILimiter {
 
     protected volatile LimiterConfig limiterConfig = null;
     protected volatile LimiterStatistics statistics = new LimiterStatistics();
-
-    private final String model;
-    private final String module = "limiter";
+    protected final Extension extension;
 
     AbstractCheckLimiter() {
-        Extension extension = this.getClass().getAnnotation(Extension.class);
+        this.extension = this.getClass().getAnnotation(Extension.class);
         if (null == extension) {
             throw new IllegalStateException("The " + this.getClass().getName() + " must has @Extension");
         }
-
-        this.model = extension.value();
     }
 
     @Override
@@ -82,7 +78,7 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      */
     void notifyBroadcastEvent(LimiterGlobalConfig.EventType eventType) {
         try {
-            EventProcessor.onEvent(eventType, model, limiterConfig, statistics.getStatisticsData());
+            EventProcessor.onEvent(eventType, extension.value(), limiterConfig, statistics.getStatisticsData());
         } catch (Exception e) {
             log.error("The notify broadcast event is exception", e);
         }
