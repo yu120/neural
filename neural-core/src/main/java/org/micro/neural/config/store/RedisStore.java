@@ -26,6 +26,8 @@ import org.micro.neural.extension.Extension;
 
 /**
  * The Store by Redis
+ * <p>
+ * TODO:死信问题怎么处理？
  *
  * @author lry
  **/
