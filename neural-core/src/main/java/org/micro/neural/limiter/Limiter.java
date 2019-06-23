@@ -20,10 +20,8 @@ import lombok.extern.slf4j.Slf4j;
  * @author lry
  **/
 @Slf4j
-@Extension(Limiter.LIMITER)
+@Extension(LimiterGlobalConfig.LIMITER)
 public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> {
-
-    public static final String LIMITER = "limiter";
 
     private final ConcurrentMap<String, ILimiter> limiters = new ConcurrentHashMap<>();
 

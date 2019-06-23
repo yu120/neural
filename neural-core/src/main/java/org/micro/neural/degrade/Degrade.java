@@ -22,10 +22,8 @@ import java.util.concurrent.ConcurrentMap;
  * @author lry
  */
 @Slf4j
-@Extension(Degrade.DEGRADE)
+@Extension(DegradeGlobalConfig.DEGRADE)
 public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> {
-
-    public static final String DEGRADE = "degrade";
 
     private volatile Map<String, Object> mockDataMap = new HashMap<>();
     private final ConcurrentMap<String, DegradeStatistics> degradeStatistics = new ConcurrentHashMap<>();

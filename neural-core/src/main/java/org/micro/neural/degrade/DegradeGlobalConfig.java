@@ -4,8 +4,6 @@ import lombok.*;
 import org.micro.neural.config.GlobalConfig;
 import org.micro.neural.config.event.IEventType;
 
-import java.io.Serializable;
-
 /**
  * The Degrade Global Config
  *
@@ -16,9 +14,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class DegradeGlobalConfig extends GlobalConfig implements Serializable {
+public class DegradeGlobalConfig extends GlobalConfig {
 
     private static final long serialVersionUID = 3023172841450527624L;
+    public static final String DEGRADE = "degrade";
 
     /**
      * The degrade level
@@ -76,11 +75,11 @@ public class DegradeGlobalConfig extends GlobalConfig implements Serializable {
         /**
          * The notification mock data exception of degrade
          */
-        NOTIFY_EXCEPTION(Degrade.DEGRADE, "The notify config is exception of degrade"),
+        NOTIFY_EXCEPTION(DEGRADE, "The notify config is exception of degrade"),
         /**
          * The collect statistics exception of degrade
          */
-        COLLECT_EXCEPTION(Degrade.DEGRADE, "The collect statistics is exception of degrade");
+        COLLECT_EXCEPTION(DEGRADE, "The collect statistics is exception of degrade");
 
         String module;
         String message;
