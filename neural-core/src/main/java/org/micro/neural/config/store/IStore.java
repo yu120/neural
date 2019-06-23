@@ -59,13 +59,31 @@ public interface IStore {
      */
     <C> C query(String space, String key, Class<C> clz);
 
+    /**
+     * The get key
+     *
+     * @param key key
+     * @return value
+     */
     String get(String key);
+
+    /**
+     * The lua script eval
+     *
+     * @param type   type class
+     * @param script script
+     * @param keys   key list
+     * @param values value list
+     * @param <T>    class
+     * @return object by <T>
+     */
+    <T> T eval(Class<T> type, String script, String[] keys, String[] values);
 
     /**
      * The increment by lua script
      *
      * @param key          increment key
-     * @param category          0=increment, 1=decrement
+     * @param category     0=increment, 1=decrement
      * @param maxThreshold max threshold
      * @param timeout      timeout(ms)
      * @return 0=exceed, other=current number

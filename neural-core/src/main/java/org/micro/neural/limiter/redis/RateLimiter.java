@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.store.IStore;
-import org.micro.neural.config.store.RedisStore;
 import org.micro.neural.config.store.StorePool;
 
 import java.util.concurrent.TimeUnit;
@@ -24,10 +23,6 @@ public class RateLimiter {
      */
     private String key;
     /**
-     * redis分布式锁的key
-     */
-    private String lockKey;
-    /**
      * 每秒存入的令牌数
      */
     private Double permitsPerSecond;
@@ -38,7 +33,6 @@ public class RateLimiter {
 
     public RateLimiter(String key, Double permitsPerSecond, Integer maxBurstSeconds) {
         this.key = key;
-        this.lockKey = "DISTRIBUTED_LOCK:" + key;
         this.permitsPerSecond = permitsPerSecond;
         this.maxBurstSeconds = maxBurstSeconds;
     }
@@ -49,7 +43,14 @@ public class RateLimiter {
      * @return
      */
     private RedisPermits putDefaultPermits() {
+        RedisPermits permits = new RedisPermits(permitsPerSecond, maxBurstSeconds);
+
         IStore store = StorePool.getInstance().getStore();
+
+        String script = "";
+        String[] keys = new String[]{key, String.valueOf(permits.expires()), SerializeUtils.serialize(permits)};
+        String[] values = new String[]{};
+        RedisPermits redisPermits = store.eval(RedisPermits.class, script, keys, values);
 
         this.lock();
         try {

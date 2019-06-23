@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
@@ -23,7 +22,6 @@ import io.lettuce.core.support.ConnectionPoolSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.micro.neural.common.Constants;
 import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.extension.Extension;
@@ -141,6 +139,34 @@ public class RedisStore implements IStore {
             try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
                 RedisCommands<String, String> commands = connection.sync();
                 return commands.get(key);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public <T> T eval(Class<T> type, String script, String[] keys, String... values) {
+        ScriptOutputType scriptOutputType = null;
+        String typeName = type.getName();
+        if (Boolean.class.getName().equals(typeName)) {
+            scriptOutputType = ScriptOutputType.BOOLEAN;
+        } else if (Integer.class.getName().equals(typeName)) {
+            scriptOutputType = ScriptOutputType.INTEGER;
+        } else {
+            scriptOutputType = ScriptOutputType.MULTI;
+        }
+
+        try {
+            try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
+                RedisAsyncCommands<String, String> commands = connection.async();
+                RedisFuture<T> redisFuture = commands.eval(script, scriptOutputType, keys, values);
+                T result = redisFuture.get();
+                if (String.class.getName().equals(typeName)) {
+                    return result;
+                }
+
+                return SerializeUtils.deserialize(type, (String) result);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
