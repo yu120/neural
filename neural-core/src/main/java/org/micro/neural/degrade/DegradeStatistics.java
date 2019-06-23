@@ -1,12 +1,11 @@
 package org.micro.neural.degrade;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
 import lombok.*;
-import org.micro.neural.config.statistics.Statistics;
 import lombok.extern.slf4j.Slf4j;
+import org.micro.neural.config.statistics.GlobalStatistics;
 
 import static org.micro.neural.common.Constants.*;
 
@@ -21,7 +20,7 @@ import static org.micro.neural.common.Constants.*;
 @AllArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class DegradeStatistics extends Statistics implements Serializable {
+public class DegradeStatistics extends GlobalStatistics {
 
     private static final long serialVersionUID = -2928427414009752116L;
 

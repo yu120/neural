@@ -6,7 +6,10 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.LongAccumulator;
@@ -15,7 +18,7 @@ import java.util.concurrent.atomic.LongAdder;
 import static org.micro.neural.common.Constants.*;
 
 /**
- * The Statistics.
+ * The Global Statistics.
  *
  * @author lry
  **/
@@ -23,7 +26,7 @@ import static org.micro.neural.common.Constants.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Statistics implements Serializable {
+public class GlobalStatistics implements Serializable {
 
     private static final long serialVersionUID = 229092803354377500L;
 

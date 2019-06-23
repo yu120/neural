@@ -1,12 +1,11 @@
 package org.micro.neural.limiter;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
-import org.micro.neural.config.statistics.Statistics;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.micro.neural.config.statistics.GlobalStatistics;
 
 import static org.micro.neural.common.Constants.*;
 
@@ -21,7 +20,7 @@ import static org.micro.neural.common.Constants.*;
 @AllArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class LimiterStatistics extends Statistics implements Serializable {
+public class LimiterStatistics extends GlobalStatistics {
 
     private static final long serialVersionUID = 5685475274387172658L;
 
