@@ -34,4 +34,9 @@ public class LogEventListener implements IEventListener {
         }
     }
 
+    @Override
+    public void destroy() {
+
+    }
+
 }

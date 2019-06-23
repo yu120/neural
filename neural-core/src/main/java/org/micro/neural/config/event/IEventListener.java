@@ -27,4 +27,9 @@ public interface IEventListener {
      */
     void notify(IEventType eventType, Map<String, Object> parameters);
 
+    /**
+     * The destroy store config
+     */
+    void destroy();
+
 }

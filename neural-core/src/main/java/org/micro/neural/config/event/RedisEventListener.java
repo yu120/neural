@@ -27,4 +27,9 @@ public class RedisEventListener implements IEventListener {
 
     }
 
+    @Override
+    public void destroy() {
+
+    }
+
 }
