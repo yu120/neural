@@ -16,7 +16,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class GlobalConfig implements Serializable {
 
-    private static final long serialVersionUID = 6793855595768022387L;
+    private static final long serialVersionUID = 3749338575377195865L;
 
     /**
      * The switch, default is Switch.ON

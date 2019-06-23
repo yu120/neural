@@ -14,7 +14,8 @@ import org.micro.neural.config.event.IEventType;
 @EqualsAndHashCode(callSuper = true)
 public class LimiterGlobalConfig extends GlobalConfig {
 
-    private static final long serialVersionUID = -4103412814609503453L;
+    private static final long serialVersionUID = -9072659813214931506L;
+
     public static final String IDENTITY = "limiter";
 
     /**

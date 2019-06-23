@@ -22,7 +22,7 @@ import static org.micro.neural.common.Constants.*;
 @EqualsAndHashCode(callSuper = true)
 public class LimiterStatistics extends GlobalStatistics {
 
-    private static final long serialVersionUID = 5685475274387172658L;
+    private static final long serialVersionUID = -7032404135074863381L;
 
     /**
      * The total concurrency exceed counter in the current time window

@@ -15,7 +15,7 @@ import org.micro.neural.config.RuleConfig;
 @EqualsAndHashCode(callSuper = true)
 public class DegradeConfig extends RuleConfig {
 
-    private static final long serialVersionUID = -5445833020633975979L;
+    private static final long serialVersionUID = 4795101106357214550L;
 
     /**
      * The degrade level, default is Level.NEED

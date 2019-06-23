@@ -15,7 +15,7 @@ import org.micro.neural.config.RuleConfig;
 @EqualsAndHashCode(callSuper = true)
 public class LimiterConfig extends RuleConfig {
 
-    private static final long serialVersionUID = -6531850175462577742L;
+    private static final long serialVersionUID = 4076904823256002967L;
 
     /**
      * The rate of limiter

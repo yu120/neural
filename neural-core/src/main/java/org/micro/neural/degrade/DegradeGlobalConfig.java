@@ -16,9 +16,10 @@ import org.micro.neural.config.event.IEventType;
 @EqualsAndHashCode(callSuper = true)
 public class DegradeGlobalConfig extends GlobalConfig {
 
-    private static final long serialVersionUID = 3023172841450527624L;
-    public static final String IDENTITY = "degrade";
+    private static final long serialVersionUID = 6752689785921541587L;
 
+    public static final String IDENTITY = "degrade";
+    
     /**
      * The degrade level
      */

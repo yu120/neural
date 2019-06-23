@@ -29,7 +29,7 @@ import static org.micro.neural.common.Constants.*;
 @AllArgsConstructor
 public class GlobalStatistics implements Serializable {
 
-    private static final long serialVersionUID = 229092803354377500L;
+    private static final long serialVersionUID = 2972356738274634556L;
 
     /**
      * The total request counter in the current time window: Calculation QPS

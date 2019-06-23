@@ -22,7 +22,7 @@ import static org.micro.neural.common.Constants.*;
 @EqualsAndHashCode(callSuper = true)
 public class DegradeStatistics extends GlobalStatistics {
 
-    private static final long serialVersionUID = -2928427414009752116L;
+    private static final long serialVersionUID = -285179675871196824L;
 
     /**
      * The total times degrade counter（ms）

@@ -17,9 +17,10 @@ import java.util.concurrent.*;
 @AllArgsConstructor
 public class EventConfig implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    public static final String IDENTITY = "event";
+    private static final long serialVersionUID = -201057350875510362L;
 
+    public static final String IDENTITY = "event";
+    
     /**
      * The thread core num of event
      */

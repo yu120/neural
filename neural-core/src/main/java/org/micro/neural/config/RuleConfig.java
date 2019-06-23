@@ -18,8 +18,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class RuleConfig implements Serializable {
 
-    private static final long serialVersionUID = 5564143662571971030L;
-
+    private static final long serialVersionUID = 1587739377558585912L;
+    
     /**
      * The application name or id
      **/
