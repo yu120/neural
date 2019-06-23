@@ -1,4 +1,4 @@
-package org.micro.neural.config.statistics;
+package org.micro.neural.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
