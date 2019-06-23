@@ -1,8 +1,8 @@
 package org.micro.neural.limiter.core;
 
 import lombok.Getter;
+import org.micro.neural.config.GlobalConfig;
 import org.micro.neural.config.event.EventProcessor;
-import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.LimiterConfig;
 import org.micro.neural.limiter.LimiterGlobalConfig;
@@ -44,11 +44,6 @@ public abstract class AbstractCheckLimiter implements ILimiter {
         return true;
     }
 
-    @Override
-    public void destroy() {
-        limiterConfig.setEnable(Switch.OFF);
-    }
-
     /**
      * Whether the check does not need process
      *
@@ -59,7 +54,7 @@ public abstract class AbstractCheckLimiter implements ILimiter {
             return true;
         }
 
-        return null == limiterConfig.getEnable() || Switch.OFF == limiterConfig.getEnable();
+        return null == limiterConfig.getEnable() || GlobalConfig.Switch.OFF == limiterConfig.getEnable();
     }
 
     /**

@@ -45,9 +45,4 @@ public interface ILimiter {
      */
     LimiterStatistics getStatistics();
 
-    /**
-     * The destroy of limiter.
-     */
-    void destroy();
-
 }

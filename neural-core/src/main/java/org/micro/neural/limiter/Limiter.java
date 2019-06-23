@@ -91,14 +91,6 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
     }
 
     @Override
-    public void destroy() {
-        super.destroy();
-        if (!limiters.isEmpty()) {
-            limiters.values().forEach(ILimiter::destroy);
-        }
-    }
-
-    @Override
     protected void doNotify(String identity, LimiterConfig ruleConfig) {
         try {
             ILimiter limiter = limiters.get(identity);
