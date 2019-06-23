@@ -39,7 +39,7 @@ public class MemoryLimiter extends AbstractCallLimiter {
         if (null == loadingCache) {
             loadingCache = cacheBuilder.build(new CacheLoader<Long, LongAdder>() {
                 @Override
-                public LongAdder load(Long seconds) throws Exception {
+                public LongAdder load(Long currentTimeSeconds) throws Exception {
                     return new LongAdder();
                 }
             });
@@ -50,7 +50,7 @@ public class MemoryLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire tryAcquireConcurrency() {
-        if (super.getLimiterConfig().getConcurrency() > concurrencyCounter.longValue()) {
+        if (limiterConfig.getConcurrency() > concurrencyCounter.longValue()) {
             concurrencyCounter.increment();
             return Acquire.SUCCESS;
         }
@@ -67,11 +67,12 @@ public class MemoryLimiter extends AbstractCallLimiter {
     protected Acquire tryAcquireRateLimiter() {
         try {
             LongAdder times = loadingCache.get(System.currentTimeMillis() / 1000);
-            if (super.getLimiterConfig().getRate() > times.longValue()) {
+            if (limiterConfig.getRate() > times.longValue()) {
                 return Acquire.SUCCESS;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("The try acquire memory rate limiter is exception", e);
+            return Acquire.EXCEPTION;
         }
 
         return Acquire.FAILURE;

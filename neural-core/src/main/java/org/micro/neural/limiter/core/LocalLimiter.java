@@ -37,7 +37,7 @@ public class LocalLimiter extends AbstractCallLimiter {
 
                 return true;
             } catch (Exception e) {
-                log.error("The refresh LocalLimiter is exception", e);
+                log.error("The refresh local limiter is exception", e);
             }
         }
 
@@ -48,7 +48,7 @@ public class LocalLimiter extends AbstractCallLimiter {
     protected Acquire tryAcquireConcurrency() {
         try {
             // the get concurrency timeout
-            Long timeout = super.getLimiterConfig().getConcurrencyTimeout();
+            Long timeout = limiterConfig.getConcurrencyTimeout();
             if (timeout > 0) {
                 // the try acquire by timeout
                 return semaphore.tryAcquire(timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
@@ -57,7 +57,7 @@ public class LocalLimiter extends AbstractCallLimiter {
                 return semaphore.tryAcquire() ? Acquire.SUCCESS : Acquire.FAILURE;
             }
         } catch (Exception e) {
-            log.error("The try acquire concurrency is exception", e);
+            log.error("The try acquire local concurrency is exception", e);
             return Acquire.EXCEPTION;
         }
     }
@@ -71,7 +71,7 @@ public class LocalLimiter extends AbstractCallLimiter {
     protected Acquire tryAcquireRateLimiter() {
         try {
             // the get rate timeout
-            Long timeout = super.getLimiterConfig().getRateTimeout();
+            Long timeout = limiterConfig.getRateTimeout();
             if (timeout > 0) {
                 // the try acquire by timeout
                 return rateLimiter.tryAcquire(timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
@@ -80,7 +80,7 @@ public class LocalLimiter extends AbstractCallLimiter {
                 return rateLimiter.tryAcquire() ? Acquire.SUCCESS : Acquire.FAILURE;
             }
         } catch (Exception e) {
-            log.error("The try acquire rate limiter is exception", e);
+            log.error("The try acquire local rate limiter is exception", e);
             return Acquire.EXCEPTION;
         }
     }
