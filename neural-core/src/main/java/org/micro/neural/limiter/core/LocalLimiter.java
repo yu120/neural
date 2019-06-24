@@ -68,6 +68,11 @@ public class LocalLimiter extends AbstractCallLimiter {
     }
 
     @Override
+    protected Acquire tryAcquireRequest() {
+        return null;
+    }
+
+    @Override
     protected Acquire tryAcquireRateLimiter() {
         try {
             // the get rate timeout

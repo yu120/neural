@@ -55,6 +55,11 @@ public class MemoryLimiter extends AbstractCallLimiter {
     }
 
     @Override
+    protected Acquire tryAcquireRequest() {
+        return null;
+    }
+
+    @Override
     protected Acquire tryAcquireRateLimiter() {
         if (cache == null) {
             return Acquire.SUCCESS;

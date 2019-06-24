@@ -141,6 +141,13 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
     protected abstract void releaseAcquireConcurrency();
 
     /**
+     * The acquire of request limiter windows time.
+     *
+     * @return The excess of limiting
+     */
+    protected abstract Acquire tryAcquireRequest();
+
+    /**
      * The acquire of rate limiter.
      *
      * @return The excess of limiting

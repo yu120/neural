@@ -53,6 +53,11 @@ public class RedisLimiter extends AbstractCallLimiter {
     }
 
     @Override
+    protected Acquire tryAcquireRequest() {
+        return null;
+    }
+
+    @Override
     protected Acquire tryAcquireRateLimiter() {
         return null;
     }
