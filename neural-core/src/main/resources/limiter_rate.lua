@@ -1,13 +1,9 @@
 ---
---- Created by 周雄海.
---- DateTime: 2019/04/20 下午5:39
+--- 基于Redis实现令牌桶限流
 ---
 
 --- 获取令牌
---- 返回码
---- 0 没有令牌桶配置
---- -1 表示取令牌失败，也就是桶里没有令牌
---- 1 表示取令牌成功
+--- 返回码:0=没有令牌桶配置,-1=表示取令牌失败，也就是桶里没有令牌,1=表示取令牌成功
 --- @param key 令牌的唯一标识
 --- @param permits_s 请求令牌数量
 --- @param curr_mill_second_s 当前毫秒数
@@ -19,7 +15,7 @@ local function acquire(key, permits_s, curr_mill_second_s, reserved_percent_s, m
     local reserved_percent = tonumber(reserved_percent_s);
     local max_wait_mill_second = 0
     if reserved_percent <= 0 then
-        -- 不预留令牌，时，等待时间才生效
+        -- 不预留令牌时，等待时间才生效
         max_wait_mill_second = tonumber(max_wait_mill_second_s)
     end
 
@@ -95,7 +91,6 @@ end
 
 local key = KEYS[1]
 local method = ARGV[1]
-
 if method == 'acquire' then
     return acquire(key, ARGV[2], ARGV[3], ARGV[4], ARGV[5])
 elseif method == 'init' then
@@ -103,5 +98,5 @@ elseif method == 'init' then
 elseif method == 'delete' then
     return delete(key)
 else
-    --ignore
+    -- ignore
 end
