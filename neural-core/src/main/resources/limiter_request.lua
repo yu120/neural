@@ -3,7 +3,7 @@
 -- 获取限流KEY(LUA下标从1开始)
 local key = KEYS[1]
 -- 时间窗口内最大并发数
-local max_permits = tonumber(ARGV[1])
+local request_max_permits = tonumber(ARGV[1])
 -- 窗口的间隔时间:milliseconds
 local request_interval = tonumber(ARGV[2])
 
@@ -11,7 +11,7 @@ local request_interval = tonumber(ARGV[2])
 local current_permits = tonumber(redis.call("GET", key) or 0)
 
 -- 如果超过了最大并发数，返回false
-if current_permits + 1 > max_permits then
+if current_permits + 1 > request_max_permits then
     return 0
 else
     -- 增加并发计数

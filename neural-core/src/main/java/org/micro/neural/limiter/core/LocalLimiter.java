@@ -68,11 +68,6 @@ public class LocalLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire tryAcquireRequest() {
-        return null;
-    }
-
-    @Override
     protected Acquire tryAcquireRateLimiter() {
         try {
             // the get rate timeout
@@ -88,6 +83,11 @@ public class LocalLimiter extends AbstractCallLimiter {
             log.error("The try acquire local rate limiter is exception", e);
             return Acquire.EXCEPTION;
         }
+    }
+
+    @Override
+    protected Acquire tryAcquireRequest() {
+        return null;
     }
 
 }

@@ -4,6 +4,7 @@ import org.micro.neural.common.URL;
 import org.micro.neural.extension.SPI;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -69,15 +70,15 @@ public interface IStore {
     /**
      * The lua script eval
      *
-     * @param type   type class
-     * @param script script
-     * @param timeout      timeout(ms)
-     * @param keys   key list
-     * @param values value list
-     * @param <T>    class
+     * @param type    type class
+     * @param script  script
+     * @param timeout timeout(ms)
+     * @param keys    key list
+     * @param values  value list
+     * @param <T>     class
      * @return object by <T>
      */
-    <T> T eval(Class<T> type, String script, Long timeout, String[] keys, String[] values);
+    <T> T eval(Class<T> type, String script, Long timeout, List<String> keys, List<Object> values);
 
     /**
      * The pull config

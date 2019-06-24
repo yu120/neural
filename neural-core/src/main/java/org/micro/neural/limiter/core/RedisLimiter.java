@@ -10,6 +10,8 @@ import org.micro.neural.extension.Extension;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The Limiter pf Redis.
@@ -32,19 +34,15 @@ public class RedisLimiter extends AbstractCallLimiter {
     @Override
     protected Acquire tryAcquireConcurrency() {
         IStore store = storePool.getStore();
-        String[] keys = new String[]{limiterConfig.identity()};
-        String[] values = new String[]{String.valueOf(limiterConfig.getConcurrency()), "0"};
+        List<String> keys = new ArrayList<>();
+        keys.add(limiterConfig.identity());
+        List<Object> values = new ArrayList<>();
+        values.add(limiterConfig.getConcurrency());
+        values.add(0);
 
         try {
-            Integer result = store.eval(Integer.class, CONCURRENCY_SCRIPT,
-                    limiterConfig.getConcurrencyTimeout(), keys, values);
-            if (result == null) {
-                return Acquire.EXCEPTION;
-            } else if (result == 0) {
-                return Acquire.FAILURE;
-            } else {
-                return Acquire.SUCCESS;
-            }
+            Integer result = store.eval(Integer.class, CONCURRENCY_SCRIPT, limiterConfig.getConcurrencyTimeout(), keys, values);
+            return result == null ? Acquire.EXCEPTION : (result == 0 ? Acquire.FAILURE : Acquire.SUCCESS);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Acquire.EXCEPTION;
@@ -54,33 +52,31 @@ public class RedisLimiter extends AbstractCallLimiter {
     @Override
     protected void releaseAcquireConcurrency() {
         IStore store = storePool.getStore();
-        String[] keys = new String[]{limiterConfig.identity()};
-        String[] values = new String[]{String.valueOf(limiterConfig.getConcurrency()), "1"};
+        List<String> keys = new ArrayList<>();
+        keys.add(limiterConfig.identity());
+        List<Object> values = new ArrayList<>();
+        values.add(limiterConfig.getConcurrency());
+        values.add(1);
 
         try {
-            store.eval(Integer.class, CONCURRENCY_SCRIPT,
-                    limiterConfig.getConcurrencyTimeout(), keys, values);
+            store.eval(Integer.class, CONCURRENCY_SCRIPT, limiterConfig.getConcurrencyTimeout(), keys, values);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
     }
 
     @Override
-    protected Acquire tryAcquireRequest() {
+    protected Acquire tryAcquireRateLimiter() {
         IStore store = storePool.getStore();
-        String[] keys = new String[]{limiterConfig.identity()};
-        String[] values = new String[]{String.valueOf(limiterConfig.getRequestMaxPermits())};
+        List<String> keys = new ArrayList<>();
+        keys.add(limiterConfig.identity());
+        List<Object> values = new ArrayList<>();
+        values.add(limiterConfig.getRequestMaxPermits());
+        values.add(limiterConfig.getRequestInterval());
 
         try {
-            Integer result = store.eval(Integer.class, REQUEST_SCRIPT,
-                    limiterConfig.getRequestTimeout(), keys, values);
-            if (result == null) {
-                return Acquire.EXCEPTION;
-            } else if (result == 0) {
-                return Acquire.FAILURE;
-            } else {
-                return Acquire.SUCCESS;
-            }
+            Integer result = store.eval(Integer.class, RATE_SCRIPT, limiterConfig.getRequestTimeout(), keys, values);
+            return result == null ? Acquire.EXCEPTION : (result == 0 ? Acquire.FAILURE : Acquire.SUCCESS);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Acquire.EXCEPTION;
@@ -88,8 +84,21 @@ public class RedisLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire tryAcquireRateLimiter() {
-        return null;
+    protected Acquire tryAcquireRequest() {
+        IStore store = storePool.getStore();
+        List<String> keys = new ArrayList<>();
+        keys.add(limiterConfig.identity());
+        List<Object> values = new ArrayList<>();
+        values.add(limiterConfig.getRequestMaxPermits());
+        values.add(limiterConfig.getRequestInterval());
+
+        try {
+            Integer result = store.eval(Integer.class, REQUEST_SCRIPT, limiterConfig.getRequestTimeout(), keys, values);
+            return result == null ? Acquire.EXCEPTION : (result == 0 ? Acquire.FAILURE : Acquire.SUCCESS);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Acquire.EXCEPTION;
+        }
     }
 
     private static String getScript(String name) {
