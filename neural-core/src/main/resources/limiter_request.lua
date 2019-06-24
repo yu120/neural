@@ -4,8 +4,8 @@
 local key = KEYS[1]
 -- 时间窗口内最大并发数
 local max_permits = tonumber(ARGV[1])
--- 窗口的间隔时间
-local interval_milliseconds = tonumber(ARGV[2])
+-- 窗口的间隔时间:milliseconds
+local request_interval = tonumber(ARGV[2])
 
 -- 获取当前的许可数
 local current_permits = tonumber(redis.call("GET", key) or 0)
@@ -18,7 +18,7 @@ else
     redis.call("INCRBY", key, 1)
     -- 如果key中保存的并发计数为0，说明当前是一个新的时间窗口，它的过期时间设置为窗口的过期时间
     if current_permits == 0 then
-        redis.call("PEXPIRE", key, interval_milliseconds)
+        redis.call("PEXPIRE", key, request_interval)
     end
     return current_permits + 1
 end

@@ -4,7 +4,6 @@ import org.micro.neural.common.URL;
 import org.micro.neural.extension.SPI;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -72,23 +71,13 @@ public interface IStore {
      *
      * @param type   type class
      * @param script script
+     * @param timeout      timeout(ms)
      * @param keys   key list
      * @param values value list
      * @param <T>    class
      * @return object by <T>
      */
-    <T> T eval(Class<T> type, String script, String[] keys, String[] values);
-
-    /**
-     * The increment by lua script
-     *
-     * @param key          increment key
-     * @param category     0=increment, 1=decrement
-     * @param maxThreshold max threshold
-     * @param timeout      timeout(ms)
-     * @return 0=exceed, other=current number
-     */
-    Integer concurrency(String key, Integer category, Long maxThreshold, Long timeout);
+    <T> T eval(Class<T> type, String script, Long timeout, String[] keys, String[] values);
 
     /**
      * The pull config

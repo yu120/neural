@@ -1,13 +1,9 @@
 package org.micro.neural.config.store;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.RedisURI;
@@ -40,20 +36,6 @@ public class RedisStore implements IStore {
     private RedisClient redisClient = null;
     private GenericObjectPool<StatefulRedisConnection<String, String>> objectPool;
     private final Map<IStoreListener, RedisPubSubAsyncCommands<String, String>> subscribed = new ConcurrentHashMap<>();
-
-    private static String CONCURRENCY_SCRIPT = null;
-    private static String RATE_SCRIPT = null;
-
-    static {
-        try {
-            CONCURRENCY_SCRIPT = CharStreams.toString(new InputStreamReader(
-                    RedisStore.class.getResourceAsStream("/limiter_concurrency.lua"), Charsets.UTF_8));
-            RATE_SCRIPT = CharStreams.toString(new InputStreamReader(
-                    RedisStore.class.getResourceAsStream("/limiter_rate.lua"), Charsets.UTF_8));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public void initialize(URL url) {
@@ -146,7 +128,7 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public <T> T eval(Class<T> type, String script, String[] keys, String... values) {
+    public <T> T eval(Class<T> type, String script, Long timeout, String[] keys, String[] values) {
         ScriptOutputType scriptOutputType;
         String typeName = type.getName();
         if (Boolean.class.getName().equals(typeName)) {
@@ -161,30 +143,12 @@ public class RedisStore implements IStore {
             try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
                 RedisAsyncCommands<String, String> commands = connection.async();
                 RedisFuture<T> redisFuture = commands.eval(script, scriptOutputType, keys, values);
-                T result = redisFuture.get();
+                T result = redisFuture.get(timeout, TimeUnit.MILLISECONDS);
                 if (String.class.getName().equals(typeName)) {
                     return result;
                 }
 
                 return SerializeUtils.deserialize(type, (String) result);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public Integer concurrency(String key, Integer category, Long maxThreshold, Long timeout) {
-        ScriptOutputType type = ScriptOutputType.INTEGER;
-        String[] keys = new String[]{key};
-        String[] values = new String[]{String.valueOf(maxThreshold), String.valueOf(category)};
-
-        try {
-            Long borrowTimeout = Double.valueOf(timeout * 0.8).longValue();
-            try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject(borrowTimeout)) {
-                RedisAsyncCommands<String, String> commands = connection.async();
-                RedisFuture<Integer> redisFuture = commands.eval(CONCURRENCY_SCRIPT, type, keys, values);
-                return redisFuture.get(timeout, TimeUnit.MILLISECONDS);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

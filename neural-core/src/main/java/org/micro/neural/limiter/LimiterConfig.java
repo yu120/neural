@@ -44,6 +44,19 @@ public class LimiterConfig extends RuleConfig {
     private Long concurrencyTimeout = 0L;
 
     /**
+     * The request of limiter
+     */
+    private Long requestMaxPermits = 0L;
+    /**
+     * The timeout of request limiter
+     */
+    private Long requestTimeout = 0L;
+    /**
+     * The request windows interval of request limiter
+     */
+    private Long requestInterval = 0L;
+
+    /**
      * The strategy of limiter, default is Strategy.NON
      */
     private Strategy strategy = Strategy.NON;
