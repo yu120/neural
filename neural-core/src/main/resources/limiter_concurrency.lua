@@ -1,4 +1,5 @@
 -- Concurrency Limiter Script v1.0
+
 -- 获取限流KEY(LUA下标从1开始)
 local key = KEYS[1]
 -- 获取限流大小参数
