@@ -1,10 +1,11 @@
 -- Concurrency Limiter Script v1.0
+-- 死信问题怎么解决
 
 -- 获取限流KEY(LUA下标从1开始)
 local key = KEYS[1]
 -- 获取限流大小参数
 local limit = tonumber(ARGV[1])
--- 操作类型
+-- 操作类型,0表示加流量,1表示减流量
 local category = tonumber(ARGV[2])
 
 -- 获取当前流量大小,没有则默认为0
@@ -18,7 +19,7 @@ if category == 0 then
         redis.call("INCRBY", key, 1)
         return currentConcurrency + 1
     end
-else
+elseif category == 1 then
     if currentConcurrency - 1 <= 0 then
         return 0
     else
