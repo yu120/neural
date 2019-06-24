@@ -7,6 +7,10 @@ import org.micro.neural.extension.Extension;
 
 /**
  * The Limiter pf Redis.
+ * <p>
+ * 1.Limit instantaneous concurrency
+ * 2.Limit the maximum number of requests for a time window
+ * 3.Token Bucket
  *
  * @author lry
  **/

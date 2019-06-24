@@ -147,7 +147,7 @@ public class RedisStore implements IStore {
 
     @Override
     public <T> T eval(Class<T> type, String script, String[] keys, String... values) {
-        ScriptOutputType scriptOutputType = null;
+        ScriptOutputType scriptOutputType;
         String typeName = type.getName();
         if (Boolean.class.getName().equals(typeName)) {
             scriptOutputType = ScriptOutputType.BOOLEAN;
