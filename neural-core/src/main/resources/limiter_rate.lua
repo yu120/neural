@@ -2,7 +2,7 @@
 --- 基于Redis实现令牌桶限流
 ---
 
---- 获取令牌
+--- 1.获取令牌
 --- 返回码:0=没有令牌桶配置,-1=表示取令牌失败，也就是桶里没有令牌,1=表示取令牌成功
 --- @param key 令牌的唯一标识
 --- @param permits_s 请求令牌数量
@@ -64,7 +64,7 @@ local function acquire(key, permits_s, curr_mill_second_s, reserved_percent_s, m
 end
 
 
---- 初始化令牌桶配置
+--- 2.初始化令牌桶配置
 --- @param key 令牌的唯一标识
 --- @param max_permits 桶大小
 --- @param rate 向桶里添加令牌的速率
@@ -81,7 +81,7 @@ local function init(key, max_permits, rate)
 end
 
 
---- 删除令牌桶
+--- 3.删除令牌桶
 local function delete(key)
     redis.pcall("DEL", key)
     return 1;
@@ -90,12 +90,12 @@ end
 
 
 local key = KEYS[1]
-local method = ARGV[1]
-if method == 'acquire' then
-    return acquire(key, ARGV[2], ARGV[3], ARGV[4], ARGV[5])
-elseif method == 'init' then
-    return init(key, ARGV[2], ARGV[3])
-elseif method == 'delete' then
+local method = KEYS[2]
+if method == "acquire" then
+    return acquire(key, ARGV[1], ARGV[2], ARGV[3], ARGV[4])
+elseif method == "init" then
+    return init(key, ARGV[1], ARGV[2])
+elseif method == "delete" then
     return delete(key)
 else
     -- ignore

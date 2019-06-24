@@ -34,25 +34,32 @@ public class LimiterConfig extends RuleConfig {
      */
     private Unit unit = Unit.SEC;
 
-    /**
-     * The concurrency of limiter
-     */
-    private Long concurrency = 0L;
-    /**
-     * The timeout of concurrency limiter
-     */
-    private Long concurrencyTimeout = 0L;
+    // === concurrent limiter
 
     /**
-     * The request of limiter
+     * The concurrent of concurrent limiter
      */
-    private Long requestMaxPermits = 0L;
+    private Long maxConcurrent = 0L;
     /**
-     * The timeout of request limiter
+     * The concurrent timeout of concurrent limiter
+     */
+    private Long concurrentTimeout = 0L;
+
+    // === rate limiter
+
+
+    // === request limiter
+
+    /**
+     * The request max permit of request limiter
+     */
+    private Long maxPermitRequest = 0L;
+    /**
+     * The request timeout of request limiter
      */
     private Long requestTimeout = 0L;
     /**
-     * The request windows interval of request limiter
+     * The request interval(windows) of request limiter
      */
     private Long requestInterval = 0L;
 

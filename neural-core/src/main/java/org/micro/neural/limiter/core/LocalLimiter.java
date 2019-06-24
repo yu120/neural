@@ -26,9 +26,9 @@ public class LocalLimiter extends AbstractCallLimiter {
         if (super.refresh(limiterConfig)) {
             try {
                 LimiterConfig config = super.getLimiterConfig();
-                if (0 < config.getConcurrency()) {
+                if (0 < config.getMaxConcurrent()) {
                     // the refresh semaphore
-                    semaphore.setMaxPermits(config.getConcurrency().intValue());
+                    semaphore.setMaxPermits(config.getMaxConcurrent().intValue());
                 }
                 if (0 < config.getRate()) {
                     // the refresh rateLimiter
@@ -45,10 +45,10 @@ public class LocalLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire tryAcquireConcurrency() {
+    protected Acquire tryAcquireConcurrent() {
         try {
-            // the get concurrency timeout
-            Long timeout = limiterConfig.getConcurrencyTimeout();
+            // the get concurrent timeout
+            Long timeout = limiterConfig.getConcurrentTimeout();
             if (timeout > 0) {
                 // the try acquire by timeout
                 return semaphore.tryAcquire(timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
@@ -57,13 +57,13 @@ public class LocalLimiter extends AbstractCallLimiter {
                 return semaphore.tryAcquire() ? Acquire.SUCCESS : Acquire.FAILURE;
             }
         } catch (Exception e) {
-            log.error("The try acquire local concurrency is exception", e);
+            log.error("The try acquire local concurrent is exception", e);
             return Acquire.EXCEPTION;
         }
     }
 
     @Override
-    protected void releaseAcquireConcurrency() {
+    protected void releaseAcquireConcurrent() {
         semaphore.release();
     }
 

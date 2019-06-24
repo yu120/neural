@@ -12,8 +12,8 @@ public class LimiterConfigTest {
 
     public static void main(String[] args) {
         LimiterConfig config = new LimiterConfig();
-        config.setConcurrencyTimeout(1000L);
-        config.setConcurrency(100L);
+        config.setConcurrentTimeout(1000L);
+        config.setMaxConcurrent(100L);
         config.setRateTimeout(1000L);
         config.setRate(2000L);
         config.setStrategy(LimiterConfig.Strategy.EXCEPTION);

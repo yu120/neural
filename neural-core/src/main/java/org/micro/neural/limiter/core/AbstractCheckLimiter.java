@@ -53,12 +53,12 @@ public abstract class AbstractCheckLimiter implements ILimiter {
     }
 
     /**
-     * The check the need for concurrency limiting exceed
+     * The check the need for concurrent limiting exceed
      *
-     * @return true indicates that it need to be concurrency handled
+     * @return true indicates that it need to be concurrent handled
      */
     boolean checkConcurrencyExceed() {
-        return limiterConfig.getConcurrency() > 0L;
+        return limiterConfig.getMaxConcurrent() > 0L;
     }
 
     /**

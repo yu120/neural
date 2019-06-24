@@ -23,9 +23,9 @@ public class LimiterStatistics extends GlobalStatistics {
     private static final long serialVersionUID = -7032404135074863381L;
 
     /**
-     * The total concurrency exceed counter in the current time window
+     * The total concurrent exceed counter in the current time window
      */
-    private final LongAdder concurrencyExceedCounter = new LongAdder();
+    private final LongAdder concurrentExceedCounter = new LongAdder();
     /**
      * The total rate exceed counter in the current time window
      */
@@ -39,7 +39,7 @@ public class LimiterStatistics extends GlobalStatistics {
             switch (eventType) {
                 case CONCURRENT_EXCEED:
                     // increment exceed times
-                    concurrencyExceedCounter.increment();
+                    concurrentExceedCounter.increment();
                     return;
                 case RATE_EXCEED:
                     // increment exceed times
@@ -64,14 +64,14 @@ public class LimiterStatistics extends GlobalStatistics {
         Map<String, Long> map = super.getAndReset(identity, time);
 
         // statistics exceed
-        long concurrencyExceed = concurrencyExceedCounter.sumThenReset();
+        long concurrentExceed = concurrentExceedCounter.sumThenReset();
         long rateExceed = rateExceedCounter.sumThenReset();
         if (map.isEmpty()) {
             return map;
         }
 
         // statistics exceed
-        map.put(String.format(STATISTICS, CONCURRENCY_EXCEED_KEY, identity, time), concurrencyExceed);
+        map.put(String.format(STATISTICS, CONCURRENT_EXCEED_KEY, identity, time), concurrentExceed);
         map.put(String.format(STATISTICS, RATE_EXCEED_KEY, identity, time), rateExceed);
 
         return map;
@@ -86,7 +86,7 @@ public class LimiterStatistics extends GlobalStatistics {
     public Map<String, Long> getStatisticsData() {
         Map<String, Long> map = super.getStatisticsData();
         // statistics trade
-        map.put(CONCURRENCY_EXCEED_KEY, concurrencyExceedCounter.longValue());
+        map.put(CONCURRENT_EXCEED_KEY, concurrentExceedCounter.longValue());
         map.put(RATE_EXCEED_KEY, rateExceedCounter.longValue());
 
         return map;

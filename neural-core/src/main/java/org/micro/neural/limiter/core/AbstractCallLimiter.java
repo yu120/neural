@@ -27,22 +27,22 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         // the total request of statistical traffic
         statistics.totalRequestTraffic();
 
-        // the concurrency limiter and original call
+        // the concurrent limiter and original call
         return doConcurrencyOriginalCall(originalCall);
     }
 
     /**
-     * The concurrency limiter and original call
+     * The concurrent limiter and original call
      *
      * @param originalCall The original call interface
      * @return The original call result
      * @throws Throwable throw original call exception
      */
     private Object doConcurrencyOriginalCall(OriginalCall originalCall) throws Throwable {
-        // the check concurrency limiting exceed
+        // the check concurrent limiting exceed
         if (super.checkConcurrencyExceed()) {
-            // try acquire concurrency
-            switch (tryAcquireConcurrency()) {
+            // try acquire concurrent
+            switch (tryAcquireConcurrent()) {
                 case FAILURE:
                     // the concurrent exceed
                     return doStrategyProcess(LimiterGlobalConfig.EventType.CONCURRENT_EXCEED, originalCall);
@@ -51,7 +51,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
                     try {
                         return doRateOriginalCall(originalCall);
                     } finally {
-                        releaseAcquireConcurrency();
+                        releaseAcquireConcurrent();
                     }
                 case EXCEPTION:
                     // the skip exception case
@@ -129,16 +129,16 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
     }
 
     /**
-     * The acquire of concurrency limiter.
+     * The acquire of concurrent limiter.
      *
      * @return The excess of limiting
      */
-    protected abstract Acquire tryAcquireConcurrency();
+    protected abstract Acquire tryAcquireConcurrent();
 
     /**
-     * The release of concurrency limiter.
+     * The release of concurrent limiter.
      */
-    protected abstract void releaseAcquireConcurrency();
+    protected abstract void releaseAcquireConcurrent();
 
     /**
      * The acquire of rate limiter.

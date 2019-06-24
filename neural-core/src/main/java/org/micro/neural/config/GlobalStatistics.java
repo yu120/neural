@@ -60,13 +60,13 @@ public class GlobalStatistics implements Serializable {
     protected final LongAccumulator maxElapsedCounter = new LongAccumulator(Long::max, 0);
 
     /**
-     * The total concurrency exceed counter in the current time window
+     * The total concurrent exceed counter in the current time window
      */
-    protected final LongAdder concurrencyCounter = new LongAdder();
+    protected final LongAdder concurrentCounter = new LongAdder();
     /**
-     * The max concurrency counter in the current time window
+     * The max concurrent counter in the current time window
      */
-    protected final LongAccumulator maxConcurrencyCounter = new LongAccumulator(Long::max, 0);
+    protected final LongAccumulator maxConcurrentCounter = new LongAccumulator(Long::max, 0);
 
     /**
      * The total rate counter in the current time window
@@ -119,10 +119,10 @@ public class GlobalStatistics implements Serializable {
      */
     private void incrementTraffic() {
         try {
-            // increment concurrency times
-            concurrencyCounter.increment();
-            // total max concurrency times
-            maxConcurrencyCounter.accumulate(concurrencyCounter.longValue());
+            // increment concurrent times
+            concurrentCounter.increment();
+            // total max concurrent times
+            maxConcurrentCounter.accumulate(concurrentCounter.longValue());
 
             // increment request rate times
             rateCounter.increment();
@@ -169,8 +169,8 @@ public class GlobalStatistics implements Serializable {
 
             // total all success times
             successCounter.increment();
-            // decrement concurrency times
-            concurrencyCounter.decrement();
+            // decrement concurrent times
+            concurrentCounter.decrement();
         } catch (Exception e) {
             log.error("The decrement traffic is exception", e);
         }
@@ -211,9 +211,9 @@ public class GlobalStatistics implements Serializable {
         // statistics elapsed
         long totalElapsed = elapsedCounter.sumThenReset();
         long maxElapsed = maxElapsedCounter.getThenReset();
-        // statistics concurrency
-        long concurrency = concurrencyCounter.sumThenReset();
-        long maxConcurrency = maxConcurrencyCounter.getThenReset();
+        // statistics concurrent
+        long concurrent = concurrentCounter.sumThenReset();
+        long maxConcurrent = maxConcurrentCounter.getThenReset();
         // statistics rate
         long rate = rateCounter.sumThenReset();
         long maxRate = maxRateCounter.getThenReset();
@@ -232,10 +232,10 @@ public class GlobalStatistics implements Serializable {
         // statistics elapsed
         map.put(String.format(STATISTICS, ELAPSED_KEY, identity, time), totalElapsed);
         map.put(String.format(STATISTICS, MAX_ELAPSED_KEY, identity, time), maxElapsed);
-        // statistics concurrency
-        map.put(String.format(STATISTICS, CONCURRENCY_KEY, identity, time), concurrency);
-        map.put(String.format(STATISTICS, MAX_CONCURRENCY_KEY, identity, time), maxConcurrency);
-        // statistics concurrency
+        // statistics concurrent
+        map.put(String.format(STATISTICS, CONCURRENT_KEY, identity, time), concurrent);
+        map.put(String.format(STATISTICS, MAX_CONCURRENT_KEY, identity, time), maxConcurrent);
+        // statistics concurrent
         map.put(String.format(STATISTICS, RATE_KEY, identity, time), rate);
         map.put(String.format(STATISTICS, MAX_RATE_KEY, identity, time), maxRate);
 
@@ -259,9 +259,9 @@ public class GlobalStatistics implements Serializable {
         // statistics elapsed
         map.put(ELAPSED_KEY, elapsedCounter.longValue());
         map.put(MAX_ELAPSED_KEY, maxElapsedCounter.longValue());
-        // statistics concurrency
-        map.put(CONCURRENCY_KEY, concurrencyCounter.longValue());
-        map.put(MAX_CONCURRENCY_KEY, maxConcurrencyCounter.longValue());
+        // statistics concurrent
+        map.put(CONCURRENT_KEY, concurrentCounter.longValue());
+        map.put(MAX_CONCURRENT_KEY, maxConcurrentCounter.longValue());
         // statistics rate
         map.put(RATE_KEY, rateCounter.longValue());
         map.put(MAX_RATE_KEY, maxRateCounter.longValue());

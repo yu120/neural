@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.LongAdder;
 @Extension("memory")
 public class MemoryLimiter extends AbstractCallLimiter {
 
-    private final LongAdder concurrencyCounter = new LongAdder();
+    private final LongAdder concurrentCounter = new LongAdder();
     private Cache<Long, LongAdder> cache;
 
     @Override
@@ -40,9 +40,9 @@ public class MemoryLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire tryAcquireConcurrency() {
-        if (limiterConfig.getConcurrency() > concurrencyCounter.longValue()) {
-            concurrencyCounter.increment();
+    protected Acquire tryAcquireConcurrent() {
+        if (limiterConfig.getMaxConcurrent() > concurrentCounter.longValue()) {
+            concurrentCounter.increment();
             return Acquire.SUCCESS;
         }
 
@@ -50,8 +50,8 @@ public class MemoryLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected void releaseAcquireConcurrency() {
-        concurrencyCounter.decrement();
+    protected void releaseAcquireConcurrent() {
+        concurrentCounter.decrement();
     }
 
     @Override
