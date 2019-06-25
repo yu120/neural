@@ -97,7 +97,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
                 return;
             }
 
-            limiter.refresh(globalConfig, ruleConfig);
+            limiter.refresh(ruleConfig);
         } catch (Exception e) {
             EventCollect.onEvent(EventType.NOTIFY_EXCEPTION);
             log.error(EventType.NOTIFY_EXCEPTION.getMessage(), e);

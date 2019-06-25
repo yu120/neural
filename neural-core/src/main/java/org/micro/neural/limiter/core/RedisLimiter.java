@@ -2,8 +2,6 @@ package org.micro.neural.limiter.core;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.config.store.IStore;
 import org.micro.neural.config.store.RedisStore;
@@ -13,7 +11,6 @@ import org.micro.neural.extension.Extension;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

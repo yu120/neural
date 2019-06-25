@@ -29,7 +29,7 @@ public class LocalLimiter extends AbstractCallLimiter {
 
     // === concurrent limiter
 
-    private LongAdder concurrentCounter;
+    private LongAdder counter;
     private AdjustableSemaphore semaphore;
 
     @Override
@@ -39,7 +39,7 @@ public class LocalLimiter extends AbstractCallLimiter {
         // rate limiter
         if (LimiterGlobalConfig.LocalRate.RATE_LIMITER == limiterGlobalConfig.getLocalRate()) {
             rateLimiter = AdjustableRateLimiter.create(1);
-        } else if (LimiterGlobalConfig.LocalRate.CACHE == limiterGlobalConfig.getLocalRate()) {
+        } else if (LimiterGlobalConfig.LocalRate.CACHE_CAS_CELL == limiterGlobalConfig.getLocalRate()) {
             CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
             cacheBuilder.expireAfterWrite(0, TimeUnit.SECONDS);
             cache = cacheBuilder.build();
@@ -48,8 +48,8 @@ public class LocalLimiter extends AbstractCallLimiter {
         // concurrent limiter
         if (LimiterGlobalConfig.LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()) {
             semaphore = new AdjustableSemaphore(1, true);
-        } else if (LimiterGlobalConfig.LocalConcurrent.LONG_ADDER == limiterGlobalConfig.getLocalConcurrent()) {
-            concurrentCounter = new LongAdder();
+        } else if (LimiterGlobalConfig.LocalConcurrent.CAS_CELL == limiterGlobalConfig.getLocalConcurrent()) {
+            counter = new LongAdder();
         }
     }
 
@@ -77,6 +77,36 @@ public class LocalLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire incrementConcurrent() {
+        return LimiterGlobalConfig.LocalConcurrent.SEMAPHORE ==
+                limiterGlobalConfig.getLocalConcurrent() ? incrementSemaphore() : incrementCASCell();
+    }
+
+    @Override
+    protected void decrementConcurrent() {
+        if (LimiterGlobalConfig.LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()) {
+            semaphore.release();
+        } else {
+            counter.decrement();
+        }
+    }
+
+    @Override
+    protected Acquire tryAcquireRate() {
+        return LimiterGlobalConfig.LocalRate.RATE_LIMITER ==
+                limiterGlobalConfig.getLocalRate() ? tryAcquireRateLimiter() : tryAcquireCASCellCache();
+    }
+
+    @Override
+    protected Acquire tryAcquireRequest() {
+        return null;
+    }
+
+    /**
+     * The increment Semaphore
+     *
+     * @return {@link Acquire}
+     */
+    private Acquire incrementSemaphore() {
         try {
             // the get concurrent timeout
             Long timeout = limiterConfig.getConcurrentTimeout();
@@ -93,13 +123,26 @@ public class LocalLimiter extends AbstractCallLimiter {
         }
     }
 
-    @Override
-    protected void decrementConcurrent() {
-        semaphore.release();
+    /**
+     * The increment CAS cell
+     *
+     * @return {@link Acquire}
+     */
+    private Acquire incrementCASCell() {
+        if (limiterConfig.getMaxConcurrent() > counter.longValue()) {
+            counter.increment();
+            return Acquire.SUCCESS;
+        }
+
+        return Acquire.FAILURE;
     }
 
-    @Override
-    protected Acquire tryAcquireRate() {
+    /**
+     * The try acquire rate limiter
+     *
+     * @return {@link Acquire}
+     */
+    private Acquire tryAcquireRateLimiter() {
         try {
             // the get rate timeout
             Long timeout = limiterConfig.getRateTimeout();
@@ -116,9 +159,27 @@ public class LocalLimiter extends AbstractCallLimiter {
         }
     }
 
-    @Override
-    protected Acquire tryAcquireRequest() {
-        return null;
+    /**
+     * The try acquire CAS cell cache
+     *
+     * @return {@link Acquire}
+     */
+    private Acquire tryAcquireCASCellCache() {
+        if (cache == null) {
+            return Acquire.SUCCESS;
+        }
+
+        try {
+            LongAdder times = cache.get(System.currentTimeMillis() / 1000, LongAdder::new);
+            if (limiterConfig.getRatePermit() > times.longValue()) {
+                return Acquire.SUCCESS;
+            }
+        } catch (Exception e) {
+            log.error("The try acquire memory rate limiter is exception", e);
+            return Acquire.EXCEPTION;
+        }
+
+        return Acquire.FAILURE;
     }
 
 }

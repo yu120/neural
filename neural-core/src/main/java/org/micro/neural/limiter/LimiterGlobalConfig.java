@@ -30,7 +30,7 @@ public class LimiterGlobalConfig extends GlobalConfig {
     @AllArgsConstructor
     public enum LocalRate {
         // ===
-        CACHE, RATE_LIMITER;
+        CACHE_CAS_CELL, RATE_LIMITER;
     }
 
     /**
@@ -42,7 +42,7 @@ public class LimiterGlobalConfig extends GlobalConfig {
     @AllArgsConstructor
     public enum LocalConcurrent {
         // ===
-        LONG_ADDER, SEMAPHORE;
+        CAS_CELL, SEMAPHORE;
     }
 
     /**
