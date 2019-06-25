@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.LimiterConfig;
 import org.micro.neural.limiter.LimiterGlobalConfig;
+import org.micro.neural.limiter.LimiterGlobalConfig.*;
 import org.micro.neural.limiter.extension.AdjustableRateLimiter;
 import org.micro.neural.limiter.extension.AdjustableSemaphore;
 
@@ -37,18 +38,18 @@ public class LocalLimiter extends AbstractCallLimiter {
         super.refresh(limiterGlobalConfig);
 
         // rate limiter
-        if (LimiterGlobalConfig.LocalRate.RATE_LIMITER == limiterGlobalConfig.getLocalRate()) {
+        if (LocalRate.RATE_LIMITER == limiterGlobalConfig.getLocalRate()) {
             rateLimiter = AdjustableRateLimiter.create(1);
-        } else if (LimiterGlobalConfig.LocalRate.CACHE_CAS_CELL == limiterGlobalConfig.getLocalRate()) {
+        } else {
             CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
             cacheBuilder.expireAfterWrite(0, TimeUnit.SECONDS);
             cache = cacheBuilder.build();
         }
 
         // concurrent limiter
-        if (LimiterGlobalConfig.LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()) {
+        if (LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()) {
             semaphore = new AdjustableSemaphore(1, true);
-        } else if (LimiterGlobalConfig.LocalConcurrent.CAS_CELL == limiterGlobalConfig.getLocalConcurrent()) {
+        } else {
             counter = new LongAdder();
         }
     }
@@ -56,7 +57,6 @@ public class LocalLimiter extends AbstractCallLimiter {
     @Override
     public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
         try {
-            LimiterGlobalConfig limiterGlobalConfig = super.getLimiterGlobalConfig();
             LimiterConfig config = super.getLimiterConfig();
             if (0 < config.getMaxConcurrent()) {
                 // the refresh semaphore
@@ -77,13 +77,13 @@ public class LocalLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire incrementConcurrent() {
-        return LimiterGlobalConfig.LocalConcurrent.SEMAPHORE ==
-                limiterGlobalConfig.getLocalConcurrent() ? incrementSemaphore() : incrementCASCell();
+        return LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()
+                ? incrementSemaphore() : incrementCASCell();
     }
 
     @Override
     protected void decrementConcurrent() {
-        if (LimiterGlobalConfig.LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()) {
+        if (LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()) {
             semaphore.release();
         } else {
             counter.decrement();
@@ -92,8 +92,8 @@ public class LocalLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire tryAcquireRate() {
-        return LimiterGlobalConfig.LocalRate.RATE_LIMITER ==
-                limiterGlobalConfig.getLocalRate() ? tryAcquireRateLimiter() : tryAcquireCASCellCache();
+        return LocalRate.RATE_LIMITER == limiterGlobalConfig.getLocalRate()
+                ? tryAcquireRateLimiter() : tryAcquireCASCellCache();
     }
 
     @Override
