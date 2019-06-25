@@ -61,7 +61,7 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      * @return true indicates that it need to be concurrent handled
      */
     boolean checkConcurrencyExceed() {
-        return limiterConfig.getMaxConcurrent() > 0L;
+        return limiterConfig.getMaxPermitConcurrent() > 0L;
     }
 
     /**
@@ -70,7 +70,7 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      * @return true indicates that it need to be rate handled
      */
     boolean checkRateExceed() {
-        return limiterConfig.getRatePermit() > 0L;
+        return limiterConfig.getMaxPermitRate() > 0L;
     }
 
 }
