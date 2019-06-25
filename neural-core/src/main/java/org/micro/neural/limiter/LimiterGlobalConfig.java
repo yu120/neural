@@ -18,20 +18,7 @@ public class LimiterGlobalConfig extends GlobalConfig {
 
     public static final String IDENTITY = "limiter";
 
-    private LocalRate localRate = LocalRate.RATE_LIMITER;
     private LocalConcurrent localConcurrent = LocalConcurrent.SEMAPHORE;
-
-    /**
-     * The Local Rate
-     *
-     * @author lry
-     */
-    @Getter
-    @AllArgsConstructor
-    public enum LocalRate {
-        // ===
-        CACHE_CAS_CELL, RATE_LIMITER;
-    }
 
     /**
      * The Local Concurrent

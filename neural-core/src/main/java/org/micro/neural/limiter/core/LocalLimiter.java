@@ -36,13 +36,12 @@ public class LocalLimiter extends AbstractCallLimiter {
     @Override
     public synchronized boolean refresh(LimiterGlobalConfig limiterGlobalConfig, LimiterConfig limiterConfig) throws Exception {
         // rate limiter
-        if (LocalRate.RATE_LIMITER == limiterGlobalConfig.getLocalRate()) {
-            rateLimiter = AdjustableRateLimiter.create(1);
-        } else {
-            CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-            cacheBuilder.expireAfterWrite(0, TimeUnit.SECONDS);
-            cache = cacheBuilder.build();
-        }
+        rateLimiter = AdjustableRateLimiter.create(limiterConfig.getMaxPermitRate());
+
+        // request limiter
+        CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
+        cacheBuilder.expireAfterWrite(0, TimeUnit.SECONDS);
+        cache = cacheBuilder.build();
 
         // concurrent limiter
         if (LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()) {
@@ -72,7 +71,7 @@ public class LocalLimiter extends AbstractCallLimiter {
     @Override
     protected Acquire incrementConcurrent() {
         return LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()
-                ? incrementSemaphore() : incrementCASCell();
+                ? incrementSemaphore() : incrementCAS();
     }
 
     @Override
@@ -86,13 +85,39 @@ public class LocalLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire tryAcquireRate() {
-        return LocalRate.RATE_LIMITER == limiterGlobalConfig.getLocalRate()
-                ? tryAcquireRateLimiter() : tryAcquireCASCellCache();
+        try {
+            // the get rate timeout
+            Long timeout = limiterConfig.getRateTimeout();
+            if (timeout > 0) {
+                // the try acquire by timeout
+                return rateLimiter.tryAcquire(timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
+            } else {
+                // the try acquire
+                return rateLimiter.tryAcquire() ? Acquire.SUCCESS : Acquire.FAILURE;
+            }
+        } catch (Exception e) {
+            log.error("The try acquire local rate limiter is exception", e);
+            return Acquire.EXCEPTION;
+        }
     }
 
     @Override
     protected Acquire tryAcquireRequest() {
-        return null;
+        if (cache == null) {
+            return Acquire.SUCCESS;
+        }
+
+        try {
+            LongAdder times = cache.get(System.currentTimeMillis() / 1000, LongAdder::new);
+            if (limiterConfig.getRatePermit() > times.longValue()) {
+                return Acquire.SUCCESS;
+            }
+        } catch (Exception e) {
+            log.error("The try acquire memory rate limiter is exception", e);
+            return Acquire.EXCEPTION;
+        }
+
+        return Acquire.FAILURE;
     }
 
     /**
@@ -123,55 +148,10 @@ public class LocalLimiter extends AbstractCallLimiter {
      *
      * @return {@link Acquire}
      */
-    private Acquire incrementCASCell() {
+    private Acquire incrementCAS() {
         if (limiterConfig.getMaxPermitConcurrent() > counter.longValue()) {
             counter.increment();
             return Acquire.SUCCESS;
-        }
-
-        return Acquire.FAILURE;
-    }
-
-    /**
-     * The try acquire rate limiter
-     *
-     * @return {@link Acquire}
-     */
-    private Acquire tryAcquireRateLimiter() {
-        try {
-            // the get rate timeout
-            Long timeout = limiterConfig.getRateTimeout();
-            if (timeout > 0) {
-                // the try acquire by timeout
-                return rateLimiter.tryAcquire(timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
-            } else {
-                // the try acquire
-                return rateLimiter.tryAcquire() ? Acquire.SUCCESS : Acquire.FAILURE;
-            }
-        } catch (Exception e) {
-            log.error("The try acquire local rate limiter is exception", e);
-            return Acquire.EXCEPTION;
-        }
-    }
-
-    /**
-     * The try acquire CAS cell cache
-     *
-     * @return {@link Acquire}
-     */
-    private Acquire tryAcquireCASCellCache() {
-        if (cache == null) {
-            return Acquire.SUCCESS;
-        }
-
-        try {
-            LongAdder times = cache.get(System.currentTimeMillis() / 1000, LongAdder::new);
-            if (limiterConfig.getRatePermit() > times.longValue()) {
-                return Acquire.SUCCESS;
-            }
-        } catch (Exception e) {
-            log.error("The try acquire memory rate limiter is exception", e);
-            return Acquire.EXCEPTION;
         }
 
         return Acquire.FAILURE;

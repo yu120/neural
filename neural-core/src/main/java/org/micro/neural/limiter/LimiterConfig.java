@@ -20,13 +20,13 @@ public class LimiterConfig extends RuleConfig {
     // === concurrent limiter
 
     /**
-     * The max concurrent number of concurrent limiter
-     */
-    private Integer maxPermitConcurrent = 100;
-    /**
      * The concurrent permit unit of concurrent limiter
      */
     private Integer concurrentPermit = 1;
+    /**
+     * The max concurrent number of concurrent limiter
+     */
+    private Integer maxPermitConcurrent = 100;
     /**
      * The concurrent timeout of concurrent limiter
      */
@@ -37,15 +37,19 @@ public class LimiterConfig extends RuleConfig {
     /**
      * The rate of rate limiter
      */
-    private Long ratePermit = 0L;
+    private Integer ratePermit = 1;
     /**
      * The max permit rate of rate limiter
      */
-    private Long maxPermitRate = 0L;
+    private Integer maxPermitRate = 1000;
     /**
      * The rate timeout of rate limiter
      */
     private Long rateTimeout = 0L;
+    /**
+     * The unit of limiter granularity, default is Unit.SEC
+     */
+    private Unit unit = Unit.SEC;
 
     // === request limiter
 
@@ -62,11 +66,6 @@ public class LimiterConfig extends RuleConfig {
      */
     private Long requestInterval = 0L;
 
-
-    /**
-     * The unit of limiter granularity, default is Unit.SEC
-     */
-    private Unit unit = Unit.SEC;
     /**
      * The strategy of limiter, default is Strategy.NON
      */
