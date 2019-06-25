@@ -38,5 +38,11 @@ local function decrement(key , limit)
     end
 end
 
+
 --- 主流程
-return tryAcquire(KEYS[1] , KEYS[2] , KEYS[3] , KEYS[4])
+local method = KEYS[1]
+if method == 'increment' then
+    return increment(ARGV[1], ARGV[2])
+elseif method == 'decrement' then
+    return decrement(ARGV[1], ARGV[2])
+end
