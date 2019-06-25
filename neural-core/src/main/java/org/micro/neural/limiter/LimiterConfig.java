@@ -3,6 +3,8 @@ package org.micro.neural.limiter;
 import lombok.*;
 import org.micro.neural.config.RuleConfig;
 
+import java.time.Duration;
+
 /**
  * The Limiter Config.
  *
@@ -46,10 +48,6 @@ public class LimiterConfig extends RuleConfig {
      * The rate timeout of rate limiter
      */
     private Long rateTimeout = 0L;
-    /**
-     * The unit of limiter granularity, default is Unit.SEC
-     */
-    private Unit unit = Unit.SEC;
 
     // === request limiter
 
@@ -64,7 +62,7 @@ public class LimiterConfig extends RuleConfig {
     /**
      * The request interval(windows) of request limiter
      */
-    private Long requestInterval = 0L;
+    private Duration requestInterval = Duration.ofSeconds(60);
 
     /**
      * The strategy of limiter, default is Strategy.NON
@@ -94,37 +92,6 @@ public class LimiterConfig extends RuleConfig {
         EXCEPTION("The throw 'LimiterExceedException' exception of limiter, when over flow");
 
         String message;
-
-    }
-
-    /**
-     * The unit of limiter granularity
-     *
-     * @author lry
-     */
-    @Getter
-    @AllArgsConstructor
-    public enum Unit {
-
-        /**
-         * The second of limiter granularity unit, abbreviation 'SEC'
-         */
-        SEC("The second of limiter granularity unit, abbreviation 'SEC'"),
-        /**
-         * The minute of limiter granularity unit, abbreviation 'MIN'
-         */
-        MIN("The minute of limiter granularity unit, abbreviation 'MIN'"),
-        /**
-         * The hour of limiter granularity unit, abbreviation 'HOU'
-         */
-        HOU("The hour of limiter granularity unit, abbreviation 'HOU'"),
-        /**
-         * The day of limiter granularity unit, abbreviation 'DAY'
-         */
-        DAY("The day of limiter granularity unit, abbreviation 'DAY'");
-
-        String message;
-
     }
 
 }

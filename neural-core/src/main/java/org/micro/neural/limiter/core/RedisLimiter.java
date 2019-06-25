@@ -87,7 +87,8 @@ public class RedisLimiter extends AbstractCallLimiter {
         List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
         keys.add(limiterConfig.getMaxPermitRequest());
-        keys.add(limiterConfig.getRequestInterval());
+        //TODO
+        keys.add(limiterConfig.getRequestInterval().toMillis());
 
         try {
             Integer result = store.eval(Integer.class, REQUEST_SCRIPT, limiterConfig.getRequestTimeout(), keys);

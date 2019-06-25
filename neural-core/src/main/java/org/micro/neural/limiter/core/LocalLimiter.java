@@ -40,7 +40,7 @@ public class LocalLimiter extends AbstractCallLimiter {
 
         // request limiter
         CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-        cacheBuilder.expireAfterWrite(0, TimeUnit.SECONDS);
+        cacheBuilder.expireAfterWrite(limiterConfig.getRequestInterval().toMillis(), TimeUnit.MILLISECONDS);
         cache = cacheBuilder.build();
 
         // concurrent limiter
