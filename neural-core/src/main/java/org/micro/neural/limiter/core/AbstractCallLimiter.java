@@ -74,7 +74,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
     private Object doRateOriginalCall(OriginalCall originalCall) throws Throwable {
         // the check rate limiting exceed
         if (super.checkRateExceed()) {
-            switch (tryAcquireRateLimiter()) {
+            switch (tryAcquireRate()) {
                 case FAILURE:
                     // the rate exceed
                     return doStrategyProcess(LimiterGlobalConfig.EventType.RATE_EXCEED, originalCall);
@@ -145,7 +145,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      *
      * @return The excess of limiting
      */
-    protected abstract Acquire tryAcquireRateLimiter();
+    protected abstract Acquire tryAcquireRate();
 
     /**
      * The acquire of request limiter windows time.

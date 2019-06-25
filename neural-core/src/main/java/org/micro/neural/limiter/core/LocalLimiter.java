@@ -68,7 +68,7 @@ public class LocalLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire tryAcquireRateLimiter() {
+    protected Acquire tryAcquireRate() {
         try {
             // the get rate timeout
             Long timeout = limiterConfig.getRateTimeout();

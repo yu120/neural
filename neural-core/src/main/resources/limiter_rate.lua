@@ -33,7 +33,7 @@ end
 --- @param curr_mill_second 当前毫秒数
 --- @param app 使用令牌的应用标识
 --- @return -1=没有令牌桶配置,0=表示取令牌失败(也就是桶里没有令牌),1=表示获取令牌成功
-local function tryAcquire(key , permits , curr_mill_second , app)
+local function tryAcquireRate(key , permits , curr_mill_second , app)
     local redis_rate_limit_info = redis.pcall('HMGET' , key , 'last_mill_second','curr_permits','max_permits','rate','apps')
     local last_mill_second = redis_rate_limit_info[1]
     local curr_permits = tonumber(redis_rate_limit_info[2])
@@ -94,8 +94,8 @@ end
 
 --- 主流程
 local method = KEYS[1]
-if method == 'tryAcquire' then
-    return tryAcquire(ARGV[1], ARGV[2], ARGV[3], ARGV[4])
+if method == 'tryAcquireRate' then
+    return tryAcquireRate(ARGV[1], ARGV[2], ARGV[3], ARGV[4])
 elseif method == 'tryPublish' then
     return tryPublish(ARGV[1], ARGV[2], ARGV[3], ARGV[4])
 end

@@ -66,7 +66,7 @@ public class RedisLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire tryAcquireRateLimiter() {
+    protected Acquire tryAcquireRate() {
         IStore store = storePool.getStore();
         List<String> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
