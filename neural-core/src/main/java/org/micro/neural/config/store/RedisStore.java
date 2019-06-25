@@ -3,9 +3,6 @@ package org.micro.neural.config.store;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.IntFunction;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
@@ -131,7 +128,7 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public <T> T eval(Class<T> type, String script, Long timeout, List<String> keys, List<Object> values) {
+    public <T> T eval(Class<T> type, String script, Long timeout, List<Object> keys) {
         ScriptOutputType scriptOutputType;
         String typeName = type.getName();
         if (Boolean.class.getName().equals(typeName)) {
@@ -142,16 +139,15 @@ public class RedisStore implements IStore {
             scriptOutputType = ScriptOutputType.MULTI;
         }
 
-        String[] valueArray = new String[values.size()];
-        for (int i = 0; i < values.size(); i++) {
-            valueArray[i] = String.valueOf(values.get(i));
+        String[] keyArray = new String[keys.size()];
+        for (int i = 0; i < keys.size(); i++) {
+            keyArray[i] = String.valueOf(keys.get(i));
         }
 
         try {
             try (StatefulRedisConnection<String, String> connection = objectPool.borrowObject()) {
                 RedisAsyncCommands<String, String> commands = connection.async();
-                RedisFuture<T> redisFuture =
-                        commands.eval(script, scriptOutputType, keys.toArray(new String[0]), valueArray);
+                RedisFuture<T> redisFuture = commands.eval(script, scriptOutputType, keyArray);
                 T result = redisFuture.get(timeout, TimeUnit.MILLISECONDS);
                 if (String.class.getName().equals(typeName)) {
                     return result;

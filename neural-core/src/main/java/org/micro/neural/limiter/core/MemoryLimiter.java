@@ -23,7 +23,7 @@ public class MemoryLimiter extends AbstractCallLimiter {
 
     @Override
     public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
-        if (super.refresh(limiterConfig)) {
+        if (!super.refresh(limiterConfig)) {
             return false;
         }
 
@@ -34,7 +34,7 @@ public class MemoryLimiter extends AbstractCallLimiter {
         }
 
         CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-        cacheBuilder.expireAfterWrite(config.getRate(), TimeUnit.SECONDS);
+        cacheBuilder.expireAfterWrite(config.getRatePermit(), TimeUnit.SECONDS);
         cache = cacheBuilder.build();
         return true;
     }
@@ -62,7 +62,7 @@ public class MemoryLimiter extends AbstractCallLimiter {
         
         try {
             LongAdder times = cache.get(System.currentTimeMillis() / 1000, LongAdder::new);
-            if (limiterConfig.getRate() > times.longValue()) {
+            if (limiterConfig.getRatePermit() > times.longValue()) {
                 return Acquire.SUCCESS;
             }
         } catch (Exception e) {

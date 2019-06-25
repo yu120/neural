@@ -13,6 +13,7 @@ import org.micro.neural.extension.Extension;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -36,14 +37,13 @@ public class RedisLimiter extends AbstractCallLimiter {
     @Override
     protected Acquire incrementConcurrent() {
         IStore store = storePool.getStore();
-        List<String> keys = new ArrayList<>();
+        List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
-        List<Object> values = new ArrayList<>();
-        values.add(limiterConfig.getMaxConcurrent());
-        values.add(0);
+        keys.add(limiterConfig.getConcurrentPermit());
+        keys.add(limiterConfig.getMaxConcurrent());
 
         try {
-            Integer result = store.eval(Integer.class, CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys, values);
+            Integer result = store.eval(Integer.class, CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys);
             return result == null ? Acquire.EXCEPTION : (result == 0 ? Acquire.FAILURE : Acquire.SUCCESS);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -54,14 +54,13 @@ public class RedisLimiter extends AbstractCallLimiter {
     @Override
     protected void decrementConcurrent() {
         IStore store = storePool.getStore();
-        List<String> keys = new ArrayList<>();
+        List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
-        List<Object> values = new ArrayList<>();
-        values.add(limiterConfig.getMaxConcurrent());
-        values.add(1);
+        keys.add(-limiterConfig.getConcurrentPermit());
+        keys.add(limiterConfig.getMaxConcurrent());
 
         try {
-            store.eval(Integer.class, CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys, values);
+            store.eval(Integer.class, CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -70,20 +69,14 @@ public class RedisLimiter extends AbstractCallLimiter {
     @Override
     protected Acquire tryAcquireRate() {
         IStore store = storePool.getStore();
-        List<String> keys = new ArrayList<>();
+        List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
-        List<Object> values = new ArrayList<>();
-        // permits_s 请求令牌数量
-        values.add(limiterConfig.getMaxPermitRequest());
-        // curr_mill_second_s 当前毫秒数
-        values.add(limiterConfig.getMaxPermitRequest());
-        // reserved_percent_s 桶中预留的令牌百分比，整数
-        values.add(limiterConfig.getMaxPermitRequest());
-        // max_wait_mill_second_s 最长等待多久。负值意味着给其它请求保留部分token
-        values.add(limiterConfig.getRequestInterval());
+        keys.add(limiterConfig.getRatePermit());
+        keys.add(System.currentTimeMillis());
+        keys.add("app");
 
         try {
-            Integer result = store.eval(Integer.class, RATE_SCRIPT, limiterConfig.getRequestTimeout(), keys, values);
+            Integer result = store.eval(Integer.class, RATE_SCRIPT, limiterConfig.getRateTimeout(), keys);
             return result == null ? Acquire.EXCEPTION : (result == 0 ? Acquire.FAILURE : Acquire.SUCCESS);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -94,14 +87,13 @@ public class RedisLimiter extends AbstractCallLimiter {
     @Override
     protected Acquire tryAcquireRequest() {
         IStore store = storePool.getStore();
-        List<String> keys = new ArrayList<>();
+        List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
-        List<Object> values = new ArrayList<>();
-        values.add(limiterConfig.getMaxPermitRequest());
-        values.add(limiterConfig.getRequestInterval());
+        keys.add(limiterConfig.getMaxPermitRequest());
+        keys.add(limiterConfig.getRequestInterval());
 
         try {
-            Integer result = store.eval(Integer.class, REQUEST_SCRIPT, limiterConfig.getRequestTimeout(), keys, values);
+            Integer result = store.eval(Integer.class, REQUEST_SCRIPT, limiterConfig.getRequestTimeout(), keys);
             return result == null ? Acquire.EXCEPTION : (result == 0 ? Acquire.FAILURE : Acquire.SUCCESS);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -117,15 +109,6 @@ public class RedisLimiter extends AbstractCallLimiter {
             log.error(e.getMessage(), e);
             return null;
         }
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public class RateRule {
-        private Integer maxPermits;
-        private Integer rate;
-        private Integer currPermits;
-        private String apps;
     }
 
 }

@@ -1,5 +1,7 @@
 package org.micro.neural.limiter.core;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.extension.AdjustableRateLimiter;
 import org.micro.neural.limiter.extension.AdjustableSemaphore;
@@ -7,6 +9,7 @@ import org.micro.neural.limiter.LimiterConfig;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * The limiter based on adjustable's semaphore and rateLimiter implementation.
@@ -18,27 +21,36 @@ import java.util.concurrent.TimeUnit;
 @Extension("local")
 public class LocalLimiter extends AbstractCallLimiter {
 
+    private final LongAdder concurrentCounter = new LongAdder();
+    private Cache<Long, LongAdder> cache;
+
     private final AdjustableRateLimiter rateLimiter = AdjustableRateLimiter.create(1);
     private final AdjustableSemaphore semaphore = new AdjustableSemaphore(1, true);
 
     @Override
     public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
-        if (super.refresh(limiterConfig)) {
-            try {
-                LimiterConfig config = super.getLimiterConfig();
-                if (0 < config.getMaxConcurrent()) {
-                    // the refresh semaphore
-                    semaphore.setMaxPermits(config.getMaxConcurrent().intValue());
-                }
-                if (0 < config.getRate()) {
-                    // the refresh rateLimiter
-                    rateLimiter.setRate(config.getRate());
-                }
+        if (!super.refresh(limiterConfig)) {
+            return false;
+        }
 
-                return true;
-            } catch (Exception e) {
-                log.error("The refresh local limiter is exception", e);
+        try {
+            LimiterConfig config = super.getLimiterConfig();
+            if (0 < config.getMaxConcurrent()) {
+                // the refresh semaphore
+                semaphore.setMaxPermits(config.getMaxConcurrent().intValue());
             }
+            if (0 < config.getRatePermit()) {
+                // the refresh rateLimiter
+                rateLimiter.setRate(config.getRatePermit());
+            }
+
+            CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
+            cacheBuilder.expireAfterWrite(config.getRatePermit(), TimeUnit.SECONDS);
+            cache = cacheBuilder.build();
+
+            return true;
+        } catch (Exception e) {
+            log.error("The refresh local limiter is exception", e);
         }
 
         return false;

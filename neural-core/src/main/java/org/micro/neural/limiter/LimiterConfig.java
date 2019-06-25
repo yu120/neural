@@ -17,29 +17,16 @@ public class LimiterConfig extends RuleConfig {
 
     private static final long serialVersionUID = 4076904823256002967L;
 
-    /**
-     * The rate of limiter
-     */
-    private Long rate = 0L;
-    /**
-     * The timeout of rate limiter
-     */
-    private Long rateTimeout = 0L;
-    /**
-     * The granularity of limiter, default is 1
-     */
-    private Long granularity = 1L;
-    /**
-     * The unit of limiter granularity, default is Unit.SEC
-     */
-    private Unit unit = Unit.SEC;
-
     // === concurrent limiter
 
     /**
-     * The concurrent of concurrent limiter
+     * The max concurrent number of concurrent limiter
      */
     private Long maxConcurrent = 0L;
+    /**
+     * The concurrent permit unit of concurrent limiter
+     */
+    private Long concurrentPermit = 1L;
     /**
      * The concurrent timeout of concurrent limiter
      */
@@ -47,6 +34,22 @@ public class LimiterConfig extends RuleConfig {
 
     // === rate limiter
 
+    /**
+     * The rate of rate limiter
+     */
+    private Long ratePermit = 0L;
+    /**
+     * The max permit rate of rate limiter
+     */
+    private Long maxPermitRate = 0L;
+    /**
+     * The rate timeout of rate limiter
+     */
+    private Long rateTimeout = 0L;
+    /**
+     * The granularity of rate limiter, default is 1
+     */
+    private Long granularity = 1L;
 
     // === request limiter
 
@@ -63,6 +66,11 @@ public class LimiterConfig extends RuleConfig {
      */
     private Long requestInterval = 0L;
 
+
+    /**
+     * The unit of limiter granularity, default is Unit.SEC
+     */
+    private Unit unit = Unit.SEC;
     /**
      * The strategy of limiter, default is Strategy.NON
      */

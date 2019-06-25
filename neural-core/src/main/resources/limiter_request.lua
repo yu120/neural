@@ -10,7 +10,7 @@ Request Limiter Script v1.0
 --- @param max_permit_request  最大许可数
 --- @param request_interval  请求时间窗大小
 --- @return 0=表示获取失败,1=表示获取成功
-local function tryAcquireRequest(key , max_permit_request, request_interval)
+local function tryAcquireRequest(key, max_permit_request, request_interval)
     -- 时间窗口内最大并发数
     local org_max_permit_request = tonumber(max_permit_request)
     -- 窗口的间隔时间:milliseconds

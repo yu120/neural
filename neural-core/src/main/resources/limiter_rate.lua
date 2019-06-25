@@ -11,7 +11,7 @@ Rate Limiter Script v1.0
 --- @param source_str
 --- @param sub_str
 --- @return false=不包含,true=包含
-local function contains(source_str , sub_str)
+local function contains(source_str, sub_str)
     local start_pos,end_pos = string.find(source_str,sub_str)
     if start_pos == nil then
         return false
@@ -33,7 +33,7 @@ end
 --- @param curr_mill_second 当前毫秒数
 --- @param app 使用令牌的应用标识
 --- @return -1=没有令牌桶配置,0=表示取令牌失败(也就是桶里没有令牌),1=表示获取令牌成功
-local function tryAcquireRate(key , permits , curr_mill_second , app)
+local function tryAcquireRate(key, permits, curr_mill_second, app)
     local redis_rate_limit_info = redis.pcall('HMGET' , key , 'last_mill_second','curr_permits','max_permits','rate','apps')
     local last_mill_second = redis_rate_limit_info[1]
     local curr_permits = tonumber(redis_rate_limit_info[2])
@@ -81,7 +81,7 @@ end
 --- @param max_permits 桶大小
 --- @param rate  向桶里添加令牌的速率
 --- @param apps  可以使用令牌桶的应用列表，应用之前用逗号分隔
-local function tryPublish(key, max_permits, rate , apps)
+local function tryPublish(key, max_permits, rate, apps)
     local redis_rate_limit_info = redis.pcall('HMGET' , key , 'last_mill_second' , 'curr_permits' , 'max_permits' , 'rate' , 'apps')
     local org_max_permits = tonumber(redis_rate_limit_info[3])
     local org_rate = redis_rate_limit_info[4]

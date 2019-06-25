@@ -67,7 +67,7 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      * @return true indicates that it need to be rate handled
      */
     boolean checkRateExceed() {
-        return limiterConfig.getRate() > 0L;
+        return limiterConfig.getRatePermit() > 0L;
     }
 
 }

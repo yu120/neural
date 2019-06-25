@@ -17,24 +17,24 @@ local function trafficConcurrent(key , permits, limit)
     local currentConcurrent = tonumber(redis.call("GET", key) or "0")
     if permits > 0 then
         --- 加流量
-        if currentConcurrent + 1 > limit then
+        if currentConcurrent + permits > limit then
             -- 达到限流大小,返回状态码和并发数
             return 0
         else
-            redis.call("INCRBY", key, 1)
-            return currentConcurrent + 1
+            redis.call("INCRBY", key, permits)
+            return currentConcurrent + permits
         end
     elseif permits < 0 then
         --- 减流量
-        if currentConcurrent - 1 <= 0 then
+        if currentConcurrent + permits <= 0 then
             return 0
         else
-            redis.call("DECRBY", key, 1)
-            return currentConcurrent - 1
+            redis.call("DECRBY", key, permits)
+            return currentConcurrent + permits
         end
     end
 end
 
 
 --- 主流程
-return trafficConcurrent(KEYS[1], (KEYS[2], KEYS[3])
+return trafficConcurrent(KEYS[1], KEYS[2], KEYS[3])

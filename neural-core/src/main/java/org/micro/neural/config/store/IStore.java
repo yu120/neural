@@ -74,11 +74,10 @@ public interface IStore {
      * @param script  script
      * @param timeout timeout(ms)
      * @param keys    key list
-     * @param values  value list
      * @param <T>     class
      * @return object by <T>
      */
-    <T> T eval(Class<T> type, String script, Long timeout, List<String> keys, List<Object> values);
+    <T> T eval(Class<T> type, String script, Long timeout, List<Object> keys);
 
     /**
      * The pull config
