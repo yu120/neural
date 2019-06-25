@@ -46,10 +46,6 @@ public class LimiterConfig extends RuleConfig {
      * The rate timeout of rate limiter
      */
     private Long rateTimeout = 0L;
-    /**
-     * The granularity of rate limiter, default is 1
-     */
-    private Long granularity = 1L;
 
     // === request limiter
 
