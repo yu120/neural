@@ -15,13 +15,6 @@ import org.micro.neural.limiter.LimiterStatistics;
 public interface ILimiter {
 
     /**
-     * The get config of limiter.
-     *
-     * @return The LimiterConfig
-     */
-    LimiterConfig getLimiterConfig();
-
-    /**
      * The refresh in-memory data.
      *
      * @param limiterGlobalConfig The LimiterGlobalConfig
