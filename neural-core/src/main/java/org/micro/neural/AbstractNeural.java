@@ -57,10 +57,11 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
     public void notify(Category category, String identity, String data) {
         if (Category.GLOBAL == category) {
             this.globalConfig = SerializeUtils.deserialize(globalClass, data);
+            globalNotify(globalConfig);
         } else if (Category.RULE == category) {
             C ruleConfig = SerializeUtils.deserialize(ruleClass, data);
             configs.put(identity, ruleConfig);
-            doNotify(identity, ruleConfig);
+            ruleNotify(identity, ruleConfig);
         }
     }
 
@@ -82,9 +83,18 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
     /**
      * The execute notify
      *
+     * @param globalConfig {@link G}
+     */
+    protected void globalNotify(G globalConfig) {
+
+    }
+
+    /**
+     * The execute notify
+     *
      * @param identity   identity
      * @param ruleConfig {@link C}
      */
-    protected abstract void doNotify(String identity, C ruleConfig);
+    protected abstract void ruleNotify(String identity, C ruleConfig);
 
 }

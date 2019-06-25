@@ -33,8 +33,8 @@ public class LocalLimiter extends AbstractCallLimiter {
     private AdjustableSemaphore semaphore;
 
     @Override
-    public void initialize(LimiterGlobalConfig limiterGlobalConfig) {
-        super.initialize(limiterGlobalConfig);
+    public void refresh(LimiterGlobalConfig limiterGlobalConfig) {
+        super.refresh(limiterGlobalConfig);
 
         // rate limiter
         if (LimiterGlobalConfig.LocalRate.RATE_LIMITER == limiterGlobalConfig.getLocalRate()) {

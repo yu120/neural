@@ -31,7 +31,7 @@ public abstract class AbstractCheckLimiter implements ILimiter {
     }
 
     @Override
-    public void initialize(LimiterGlobalConfig limiterGlobalConfig) {
+    public void refresh(LimiterGlobalConfig limiterGlobalConfig) {
         this.limiterGlobalConfig = limiterGlobalConfig;
     }
 

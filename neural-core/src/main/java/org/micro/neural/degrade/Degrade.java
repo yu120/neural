@@ -106,7 +106,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
     }
 
     @Override
-    protected void doNotify(String identity, DegradeConfig ruleConfig) {
+    protected void ruleNotify(String identity, DegradeConfig ruleConfig) {
         try {
             Object mockData = mockData(ruleConfig.getMock(), ruleConfig.getClazz(), ruleConfig.getData());
             mockDataMap.put(identity, mockData);

@@ -20,7 +20,7 @@ public interface ILimiter {
      *
      * @param limiterGlobalConfig {@link LimiterGlobalConfig}
      */
-    void initialize(LimiterGlobalConfig limiterGlobalConfig);
+    void refresh(LimiterGlobalConfig limiterGlobalConfig);
 
     /**
      * The get config of limiter.
