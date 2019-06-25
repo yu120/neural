@@ -19,8 +19,7 @@ public class LimiterTest {
 
         //query order
         String identity1 = application + ":" + "order" + ":" + "queryOrder";
-        LimiterConfig config1 = new LimiterConfig(0L, 0L, 1L,
-                LimiterConfig.Unit.SEC, 0L, 0L, LimiterConfig.Strategy.NON);
+        LimiterConfig config1 = new LimiterConfig();
         config1.setApplication(application);
         config1.setGroup("order");
         config1.setResource("queryOrder");
@@ -28,8 +27,7 @@ public class LimiterTest {
         limiter.addConfig(config1);
 
         //insert order
-        LimiterConfig config2 = new LimiterConfig(0L, 0L, 1L,
-                LimiterConfig.Unit.SEC, 0L, 0L, LimiterConfig.Strategy.NON);
+        LimiterConfig config2 = new LimiterConfig();
         config2.setApplication(application);
         config2.setGroup("order");
         config2.setResource("insertOrder");
@@ -37,8 +35,7 @@ public class LimiterTest {
         limiter.addConfig(config2);
 
         //delete order
-        LimiterConfig config3 = new LimiterConfig(0L, 0L, 1L,
-                LimiterConfig.Unit.SEC, 0L, 0L, LimiterConfig.Strategy.NON);
+        LimiterConfig config3 = new LimiterConfig();
         config2.setApplication(application);
         config2.setGroup("order");
         config2.setResource("deleteOrder");
@@ -59,7 +56,7 @@ public class LimiterTest {
                 }
             });
             if (i == 50) {
-                config1.setRate(3000L);
+                config1.setRateTimeout(3000L);
                 System.out.println("1发布配置");
                 StorePool.getInstance().publish("limiter", config1);
                 System.out.println("2发布配置");
