@@ -37,7 +37,7 @@ public class RedisLimiter extends AbstractCallLimiter {
         List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
         keys.add(limiterConfig.getConcurrentPermit());
-        keys.add(limiterConfig.getMaxConcurrent());
+        keys.add(limiterConfig.getMaxPermitConcurrent());
 
         try {
             Integer result = store.eval(Integer.class, CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys);
@@ -54,7 +54,7 @@ public class RedisLimiter extends AbstractCallLimiter {
         List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
         keys.add(-limiterConfig.getConcurrentPermit());
-        keys.add(limiterConfig.getMaxConcurrent());
+        keys.add(limiterConfig.getMaxPermitConcurrent());
 
         try {
             store.eval(Integer.class, CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys);

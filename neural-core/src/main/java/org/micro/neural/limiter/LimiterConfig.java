@@ -22,7 +22,7 @@ public class LimiterConfig extends RuleConfig {
     /**
      * The max concurrent number of concurrent limiter
      */
-    private Long maxConcurrent = 0L;
+    private Integer maxPermitConcurrent = 100;
     /**
      * The concurrent permit unit of concurrent limiter
      */

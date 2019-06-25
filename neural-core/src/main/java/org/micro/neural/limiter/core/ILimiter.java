@@ -1,7 +1,6 @@
 package org.micro.neural.limiter.core;
 
 import org.micro.neural.OriginalCall;
-import org.micro.neural.common.URL;
 import org.micro.neural.extension.SPI;
 import org.micro.neural.limiter.LimiterConfig;
 import org.micro.neural.limiter.LimiterGlobalConfig;
@@ -16,13 +15,6 @@ import org.micro.neural.limiter.LimiterStatistics;
 public interface ILimiter {
 
     /**
-     * The initialize limiter
-     *
-     * @param limiterGlobalConfig {@link LimiterGlobalConfig}
-     */
-    void refresh(LimiterGlobalConfig limiterGlobalConfig);
-
-    /**
      * The get config of limiter.
      *
      * @return The LimiterConfig
@@ -32,11 +24,12 @@ public interface ILimiter {
     /**
      * The refresh in-memory data.
      *
+     * @param limiterGlobalConfig The LimiterGlobalConfig
      * @param limiterConfig       The LimiterConfig
      * @return true is success
      * @throws Exception The Exception is execute refresh LimiterConfig
      */
-    boolean refresh(LimiterConfig limiterConfig) throws Exception;
+    boolean refresh(LimiterGlobalConfig limiterGlobalConfig, LimiterConfig limiterConfig) throws Exception;
 
     /**
      * The process original call.

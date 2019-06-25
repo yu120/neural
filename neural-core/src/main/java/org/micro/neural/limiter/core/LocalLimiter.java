@@ -34,9 +34,7 @@ public class LocalLimiter extends AbstractCallLimiter {
     private AdjustableSemaphore semaphore;
 
     @Override
-    public void refresh(LimiterGlobalConfig limiterGlobalConfig) {
-        super.refresh(limiterGlobalConfig);
-
+    public synchronized boolean refresh(LimiterGlobalConfig limiterGlobalConfig, LimiterConfig limiterConfig) throws Exception {
         // rate limiter
         if (LocalRate.RATE_LIMITER == limiterGlobalConfig.getLocalRate()) {
             rateLimiter = AdjustableRateLimiter.create(1);
@@ -48,23 +46,19 @@ public class LocalLimiter extends AbstractCallLimiter {
 
         // concurrent limiter
         if (LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()) {
-            semaphore = new AdjustableSemaphore(1, true);
+            semaphore = new AdjustableSemaphore(limiterConfig.getMaxPermitConcurrent(), true);
         } else {
             counter = new LongAdder();
         }
-    }
 
-    @Override
-    public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
         try {
-            LimiterConfig config = super.getLimiterConfig();
-            if (0 < config.getMaxConcurrent()) {
+            if (0 < limiterConfig.getMaxPermitConcurrent()) {
                 // the refresh semaphore
-                semaphore.setMaxPermits(config.getMaxConcurrent().intValue());
+                semaphore.setMaxPermits(limiterConfig.getMaxPermitConcurrent());
             }
-            if (0 < config.getRatePermit()) {
+            if (0 < limiterConfig.getRatePermit()) {
                 // the refresh rateLimiter
-                rateLimiter.setRate(config.getRatePermit());
+                rateLimiter.setRate(limiterConfig.getRatePermit());
             }
 
             return true;
@@ -130,7 +124,7 @@ public class LocalLimiter extends AbstractCallLimiter {
      * @return {@link Acquire}
      */
     private Acquire incrementCASCell() {
-        if (limiterConfig.getMaxConcurrent() > counter.longValue()) {
+        if (limiterConfig.getMaxPermitConcurrent() > counter.longValue()) {
             counter.increment();
             return Acquire.SUCCESS;
         }
