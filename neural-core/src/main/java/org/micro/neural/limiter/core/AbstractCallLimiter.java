@@ -8,6 +8,8 @@ import org.micro.neural.limiter.LimiterExceedException;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.limiter.LimiterGlobalConfig;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * The Abstract Call Limiter.
  *
@@ -42,7 +44,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         // the check concurrent limiting exceed
         if (super.checkConcurrencyExceed()) {
             // try acquire concurrent
-            switch (tryAcquireConcurrent()) {
+            switch (incrementConcurrent()) {
                 case FAILURE:
                     // the concurrent exceed
                     return doStrategyProcess(LimiterGlobalConfig.EventType.CONCURRENT_EXCEED, originalCall);
@@ -51,7 +53,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
                     try {
                         return doRateOriginalCall(originalCall);
                     } finally {
-                        releaseAcquireConcurrent();
+                        decrementConcurrent();
                     }
                 case EXCEPTION:
                     // the skip exception case
@@ -129,16 +131,16 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
     }
 
     /**
-     * The acquire of concurrent limiter.
+     * The increment of concurrent limiter.
      *
      * @return The excess of limiting
      */
-    protected abstract Acquire tryAcquireConcurrent();
+    protected abstract Acquire incrementConcurrent();
 
     /**
-     * The release of concurrent limiter.
+     * The decrement of concurrent limiter.
      */
-    protected abstract void releaseAcquireConcurrent();
+    protected abstract void decrementConcurrent();
 
     /**
      * The acquire of rate limiter.

@@ -2,6 +2,8 @@ package org.micro.neural.limiter.core;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.config.store.IStore;
 import org.micro.neural.config.store.RedisStore;
@@ -32,7 +34,7 @@ public class RedisLimiter extends AbstractCallLimiter {
     private static String REQUEST_SCRIPT = getScript("/limiter_request.lua");
 
     @Override
-    protected Acquire tryAcquireConcurrent() {
+    protected Acquire incrementConcurrent() {
         IStore store = storePool.getStore();
         List<String> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
@@ -50,7 +52,7 @@ public class RedisLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected void releaseAcquireConcurrent() {
+    protected void decrementConcurrent() {
         IStore store = storePool.getStore();
         List<String> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
@@ -115,6 +117,15 @@ public class RedisLimiter extends AbstractCallLimiter {
             log.error(e.getMessage(), e);
             return null;
         }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public class RateRule {
+        private Integer maxPermits;
+        private Integer rate;
+        private Integer currPermits;
+        private String apps;
     }
 
 }

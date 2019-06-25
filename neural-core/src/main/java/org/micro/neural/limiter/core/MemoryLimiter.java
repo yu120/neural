@@ -40,7 +40,7 @@ public class MemoryLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire tryAcquireConcurrent() {
+    protected Acquire incrementConcurrent() {
         if (limiterConfig.getMaxConcurrent() > concurrentCounter.longValue()) {
             concurrentCounter.increment();
             return Acquire.SUCCESS;
@@ -50,7 +50,7 @@ public class MemoryLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected void releaseAcquireConcurrent() {
+    protected void decrementConcurrent() {
         concurrentCounter.decrement();
     }
 

@@ -45,7 +45,7 @@ public class LocalLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire tryAcquireConcurrent() {
+    protected Acquire incrementConcurrent() {
         try {
             // the get concurrent timeout
             Long timeout = limiterConfig.getConcurrentTimeout();
@@ -63,7 +63,7 @@ public class LocalLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected void releaseAcquireConcurrent() {
+    protected void decrementConcurrent() {
         semaphore.release();
     }
 
