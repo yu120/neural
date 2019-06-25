@@ -25,7 +25,7 @@ public class GlobalConfig implements Serializable {
     /**
      * The broadcast event, default is Switch.ON
      */
-    protected Switch broadcastEvent = Switch.ON;
+    protected Switch rboadcastEvent = Switch.ON;
 
     /**
      * The report cycle of monitor statistics(ms)

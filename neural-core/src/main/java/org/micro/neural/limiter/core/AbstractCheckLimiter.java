@@ -5,6 +5,7 @@ import org.micro.neural.common.utils.BeanUtils;
 import org.micro.neural.config.GlobalConfig;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.LimiterConfig;
+import org.micro.neural.limiter.LimiterGlobalConfig;
 import org.micro.neural.limiter.LimiterStatistics;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class AbstractCheckLimiter implements ILimiter {
 
     protected volatile LimiterConfig limiterConfig = null;
+    protected volatile LimiterGlobalConfig limiterGlobalConfig = null;
     protected volatile LimiterStatistics statistics = new LimiterStatistics();
     protected final Extension extension;
 
@@ -29,14 +31,17 @@ public abstract class AbstractCheckLimiter implements ILimiter {
     }
 
     @Override
-    public boolean refresh(LimiterConfig limiterConfig) throws Exception {
+    public boolean refresh(LimiterGlobalConfig limiterGlobalConfig, LimiterConfig limiterConfig) throws Exception {
         log.debug("The refresh {}", limiterConfig);
+        if (null == limiterGlobalConfig) {
+            this.limiterGlobalConfig = limiterGlobalConfig;
+        }
         if (null == limiterConfig || this.limiterConfig.equals(limiterConfig)) {
             return true;
         }
 
         BeanUtils.copyProperties(limiterConfig, this.limiterConfig);
-        return true;
+        return doRefresh(limiterConfig);
     }
 
     /**
@@ -68,6 +73,10 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      */
     boolean checkRateExceed() {
         return limiterConfig.getRatePermit() > 0L;
+    }
+
+    protected boolean doRefresh(LimiterConfig limiterConfig) throws Exception {
+        return true;
     }
 
 }

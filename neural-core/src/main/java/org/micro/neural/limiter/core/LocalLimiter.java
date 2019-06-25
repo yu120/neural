@@ -3,6 +3,7 @@ package org.micro.neural.limiter.core;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.micro.neural.extension.Extension;
+import org.micro.neural.limiter.LimiterGlobalConfig;
 import org.micro.neural.limiter.extension.AdjustableRateLimiter;
 import org.micro.neural.limiter.extension.AdjustableSemaphore;
 import org.micro.neural.limiter.LimiterConfig;
@@ -21,19 +22,20 @@ import java.util.concurrent.atomic.LongAdder;
 @Extension("local")
 public class LocalLimiter extends AbstractCallLimiter {
 
-    private final LongAdder concurrentCounter = new LongAdder();
-    private Cache<Long, LongAdder> cache;
+    // === rate limiter
 
+    private Cache<Long, LongAdder> cache;
     private final AdjustableRateLimiter rateLimiter = AdjustableRateLimiter.create(1);
+
+    // === concurrent limiter
+
+    private final LongAdder concurrentCounter = new LongAdder();
     private final AdjustableSemaphore semaphore = new AdjustableSemaphore(1, true);
 
     @Override
-    public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
-        if (!super.refresh(limiterConfig)) {
-            return false;
-        }
-
+    public synchronized boolean doRefresh(LimiterConfig limiterConfig) throws Exception {
         try {
+            LimiterGlobalConfig limiterGlobalConfig = super.getLimiterGlobalConfig();
             LimiterConfig config = super.getLimiterConfig();
             if (0 < config.getMaxConcurrent()) {
                 // the refresh semaphore
