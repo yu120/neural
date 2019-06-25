@@ -112,10 +112,11 @@ public class LocalLimiter extends AbstractCallLimiter {
             Long timeout = limiterConfig.getConcurrentTimeout();
             if (timeout > 0) {
                 // the try acquire by timeout
-                return semaphore.tryAcquire(timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
+                return semaphore.tryAcquire(limiterConfig.getConcurrentPermit(),
+                        timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
             } else {
                 // the try acquire
-                return semaphore.tryAcquire() ? Acquire.SUCCESS : Acquire.FAILURE;
+                return semaphore.tryAcquire(limiterConfig.getConcurrentPermit()) ? Acquire.SUCCESS : Acquire.FAILURE;
             }
         } catch (Exception e) {
             log.error("The try acquire local concurrent is exception", e);

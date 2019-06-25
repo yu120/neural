@@ -26,7 +26,7 @@ public class LimiterConfig extends RuleConfig {
     /**
      * The concurrent permit unit of concurrent limiter
      */
-    private Long concurrentPermit = 1L;
+    private Integer concurrentPermit = 1;
     /**
      * The concurrent timeout of concurrent limiter
      */
