@@ -148,7 +148,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
     protected abstract Acquire tryAcquireRate();
 
     /**
-     * The acquire of request limiter windows time.
+     * The acquire windows time of request limiter.
      *
      * @return The excess of limiting
      */
