@@ -18,8 +18,8 @@ public class LimiterGlobalConfig extends GlobalConfig {
 
     public static final String IDENTITY = "limiter";
 
-    private LocalRate localRate = LocalRate.ADJUSTABLE_RATE_LIMITER;
-    private LocalConcurrent localConcurrent = LocalConcurrent.ADJUSTABLE_SEMAPHORE;
+    private LocalRate localRate = LocalRate.RATE_LIMITER;
+    private LocalConcurrent localConcurrent = LocalConcurrent.SEMAPHORE;
 
     /**
      * The Local Rate
@@ -30,7 +30,7 @@ public class LimiterGlobalConfig extends GlobalConfig {
     @AllArgsConstructor
     public enum LocalRate {
         // ===
-        CACHE, ADJUSTABLE_RATE_LIMITER;
+        CACHE, RATE_LIMITER;
     }
 
     /**
@@ -42,7 +42,7 @@ public class LimiterGlobalConfig extends GlobalConfig {
     @AllArgsConstructor
     public enum LocalConcurrent {
         // ===
-        LONG_ADDER, ADJUSTABLE_SEMAPHORE;
+        LONG_ADDER, SEMAPHORE;
     }
 
     /**

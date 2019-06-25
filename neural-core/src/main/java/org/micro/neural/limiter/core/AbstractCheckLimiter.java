@@ -31,17 +31,19 @@ public abstract class AbstractCheckLimiter implements ILimiter {
     }
 
     @Override
-    public boolean refresh(LimiterGlobalConfig limiterGlobalConfig, LimiterConfig limiterConfig) throws Exception {
+    public void initialize(LimiterGlobalConfig limiterGlobalConfig) {
+        this.limiterGlobalConfig = limiterGlobalConfig;
+    }
+
+    @Override
+    public boolean refresh(LimiterConfig limiterConfig) throws Exception {
         log.debug("The refresh {}", limiterConfig);
-        if (null == limiterGlobalConfig) {
-            this.limiterGlobalConfig = limiterGlobalConfig;
-        }
         if (null == limiterConfig || this.limiterConfig.equals(limiterConfig)) {
             return true;
         }
 
         BeanUtils.copyProperties(limiterConfig, this.limiterConfig);
-        return doRefresh(limiterConfig);
+        return true;
     }
 
     /**
@@ -73,10 +75,6 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      */
     boolean checkRateExceed() {
         return limiterConfig.getRatePermit() > 0L;
-    }
-
-    protected boolean doRefresh(LimiterConfig limiterConfig) throws Exception {
-        return true;
     }
 
 }
