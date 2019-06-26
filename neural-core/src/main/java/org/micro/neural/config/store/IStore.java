@@ -72,7 +72,7 @@ public interface IStore {
      *
      * @param type    type class
      * @param script  script
-     * @param timeout timeout(ms)
+     * @param timeout timeout(ms): borrowMaxWaitMillis = 0.8 * timeout, future.get(timeout)
      * @param keys    key list
      * @param <T>     class
      * @return object by <T>

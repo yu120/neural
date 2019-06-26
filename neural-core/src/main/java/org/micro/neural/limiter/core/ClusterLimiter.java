@@ -27,9 +27,9 @@ import java.util.List;
 public class ClusterLimiter extends AbstractCallLimiter {
 
     private StorePool storePool = StorePool.getInstance();
-    private static String CONCURRENT_SCRIPT = getScript("/limiter_concurrent.lua");
-    private static String RATE_SCRIPT = getScript("/limiter_rate.lua");
-    private static String REQUEST_SCRIPT = getScript("/limiter_request.lua");
+    private static String CONCURRENT_SCRIPT = loadScript("/limiter_concurrent.lua");
+    private static String RATE_SCRIPT = loadScript("/limiter_rate.lua");
+    private static String REQUEST_SCRIPT = loadScript("/limiter_request.lua");
 
     @Override
     protected Acquire incrementConcurrent() {
@@ -99,7 +99,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
         }
     }
 
-    private static String getScript(String name) {
+    private static String loadScript(String name) {
         try {
             return CharStreams.toString(new InputStreamReader(
                     RedisStore.class.getResourceAsStream(name), Charsets.UTF_8));

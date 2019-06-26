@@ -31,11 +31,13 @@ import java.util.concurrent.TimeUnit;
 @Extension(RedisStore.IDENTITY)
 public class RedisStore implements IStore {
 
-    public static final String IDENTITY = "redis";
-    public static final String SENTINEL = "sentinel";
-    public static final String PASSWORD = "password";
+    static final String IDENTITY = "redis";
+    private static final String SENTINEL = "sentinel";
+    private static final String PASSWORD = "password";
+    private static final String BORROW_MAX_WAIT_MILLIS = "borrowMaxWaitMillis";
 
     private RedisClient redisClient = null;
+    private long borrowMaxWaitMillis = 10000;
     private GenericObjectPool<StatefulRedisConnection<String, String>> objectPool;
     private final Map<IStoreListener, RedisPubSubAsyncCommands<String, String>> subscribed = new ConcurrentHashMap<>();
 
@@ -54,14 +56,19 @@ public class RedisStore implements IStore {
             redisURI.setPassword(password);
         }
 
+        this.borrowMaxWaitMillis = url.getParameter(BORROW_MAX_WAIT_MILLIS, borrowMaxWaitMillis);
         this.redisClient = RedisClient.create(redisURI);
         this.objectPool = ConnectionPoolSupport.createGenericObjectPool(
                 () -> redisClient.connect(), new GenericObjectPoolConfig());
     }
 
     private StatefulRedisConnection<String, String> borrowObject() {
+        return borrowObject(borrowMaxWaitMillis);
+    }
+
+    private StatefulRedisConnection<String, String> borrowObject(long borrowMaxWaitMillis) {
         try {
-            return objectPool.borrowObject();
+            return objectPool.borrowObject(borrowMaxWaitMillis);
         } catch (Exception e) {
             throw new RuntimeException("The borrow object is exception", e);
         }
@@ -138,7 +145,8 @@ public class RedisStore implements IStore {
             keyArray[i] = String.valueOf(obj);
         }
 
-        try (StatefulRedisConnection<String, String> connection = borrowObject()) {
+        long borrowMaxWaitMillis = Double.valueOf(0.8 * timeout).longValue();
+        try (StatefulRedisConnection<String, String> connection = borrowObject(borrowMaxWaitMillis)) {
             RedisFuture<T> redisFuture = connection.async().eval(script, scriptOutputType, keyArray);
 
             T result;
@@ -177,33 +185,33 @@ public class RedisStore implements IStore {
 
             @Override
             public void message(String channel, String message) {
-                log.debug("message={} on channel {}", message, channel);
+                log.debug("subscribe: message={} on channel {}", message, channel);
                 listener.notify(channel, message);
             }
 
             @Override
             public void subscribed(String channel, long count) {
-                log.debug("subscribed channel={}, count={}", channel, count);
+                log.debug("subscribe: subscribed channel={}, count={}", channel, count);
             }
 
             @Override
             public void unsubscribed(String channel, long count) {
-                log.debug("unsubscribed channel={}, count={}", channel, count);
+                log.debug("subscribe: unsubscribed channel={}, count={}", channel, count);
             }
 
             @Override
             public void message(String pattern, String channel, String message) {
-                log.debug("pattern message={} in channel={}", message, channel);
+                log.debug("subscribe: pattern message={} in channel={}", message, channel);
             }
 
             @Override
             public void psubscribed(String pattern, long count) {
-                log.debug("pattern subscribed pattern={}, count={}", pattern, count);
+                log.debug("subscribe: pattern subscribed pattern={}, count={}", pattern, count);
             }
 
             @Override
             public void punsubscribed(String pattern, long count) {
-                log.debug("pattern unsubscribed channel={}, count={}", pattern, count);
+                log.debug("subscribe: pattern unsubscribed channel={}, count={}", pattern, count);
             }
 
         });
