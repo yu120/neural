@@ -17,12 +17,12 @@ public interface ILimiter {
     /**
      * The refresh in-memory data.
      *
-     * @param limiterGlobalConfig The LimiterGlobalConfig
+     * @param globalConfig The LimiterGlobalConfig
      * @param limiterConfig       The LimiterConfig
      * @return true is success
      * @throws Exception The Exception is execute refresh LimiterConfig
      */
-    boolean refresh(LimiterGlobalConfig limiterGlobalConfig, LimiterConfig limiterConfig) throws Exception;
+    boolean refresh(LimiterGlobalConfig globalConfig, LimiterConfig limiterConfig) throws Exception;
 
     /**
      * The process original call.

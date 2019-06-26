@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class AbstractCheckLimiter implements ILimiter {
 
     protected volatile LimiterConfig limiterConfig = null;
-    protected volatile LimiterGlobalConfig limiterGlobalConfig = null;
+    protected volatile LimiterGlobalConfig globalConfig = null;
     protected volatile LimiterStatistics statistics = new LimiterStatistics();
     protected final Extension extension;
 
@@ -31,9 +31,9 @@ public abstract class AbstractCheckLimiter implements ILimiter {
     }
 
     @Override
-    public boolean refresh(LimiterGlobalConfig limiterGlobalConfig, LimiterConfig limiterConfig) throws Exception {
+    public boolean refresh(LimiterGlobalConfig globalConfig, LimiterConfig limiterConfig) throws Exception {
         log.debug("The refresh {}", limiterConfig);
-        this.limiterGlobalConfig = limiterGlobalConfig;
+        this.globalConfig = globalConfig;
         if (null == limiterConfig || this.limiterConfig.equals(limiterConfig)) {
             return true;
         }

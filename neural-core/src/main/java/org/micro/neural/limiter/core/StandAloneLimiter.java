@@ -34,7 +34,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
     private AdjustableSemaphore semaphore;
 
     @Override
-    public synchronized boolean refresh(LimiterGlobalConfig limiterGlobalConfig, LimiterConfig limiterConfig) throws Exception {
+    public synchronized boolean refresh(LimiterGlobalConfig globalConfig, LimiterConfig limiterConfig) throws Exception {
         // rate limiter
         rateLimiter = AdjustableRateLimiter.create(limiterConfig.getMaxPermitRate());
 
@@ -44,7 +44,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
         cache = cacheBuilder.build();
 
         // concurrent limiter
-        if (LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()) {
+        if (Concurrent.SEMAPHORE == globalConfig.getConcurrent()) {
             semaphore = new AdjustableSemaphore(limiterConfig.getMaxPermitConcurrent(), true);
         } else {
             counter = new LongAdder();
@@ -70,13 +70,13 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire incrementConcurrent() {
-        return LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()
+        return Concurrent.SEMAPHORE == globalConfig.getConcurrent()
                 ? incrementSemaphore() : incrementCAS();
     }
 
     @Override
     protected void decrementConcurrent() {
-        if (LocalConcurrent.SEMAPHORE == limiterGlobalConfig.getLocalConcurrent()) {
+        if (Concurrent.SEMAPHORE == globalConfig.getConcurrent()) {
             semaphore.release();
         } else {
             counter.decrement();
