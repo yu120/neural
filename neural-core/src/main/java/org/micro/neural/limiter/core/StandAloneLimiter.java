@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * The limiter based on adjustable's semaphore and rateLimiter implementation.
+ * The Stand Alone Limiter.
  *
  * @author lry
  * @apiNote The local limiter

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The Limiter pf Redis.
+ * The Cluster Limiter by Redis.
  * <p>
  * 1.Limit instantaneous concurrent
  * 2.Limit the maximum number of requests for a time window
