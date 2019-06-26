@@ -25,7 +25,7 @@ public class FilterChain<M> {
     @SuppressWarnings("rawtypes")
     private final ConcurrentHashMap<String, List<Filter<M>>> filters = new ConcurrentHashMap<String, List<Filter<M>>>();
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings("unchecked")
     public FilterChain() {
         try {
             List<Filter> filterList = ExtensionLoader.getLoader(Filter.class).getExtensions();
@@ -36,14 +36,9 @@ public class FilterChain<M> {
                     Extension extension = filter.getClass().getAnnotation(Extension.class);
                     if (extension != null) {
                         String[] categories = extension.category();
-                        if (categories != null) {
-                            for (int i = 0; i < categories.length; i++) {
-                                List<Filter<M>> temoFilterList = filters.get(categories[i]);
-                                if (temoFilterList == null) {
-                                    filters.put(categories[i], temoFilterList = new ArrayList<>());
-                                }
-                                temoFilterList.add(filter);
-                            }
+                        for (String category : categories) {
+                            List<Filter<M>> tempFilterList = filters.computeIfAbsent(category, k -> new ArrayList<>());
+                            tempFilterList.add(filter);
                         }
                     }
                 }
