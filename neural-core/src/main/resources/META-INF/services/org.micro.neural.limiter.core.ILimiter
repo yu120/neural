@@ -1,2 +1,2 @@
-org.micro.neural.limiter.core.LocalLimiter
-org.micro.neural.limiter.core.RedisLimiter
+org.micro.neural.limiter.core.StandAloneLimiter
+org.micro.neural.limiter.core.ClusterLimiter

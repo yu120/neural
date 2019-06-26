@@ -24,7 +24,7 @@ import java.util.List;
  **/
 @Slf4j
 @Extension("redis")
-public class RedisLimiter extends AbstractCallLimiter {
+public class ClusterLimiter extends AbstractCallLimiter {
 
     private StorePool storePool = StorePool.getInstance();
     private static String CONCURRENT_SCRIPT = getScript("/limiter_concurrent.lua");

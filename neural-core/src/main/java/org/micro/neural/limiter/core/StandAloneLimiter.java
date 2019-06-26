@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.LongAdder;
  */
 @Slf4j
 @Extension("local")
-public class LocalLimiter extends AbstractCallLimiter {
+public class StandAloneLimiter extends AbstractCallLimiter {
 
     // === rate limiter
 
