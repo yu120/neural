@@ -1,6 +1,5 @@
 package org.micro.neural.limiter.core;
 
-import com.google.common.annotations.Beta;
 import org.micro.neural.OriginalCall;
 import org.micro.neural.extension.SPI;
 import org.micro.neural.limiter.LimiterConfig;
@@ -32,7 +31,6 @@ public interface ILimiter {
      * @return The object of OriginalCall
      * @throws Throwable The Exception is execute doOriginalCall
      */
-    @Beta
     Object doOriginalCall(OriginalCall originalCall) throws Throwable;
 
     /**
