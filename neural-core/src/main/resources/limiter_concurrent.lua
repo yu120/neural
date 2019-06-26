@@ -16,7 +16,7 @@ local function trafficConcurrent(key, permits, max_permit)
     local org_max_permit = tonumber(max_permit)
 
     -- 获取当前流量大小,没有则默认为0
-    local current_permit = tonumber(redis.call("GET", key) or "0")
+    local current_permit = tonumber(redis.call('GET', key) or '0')
     local next_permit = current_permit + org_permits
 
     if permits > 0 then
@@ -25,7 +25,7 @@ local function trafficConcurrent(key, permits, max_permit)
             -- 达到限流大小,返回状态码和并发数
             return {0, org_max_permit}
         else
-            redis.call("INCRBY", key, org_permits)
+            redis.call('INCRBY', key, org_permits)
             return {1, next_permit}
         end
     elseif permits < 0 then
@@ -33,7 +33,7 @@ local function trafficConcurrent(key, permits, max_permit)
         if next_permit < 0 then
             return {0, 0}
         else
-            redis.call("DECRBY", key, org_permits)
+            redis.call('DECRBY', key, org_permits)
             return {1, next_permit}
         end
     end
