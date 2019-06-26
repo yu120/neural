@@ -6,22 +6,21 @@ Request Limiter Script v1.0
 
 
 --- 加流量
---- @param key 唯一标识
---- @param max_permit_request  最大许可数
---- @param request_interval  请求时间窗大小
---- @return 0=表示获取失败,1=表示获取成功
-local function tryAcquireRequest(key, max_permit_request, request_interval)
-    -- 时间窗口内最大并发数
-    local org_max_permit_request = tonumber(max_permit_request)
-    -- 窗口的间隔时间:milliseconds
+--- @param key                  唯一标识
+--- @param max_permit           最大许可数
+--- @param request_interval     请求时间窗大小,单位milliseconds
+--- @return                     0=获取失败,1=获取成功
+local function tryAcquireRequest(key, max_permit, request_interval)
+    local org_max_permit = tonumber(max_permit)
     local org_request_interval = tonumber(request_interval)
 
     -- 获取当前的许可数
     local current_permit = tonumber(redis.call('GET', key) or 0)
+    local next_permit = current_permit + 1
 
     -- 如果超过了最大并发数，返回false
-    if current_permit + 1 > org_max_permit_request then
-        return 0
+    if next_permit > org_max_permit then
+        return {0, org_max_permit}
     else
         -- 增加并发计数
         redis.call('INCRBY', key, 1)
@@ -30,7 +29,7 @@ local function tryAcquireRequest(key, max_permit_request, request_interval)
             redis.call('PEXPIRE', key, org_request_interval)
         end
 
-        return current_permit + 1
+        return {1, next_permit}
     end
 end
 

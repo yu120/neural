@@ -7,29 +7,34 @@ Concurrent Limiter Script v1.0
 
 
 --- 并发流量整形
---- @param key      唯一标识
---- @param permits  大于0表示加流量,小于0表示减流量
---- @param limit    获取限流大小参数
---- @return         0=表示取令牌失败(也就是桶里没有令牌),1=表示获取令牌成功
-local function trafficConcurrent(key , permits, limit)
+--- @param key          唯一标识
+--- @param permits      每次获取许可数量,大于0表示加流量,小于0表示减流量
+--- @param max_permit   最大许可数
+--- @return             0=获取失败,1=获取成功
+local function trafficConcurrent(key, permits, max_permit)
+    local org_permits = tonumber(permits)
+    local org_max_permit = tonumber(max_permit)
+
     -- 获取当前流量大小,没有则默认为0
-    local currentConcurrent = tonumber(redis.call("GET", key) or "0")
+    local current_permit = tonumber(redis.call("GET", key) or "0")
+    local next_permit = current_permit + org_permits
+
     if permits > 0 then
         --- 加流量
-        if currentConcurrent + permits > limit then
+        if next_permit > org_max_permit then
             -- 达到限流大小,返回状态码和并发数
-            return 0
+            return {0, org_max_permit}
         else
-            redis.call("INCRBY", key, permits)
-            return currentConcurrent + permits
+            redis.call("INCRBY", key, org_permits)
+            return {1, next_permit}
         end
     elseif permits < 0 then
         --- 减流量
-        if currentConcurrent + permits <= 0 then
-            return 0
+        if next_permit < 0 then
+            return {0, 0}
         else
-            redis.call("DECRBY", key, permits)
-            return currentConcurrent + permits
+            redis.call("DECRBY", key, org_permits)
+            return {1, next_permit}
         end
     end
 end

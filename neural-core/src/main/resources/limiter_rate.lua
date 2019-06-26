@@ -28,11 +28,11 @@ end
 
 
 --- 获取令牌
---- @param key 令牌的唯一标识
---- @param permits  请求令牌数量
+--- @param key              令牌的唯一标识
+--- @param permits          请求令牌数量
 --- @param curr_mill_second 当前毫秒数
---- @param app 使用令牌的应用标识
---- @return -1=没有令牌桶配置,0=表示取令牌失败(也就是桶里没有令牌),1=表示获取令牌成功
+--- @param app              使用令牌的应用标识
+--- @return                 0=获取失败,1=获取成功 -1=没有令牌桶配置,0=表示取令牌失败(也就是桶里没有令牌),1=表示获取令牌成功
 local function tryAcquireRate(key, permits, curr_mill_second, app)
     local redis_rate_limit_info = redis.pcall('HMGET' , key , 'last_mill_second','curr_permits','max_permits','rate','apps')
     local last_mill_second = redis_rate_limit_info[1]
@@ -43,7 +43,7 @@ local function tryAcquireRate(key, permits, curr_mill_second, app)
 
     -- 标识没有配置令牌桶
     if type(apps) == 'boolean' or apps == nil or not contains(apps , app) then
-        return -1
+        return {2, curr_permits}
     end
 
     local local_curr_permits = curr_permits
@@ -64,14 +64,15 @@ local function tryAcquireRate(key, permits, curr_mill_second, app)
     end
 
     -- 判断许可数
-    if (local_curr_permits - permits >=0) then
+    local next_curr_permits = local_curr_permits - permits
+    if (next_curr_permits >=0) then
         -- 获取令牌成功
-        redis.pcall('HSET' , key , 'curr_permits' , local_curr_permits - permits)
-        return 1
+        redis.pcall('HSET' , key , 'curr_permits' , next_curr_permits)
+        return {1, next_curr_permits}
     else
         -- 获取令牌失败
         redis.pcall('HSET' , key , 'curr_permits' , local_curr_permits)
-        return 0
+        return {0, next_curr_permits}
     end
 end
 

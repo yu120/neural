@@ -166,17 +166,22 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         /**
          * The success of limiter
          */
-        SUCCESS(0),
+        SUCCESS(1),
+
+        /**
+         * The non rule of limiter
+         */
+        NON_RULE(2),
 
         /**
          * The failure of limiter
          */
-        FAILURE(1),
+        FAILURE(0),
 
         /**
          * The exception of limiter
          */
-        EXCEPTION(2);
+        EXCEPTION(-1);
 
         private int value;
 
