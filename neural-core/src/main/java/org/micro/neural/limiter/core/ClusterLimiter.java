@@ -23,7 +23,7 @@ import java.util.List;
  * @author lry
  **/
 @Slf4j
-@Extension("redis")
+@Extension("cluster")
 public class ClusterLimiter extends AbstractCallLimiter {
 
     private StorePool storePool = StorePool.getInstance();
