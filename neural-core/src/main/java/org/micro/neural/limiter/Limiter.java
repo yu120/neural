@@ -28,7 +28,8 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
     @Override
     public void addConfig(LimiterConfig config) {
         super.addConfig(config);
-        limiters.put(config.identity(), ExtensionLoader.getLoader(ILimiter.class).getExtension());
+        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(config.getModel());
+        limiters.put(config.identity(), limiter);
     }
 
     @Override

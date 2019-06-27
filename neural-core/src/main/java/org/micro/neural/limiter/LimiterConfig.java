@@ -19,8 +19,17 @@ public class LimiterConfig extends RuleConfig {
 
     private static final long serialVersionUID = 4076904823256002967L;
 
+    /**
+     * The model of limiter
+     */
+    private String model = "stand-alone";
+
     // === concurrent limiter
 
+    /**
+     * The enable of concurrent limiter
+     */
+    private Boolean concurrentEnable = true;
     /**
      * The concurrent permit unit of concurrent limiter
      */
@@ -37,6 +46,10 @@ public class LimiterConfig extends RuleConfig {
     // === rate limiter
 
     /**
+     * The enable of rate limiter
+     */
+    private Boolean rateEnable = true;
+    /**
      * The rate of rate limiter
      */
     private Integer ratePermit = 1;
@@ -51,6 +64,14 @@ public class LimiterConfig extends RuleConfig {
 
     // === request limiter
 
+    /**
+     * The enable of request limiter
+     */
+    private Boolean requestEnable = true;
+    /**
+     * The request of rate limiter
+     */
+    private Integer requestPermit = 1;
     /**
      * The request max permit of request limiter
      */

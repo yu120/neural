@@ -40,7 +40,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      */
     private Object doConcurrentOriginalCall(OriginalCall originalCall) throws Throwable {
         // the check concurrent limiting exceed
-        if (super.checkConcurrentExceed()) {
+        if (super.checkConcurrentEnable()) {
             // try acquire concurrent
             switch (incrementConcurrent()) {
                 case FAILURE:
@@ -73,11 +73,38 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      */
     private Object doRateOriginalCall(OriginalCall originalCall) throws Throwable {
         // the check rate limiting exceed
-        if (super.checkRateExceed()) {
+        if (super.checkRateEnable()) {
             switch (tryAcquireRate()) {
                 case FAILURE:
                     // the rate exceed
                     return doStrategyProcess(LimiterGlobalConfig.EventType.RATE_EXCEED, originalCall);
+                case SUCCESS:
+                    // the pass success case
+                case EXCEPTION:
+                    // the skip exception case
+                default:
+                    // the skip other case
+            }
+        }
+
+        // the skip non check RateLimiter or success or exception or other
+        return doRequestOriginalCall(originalCall);
+    }
+
+    /**
+     * The request limiter and original call
+     *
+     * @param originalCall The original call interface
+     * @return The original call result
+     * @throws Throwable throw original call exception
+     */
+    private Object doRequestOriginalCall(OriginalCall originalCall) throws Throwable {
+        // the check request limiting exceed
+        if (super.checkRequestEnable()) {
+            switch (tryAcquireRequest()) {
+                case FAILURE:
+                    // the request exceed
+                    return doStrategyProcess(LimiterGlobalConfig.EventType.REQUEST_EXCEED, originalCall);
                 case SUCCESS:
                     // the pass success case
                 case EXCEPTION:

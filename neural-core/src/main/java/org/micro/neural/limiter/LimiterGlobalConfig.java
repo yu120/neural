@@ -36,6 +36,10 @@ public class LimiterGlobalConfig extends GlobalConfig {
          */
         CONCURRENT_EXCEED(IDENTITY, "The concurrent exceed event of limiter"),
         /**
+         * The request exceed event of limiter
+         */
+        REQUEST_EXCEED(IDENTITY, "The request exceed event of limiter"),
+        /**
          * The notify config exception of limiter
          */
         NOTIFY_EXCEPTION(IDENTITY, "The notify config is exception of limiter"),

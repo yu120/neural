@@ -43,6 +43,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
 
         try {
             EvalResult evalResult = eval(CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys);
+            System.out.println("The increment concurrent:" + evalResult);
             return evalResult.getCode();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -59,6 +60,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
 
         try {
             EvalResult evalResult = eval(CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys);
+            System.out.println("The decrement concurrent:" + evalResult);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -85,8 +87,8 @@ public class ClusterLimiter extends AbstractCallLimiter {
     protected Acquire tryAcquireRequest() {
         List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
+        keys.add(limiterConfig.getRequestPermit());
         keys.add(limiterConfig.getMaxPermitRequest());
-        //TODO
         keys.add(limiterConfig.getRequestInterval().toMillis());
 
         try {

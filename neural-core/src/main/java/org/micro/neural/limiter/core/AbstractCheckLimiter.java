@@ -53,21 +53,42 @@ public abstract class AbstractCheckLimiter implements ILimiter {
     }
 
     /**
-     * The check the need for concurrent limiting exceed
+     * The check the need for concurrent limiting enable
      *
      * @return true indicates that it need to be concurrent handled
      */
-    boolean checkConcurrentExceed() {
-        return limiterConfig.getMaxPermitConcurrent() > 0L;
+    boolean checkConcurrentEnable() {
+        if (!limiterConfig.getConcurrentEnable() || limiterConfig.getConcurrentPermit() < 1) {
+            return false;
+        }
+
+        return limiterConfig.getMaxPermitConcurrent() >= limiterConfig.getConcurrentPermit();
     }
 
     /**
-     * The check the need for rate limiting exceed
+     * The check the need for rate limiting enable
      *
      * @return true indicates that it need to be rate handled
      */
-    boolean checkRateExceed() {
-        return limiterConfig.getMaxPermitRate() > 0L;
+    boolean checkRateEnable() {
+        if (!limiterConfig.getRateEnable() || limiterConfig.getRatePermit() < 1) {
+            return false;
+        }
+
+        return limiterConfig.getMaxPermitRate() >= limiterConfig.getRatePermit();
+    }
+
+    /**
+     * The check the need for request limiting enable
+     *
+     * @return true indicates that it need to be rate handled
+     */
+    boolean checkRequestEnable() {
+        if (!limiterConfig.getRequestEnable() || limiterConfig.getRequestPermit() < 1) {
+            return false;
+        }
+
+        return limiterConfig.getMaxPermitRequest() >= limiterConfig.getRequestPermit();
     }
 
 }
