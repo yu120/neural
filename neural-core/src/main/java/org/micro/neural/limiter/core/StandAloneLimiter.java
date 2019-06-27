@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.LimiterConfig;
 import org.micro.neural.limiter.LimiterGlobalConfig;
-import org.micro.neural.limiter.LimiterGlobalConfig.*;
 import org.micro.neural.limiter.extension.AdjustableRateLimiter;
 import org.micro.neural.limiter.extension.AdjustableSemaphore;
 
@@ -25,13 +24,15 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     // === rate limiter
 
-    private Cache<Long, LongAdder> cache;
     private AdjustableRateLimiter rateLimiter;
 
     // === concurrent limiter
 
-    private LongAdder counter;
     private AdjustableSemaphore semaphore;
+
+    // ==== request limiter
+
+    private Cache<Long, LongAdder> cache;
 
     @Override
     public synchronized boolean refresh(LimiterGlobalConfig globalConfig, LimiterConfig limiterConfig) throws Exception {
@@ -44,11 +45,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
         cache = cacheBuilder.build();
 
         // concurrent limiter
-        if (Concurrent.SEMAPHORE == globalConfig.getConcurrent()) {
-            semaphore = new AdjustableSemaphore(limiterConfig.getMaxPermitConcurrent(), true);
-        } else {
-            counter = new LongAdder();
-        }
+        semaphore = new AdjustableSemaphore(limiterConfig.getMaxPermitConcurrent(), true);
 
         try {
             if (0 < limiterConfig.getMaxPermitConcurrent()) {
@@ -70,17 +67,26 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire incrementConcurrent() {
-        return Concurrent.SEMAPHORE == globalConfig.getConcurrent()
-                ? incrementSemaphore() : incrementCAS();
+        try {
+            // the get concurrent timeout
+            Long timeout = limiterConfig.getConcurrentTimeout();
+            if (timeout > 0) {
+                // the try acquire by timeout
+                return semaphore.tryAcquire(limiterConfig.getConcurrentPermit(),
+                        timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
+            } else {
+                // the try acquire
+                return semaphore.tryAcquire(limiterConfig.getConcurrentPermit()) ? Acquire.SUCCESS : Acquire.FAILURE;
+            }
+        } catch (Exception e) {
+            log.error("The try acquire local concurrent is exception", e);
+            return Acquire.EXCEPTION;
+        }
     }
 
     @Override
     protected void decrementConcurrent() {
-        if (Concurrent.SEMAPHORE == globalConfig.getConcurrent()) {
-            semaphore.release();
-        } else {
-            counter.decrement();
-        }
+        semaphore.release();
     }
 
     @Override
@@ -115,43 +121,6 @@ public class StandAloneLimiter extends AbstractCallLimiter {
         } catch (Exception e) {
             log.error("The try acquire memory rate limiter is exception", e);
             return Acquire.EXCEPTION;
-        }
-
-        return Acquire.FAILURE;
-    }
-
-    /**
-     * The increment Semaphore
-     *
-     * @return {@link Acquire}
-     */
-    private Acquire incrementSemaphore() {
-        try {
-            // the get concurrent timeout
-            Long timeout = limiterConfig.getConcurrentTimeout();
-            if (timeout > 0) {
-                // the try acquire by timeout
-                return semaphore.tryAcquire(limiterConfig.getConcurrentPermit(),
-                        timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
-            } else {
-                // the try acquire
-                return semaphore.tryAcquire(limiterConfig.getConcurrentPermit()) ? Acquire.SUCCESS : Acquire.FAILURE;
-            }
-        } catch (Exception e) {
-            log.error("The try acquire local concurrent is exception", e);
-            return Acquire.EXCEPTION;
-        }
-    }
-
-    /**
-     * The increment CAS cell
-     *
-     * @return {@link Acquire}
-     */
-    private Acquire incrementCAS() {
-        if (limiterConfig.getMaxPermitConcurrent() > counter.longValue()) {
-            counter.increment();
-            return Acquire.SUCCESS;
         }
 
         return Acquire.FAILURE;

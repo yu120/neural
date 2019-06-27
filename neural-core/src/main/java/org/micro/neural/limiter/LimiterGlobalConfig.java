@@ -18,20 +18,6 @@ public class LimiterGlobalConfig extends GlobalConfig {
 
     public static final String IDENTITY = "limiter";
 
-    private Concurrent concurrent = Concurrent.SEMAPHORE;
-
-    /**
-     * The Local Concurrent
-     *
-     * @author lry
-     */
-    @Getter
-    @AllArgsConstructor
-    public enum Concurrent {
-        // ===
-        CAS_CELL, SEMAPHORE;
-    }
-
     /**
      * The Limiter Type.
      *
