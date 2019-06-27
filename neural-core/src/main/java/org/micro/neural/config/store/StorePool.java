@@ -81,11 +81,11 @@ public class StorePool implements IStoreListener {
         store.initialize(url);
 
         // start cycle pull configs scheduled
-        //scheduledPullConfigs();
+        scheduledPullConfigs();
         // start subscribe configs listener
-        //subscribeNotifyConfigs();
+        subscribeNotifyConfigs();
         // start cycle push statistics scheduled
-        //scheduledPushStatistics();
+        scheduledPushStatistics();
 
         // add shutdown Hook
         Runtime.getRuntime().addShutdownHook(new Thread(this::destroy));
