@@ -185,6 +185,16 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
 
         private int value;
 
+        public static Acquire valueOf(int value) {
+            for (Acquire e : values()) {
+                if (e.getValue() == value) {
+                    return e;
+                }
+            }
+
+            return Acquire.EXCEPTION;
+        }
+
     }
 
 }

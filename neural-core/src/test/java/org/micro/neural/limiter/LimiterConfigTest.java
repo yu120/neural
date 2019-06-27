@@ -13,9 +13,9 @@ public class LimiterConfigTest {
     public static void main(String[] args) {
         LimiterConfig config = new LimiterConfig();
         config.setConcurrentTimeout(1000L);
-        config.setMaxConcurrent(100L);
+        config.setMaxPermitConcurrent(100);
         config.setRateTimeout(1000L);
-        config.setRate(2000L);
+        config.setRatePermit(2000);
         config.setStrategy(LimiterConfig.Strategy.EXCEPTION);
         config.setName("标题");
         config.setRemarks("备注信息");

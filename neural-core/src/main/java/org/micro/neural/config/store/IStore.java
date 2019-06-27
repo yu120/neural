@@ -70,14 +70,12 @@ public interface IStore {
     /**
      * The lua script eval
      *
-     * @param type    type class
      * @param script  script
      * @param timeout timeout(ms): borrowMaxWaitMillis = 0.8 * timeout, future.get(timeout)
      * @param keys    key list
-     * @param <T>     class
      * @return object by <T>
      */
-    <T> T eval(Class<T> type, String script, Long timeout, List<Object> keys);
+    List<Object> eval(String script, Long timeout, List<Object> keys);
 
     /**
      * The pull config

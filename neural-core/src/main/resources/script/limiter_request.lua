@@ -1,15 +1,15 @@
----[[
+--[[
 Request Limiter Script v1.0
 @author：lry(echo)
 @since：2019-06-25
----]]
+--]]
 
 
---- 加流量
---- @param key                  唯一标识
---- @param max_permit           最大许可数
---- @param request_interval     请求时间窗大小,单位milliseconds
---- @return                     0=获取失败,1=获取成功
+-- 加流量
+-- @param key                  唯一标识
+-- @param max_permit           最大许可数
+-- @param request_interval     请求时间窗大小,单位milliseconds
+-- @return                     0=获取失败,1=获取成功
 local function tryAcquireRequest(key, max_permit, request_interval)
     local org_max_permit = tonumber(max_permit)
     local org_request_interval = tonumber(request_interval)
@@ -34,5 +34,5 @@ local function tryAcquireRequest(key, max_permit, request_interval)
 end
 
 
---- 主流程
+-- 主流程
 return tryAcquireRequest(KEYS[1], KEYS[2], KEYS[3])

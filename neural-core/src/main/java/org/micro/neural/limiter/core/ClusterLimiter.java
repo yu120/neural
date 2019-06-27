@@ -2,14 +2,17 @@ package org.micro.neural.limiter.core;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.micro.neural.config.store.IStore;
-import org.micro.neural.config.store.RedisStore;
 import org.micro.neural.config.store.StorePool;
 import org.micro.neural.extension.Extension;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,21 +30,20 @@ import java.util.List;
 public class ClusterLimiter extends AbstractCallLimiter {
 
     private StorePool storePool = StorePool.getInstance();
-    private static String CONCURRENT_SCRIPT = loadScript("/script/limiter_concurrent.lua");
+    public static String CONCURRENT_SCRIPT = loadScript("/script/limiter_concurrent.lua");
     private static String RATE_SCRIPT = loadScript("/script/limiter_rate.lua");
     private static String REQUEST_SCRIPT = loadScript("/script/limiter_request.lua");
 
     @Override
     protected Acquire incrementConcurrent() {
-        IStore store = storePool.getStore();
         List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
         keys.add(limiterConfig.getConcurrentPermit());
         keys.add(limiterConfig.getMaxPermitConcurrent());
 
         try {
-            Integer result = store.eval(Integer.class, CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys);
-            return result == null ? Acquire.EXCEPTION : (result == 0 ? Acquire.FAILURE : Acquire.SUCCESS);
+            EvalResult evalResult = eval(CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys);
+            return evalResult.getCode();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Acquire.EXCEPTION;
@@ -50,14 +52,13 @@ public class ClusterLimiter extends AbstractCallLimiter {
 
     @Override
     protected void decrementConcurrent() {
-        IStore store = storePool.getStore();
         List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
         keys.add(-limiterConfig.getConcurrentPermit());
         keys.add(limiterConfig.getMaxPermitConcurrent());
 
         try {
-            store.eval(Integer.class, CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys);
+            EvalResult evalResult = eval(CONCURRENT_SCRIPT, limiterConfig.getConcurrentTimeout(), keys);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -65,7 +66,6 @@ public class ClusterLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire tryAcquireRate() {
-        IStore store = storePool.getStore();
         List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
         keys.add(limiterConfig.getRatePermit());
@@ -73,8 +73,8 @@ public class ClusterLimiter extends AbstractCallLimiter {
         keys.add("app");
 
         try {
-            Integer result = store.eval(Integer.class, RATE_SCRIPT, limiterConfig.getRateTimeout(), keys);
-            return result == null ? Acquire.EXCEPTION : (result == 0 ? Acquire.FAILURE : Acquire.SUCCESS);
+            EvalResult evalResult = eval(RATE_SCRIPT, limiterConfig.getRateTimeout(), keys);
+            return evalResult.getCode();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Acquire.EXCEPTION;
@@ -83,7 +83,6 @@ public class ClusterLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire tryAcquireRequest() {
-        IStore store = storePool.getStore();
         List<Object> keys = new ArrayList<>();
         keys.add(limiterConfig.identity());
         keys.add(limiterConfig.getMaxPermitRequest());
@@ -91,22 +90,45 @@ public class ClusterLimiter extends AbstractCallLimiter {
         keys.add(limiterConfig.getRequestInterval().toMillis());
 
         try {
-            Integer result = store.eval(Integer.class, REQUEST_SCRIPT, limiterConfig.getRequestTimeout(), keys);
-            return result == null ? Acquire.EXCEPTION : (result == 0 ? Acquire.FAILURE : Acquire.SUCCESS);
+            EvalResult evalResult = eval(REQUEST_SCRIPT, limiterConfig.getRequestTimeout(), keys);
+            return evalResult.getCode();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Acquire.EXCEPTION;
         }
     }
 
+    private EvalResult eval(String script, Long timeout, List<Object> keys) {
+        List<Object> result = storePool.getStore().eval(script, timeout, keys);
+        if (result == null || result.size() != 2) {
+            return new EvalResult(Acquire.EXCEPTION, 0L);
+        }
+
+        Acquire acquire = Acquire.valueOf((int) result.get(0));
+        return new EvalResult(acquire, (long) result.get(1));
+    }
+
     private static String loadScript(String name) {
         try {
             return CharStreams.toString(new InputStreamReader(
-                    RedisStore.class.getResourceAsStream(name), Charsets.UTF_8));
+                    ClusterLimiter.class.getResourceAsStream(name), Charsets.UTF_8));
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             return null;
         }
+    }
+
+    @Data
+    @ToString
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class EvalResult implements Serializable {
+
+        private static final long serialVersionUID = 965512125433109743L;
+
+        private Acquire code;
+        private Long num;
+
     }
 
 }

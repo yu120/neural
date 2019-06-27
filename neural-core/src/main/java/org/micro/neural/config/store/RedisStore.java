@@ -124,17 +124,7 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public <T> T eval(Class<T> type, String script, Long timeout, List<Object> keys) {
-        ScriptOutputType scriptOutputType;
-        String typeName = type.getName();
-        if (Boolean.class.getName().equals(typeName)) {
-            scriptOutputType = ScriptOutputType.BOOLEAN;
-        } else if (Integer.class.getName().equals(typeName)) {
-            scriptOutputType = ScriptOutputType.INTEGER;
-        } else {
-            scriptOutputType = ScriptOutputType.MULTI;
-        }
-
+    public List<Object> eval(String script, Long timeout, List<Object> keys) {
         String[] keyArray = new String[keys.size()];
         for (int i = 0; i < keys.size(); i++) {
             Object obj = keys.get(i);
@@ -145,22 +135,16 @@ public class RedisStore implements IStore {
             keyArray[i] = String.valueOf(obj);
         }
 
+        ScriptOutputType scriptOutputType = ScriptOutputType.MULTI;
         long borrowMaxWaitMillis = Double.valueOf(0.8 * timeout).longValue();
         try (StatefulRedisConnection<String, String> connection = borrowObject(borrowMaxWaitMillis)) {
-            RedisFuture<T> redisFuture = connection.async().eval(script, scriptOutputType, keyArray);
+            RedisFuture<List<Object>> redisFuture = connection.async().eval(script, scriptOutputType, keyArray);
 
-            T result;
             try {
-                result = redisFuture.get(timeout, TimeUnit.MILLISECONDS);
+                return redisFuture.get(timeout, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
-
-            if (String.class.getName().equals(typeName)) {
-                return result;
-            }
-
-            return SerializeUtils.deserialize(type, (String) result);
         }
     }
 
