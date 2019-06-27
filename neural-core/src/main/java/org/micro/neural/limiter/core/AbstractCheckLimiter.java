@@ -5,7 +5,6 @@ import org.micro.neural.common.utils.BeanUtils;
 import org.micro.neural.config.GlobalConfig;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.LimiterConfig;
-import org.micro.neural.limiter.LimiterGlobalConfig;
 import org.micro.neural.limiter.LimiterStatistics;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class AbstractCheckLimiter implements ILimiter {
 
     protected volatile LimiterConfig limiterConfig = null;
-    protected volatile LimiterGlobalConfig globalConfig = null;
     protected volatile LimiterStatistics statistics = new LimiterStatistics();
     protected final Extension extension;
 
@@ -31,9 +29,8 @@ public abstract class AbstractCheckLimiter implements ILimiter {
     }
 
     @Override
-    public boolean refresh(LimiterGlobalConfig globalConfig, LimiterConfig limiterConfig) throws Exception {
+    public boolean refresh(LimiterConfig limiterConfig) throws Exception {
         log.debug("The refresh {}", limiterConfig);
-        this.globalConfig = globalConfig;
         if (null == limiterConfig || this.limiterConfig.equals(limiterConfig)) {
             return true;
         }

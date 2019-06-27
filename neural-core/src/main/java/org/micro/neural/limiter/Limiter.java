@@ -97,7 +97,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
                 return;
             }
 
-            boolean flag = limiter.refresh(globalConfig, ruleConfig);
+            boolean flag = limiter.refresh(ruleConfig);
             if (!flag) {
                 log.warn("The limiter refresh failure:{},{},{}", identity, globalConfig, ruleConfig);
             }

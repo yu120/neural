@@ -5,7 +5,6 @@ import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.extension.Extension;
 import org.micro.neural.limiter.LimiterConfig;
-import org.micro.neural.limiter.LimiterGlobalConfig;
 import org.micro.neural.limiter.extension.AdjustableRateLimiter;
 import org.micro.neural.limiter.extension.AdjustableSemaphore;
 
@@ -35,7 +34,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
     private Cache<Long, LongAdder> cache;
 
     @Override
-    public synchronized boolean refresh(LimiterGlobalConfig globalConfig, LimiterConfig limiterConfig) throws Exception {
+    public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
         // rate limiter
         rateLimiter = AdjustableRateLimiter.create(limiterConfig.getMaxPermitRate());
 
