@@ -75,7 +75,7 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public void batchUpOrAdd(long expire, Map<String, Long> data) {
+    public void batchIncrBy(long expire, Map<String, Long> data) {
         try (StatefulRedisConnection<String, String> connection = borrowObject()) {
             RedisAsyncCommands<String, String> commands = connection.async();
             for (Map.Entry<String, Long> entry : data.entrySet()) {
@@ -89,6 +89,13 @@ public class RedisStore implements IStore {
     public void add(String space, String key, Object data) {
         try (StatefulRedisConnection<String, String> connection = borrowObject()) {
             connection.sync().hset(space, key, SerializeUtils.serialize(data));
+        }
+    }
+
+    @Override
+    public void batchAdd(String space, Map<String, String> data) {
+        try (StatefulRedisConnection<String, String> connection = borrowObject()) {
+            connection.sync().hmset(space, data);
         }
     }
 

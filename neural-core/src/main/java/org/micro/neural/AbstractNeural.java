@@ -39,8 +39,14 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
         this.ruleClass = (Class<C>) args[0];
         this.globalClass = (Class<G>) args[1];
 
+        try {
+            this.globalConfig = globalClass.newInstance();
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+
         Extension extension = this.getClass().getAnnotation(Extension.class);
-        StorePool.getInstance().register(extension.value(), this);
+        StorePool.getInstance().register(extension.value(), this, SerializeUtils.serialize(globalConfig));
     }
 
     @Override
@@ -50,6 +56,11 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
 
     @Override
     public void addConfig(C config) {
+        if (config.getApplication() == null || config.getApplication().length() == 0 ||
+                config.getGroup() == null || config.getGroup().length() == 0 ||
+                config.getResource() == null || config.getResource().length() == 0) {
+            throw new IllegalArgumentException("application, group, resource cannot be empty at the same time");
+        }
         configs.put(config.identity(), config);
     }
 

@@ -9,10 +9,11 @@ import org.micro.neural.limiter.LimiterConfig;
 public class RedisStoreTest {
 
     public static void main(String[] args) throws Throwable {
-        String key1 = "testQuery";
+        String key1 = "micro:neural:test";
 
         Limiter limiter = new Limiter();
         LimiterConfig limiterConfig1 = new LimiterConfig();
+        limiterConfig1.setResource("test");
         limiterConfig1.setModel("cluster");
         limiterConfig1.setConcurrentEnable(true);
         limiterConfig1.setRateEnable(false);

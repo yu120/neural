@@ -52,6 +52,7 @@ public class StorePool implements IStoreListener {
      * Map<[module], IStoreListener>
      */
     private volatile Map<String, Neural> neuralMap = new ConcurrentHashMap<>();
+    private volatile Map<String, String> globalConfigs = new ConcurrentHashMap<>();
 
     private static StorePool INSTANCE = new StorePool();
 
@@ -62,8 +63,9 @@ public class StorePool implements IStoreListener {
         return INSTANCE;
     }
 
-    public void register(String module, Neural neural) {
+    public void register(String module, Neural neural, String globalConfig) {
         neuralMap.put(module, neural);
+        globalConfigs.put(module, globalConfig);
     }
 
     public IStore getStore() {
@@ -147,6 +149,12 @@ public class StorePool implements IStoreListener {
         String remoteGlobalConfigKey = String.join(DELIMITER, Category.GLOBAL.name(), space);
         Map<String, String> remoteGlobalConfigs = store.pull(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
+        if (remoteGlobalConfigs == null || remoteGlobalConfigs.isEmpty()) {
+            if (!globalConfigs.isEmpty()) {
+                store.batchAdd(remoteGlobalConfigKey, globalConfigs);
+                remoteGlobalConfigs = new HashMap<>(globalConfigs);
+            }
+        }
         if (remoteGlobalConfigs != null && !remoteGlobalConfigs.isEmpty()) {
             for (Map.Entry<String, String> entry : remoteGlobalConfigs.entrySet()) {
                 String remoteGlobalChannel = String.join(DELIMITER, remoteGlobalConfigKey, CHANNEL, entry.getKey());
@@ -255,7 +263,7 @@ public class StorePool implements IStoreListener {
                     }
 
                     // push statistics data to remote
-                    store.batchUpOrAdd(neural.getGlobalConfig().getStatisticExpire(), sendData);
+                    store.batchIncrBy(neural.getGlobalConfig().getStatisticExpire(), sendData);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }

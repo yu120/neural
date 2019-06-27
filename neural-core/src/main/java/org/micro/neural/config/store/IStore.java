@@ -33,12 +33,20 @@ public interface IStore {
     void add(String space, String key, Object data);
 
     /**
+     * The batch add
+     *
+     * @param space space
+     * @param data  config data
+     */
+    void batchAdd(String space, Map<String, String> data);
+
+    /**
      * The batch update or add
      *
      * @param expire expire time
      * @param data   config data
      */
-    void batchUpOrAdd(long expire, Map<String, Long> data);
+    void batchIncrBy(long expire, Map<String, Long> data);
 
     /**
      * The search keys with keyword
