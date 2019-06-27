@@ -9,10 +9,6 @@ import org.micro.neural.limiter.LimiterConfig;
 public class RedisStoreTest {
 
     public static void main(String[] args) throws Throwable {
-        StorePool storePool = StorePool.getInstance();
-        URL url = URL.valueOf("redis://127.0.0.1:6379");
-        storePool.initialize(url);
-
         String key1 = "testQuery";
 
         Limiter limiter = new Limiter();
@@ -22,6 +18,11 @@ public class RedisStoreTest {
         limiterConfig1.setRateEnable(false);
         limiterConfig1.setRequestEnable(false);
         limiter.addConfig(limiterConfig1);
+
+        StorePool storePool = StorePool.getInstance();
+        URL url = URL.valueOf("redis://127.0.0.1:6379");
+        storePool.initialize(url);
+
         Object result = limiter.doWrapperCall(key1, new OriginalCall() {
             @Override
             public Object call() throws Throwable {
