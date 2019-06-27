@@ -27,9 +27,9 @@ import java.util.List;
 public class ClusterLimiter extends AbstractCallLimiter {
 
     private StorePool storePool = StorePool.getInstance();
-    private static String CONCURRENT_SCRIPT = loadScript("/limiter_concurrent.lua");
-    private static String RATE_SCRIPT = loadScript("/limiter_rate.lua");
-    private static String REQUEST_SCRIPT = loadScript("/limiter_request.lua");
+    private static String CONCURRENT_SCRIPT = loadScript("/script/limiter_concurrent.lua");
+    private static String RATE_SCRIPT = loadScript("/script/limiter_rate.lua");
+    private static String REQUEST_SCRIPT = loadScript("/script/limiter_request.lua");
 
     @Override
     protected Acquire incrementConcurrent() {
