@@ -122,7 +122,9 @@ public class Demo{
 
 ## 2 限流（Limiter）
 在分布式架构中，限流的场景主要分为两种：injvm模式和cluster模式。
+
 ![redis-lua.png](docs/redis-lua.png)
+
 ### 2.1 injvm模式
 #### 2.1.1 并发量（Concurrency）
 使用JDK中的信号量(Semaphore)进行控制。
