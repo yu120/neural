@@ -28,7 +28,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         statistics.totalRequestTraffic();
 
         // the concurrent limiter and original call
-        return doConcurrencyOriginalCall(originalCall);
+        return doConcurrentOriginalCall(originalCall);
     }
 
     /**
@@ -38,9 +38,9 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doConcurrencyOriginalCall(OriginalCall originalCall) throws Throwable {
+    private Object doConcurrentOriginalCall(OriginalCall originalCall) throws Throwable {
         // the check concurrent limiting exceed
-        if (super.checkConcurrencyExceed()) {
+        if (super.checkConcurrentExceed()) {
             // try acquire concurrent
             switch (incrementConcurrent()) {
                 case FAILURE:
@@ -60,7 +60,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
             }
         }
 
-        // the skip non check ConcurrencyLimiter or exception or other
+        // the skip non check ConcurrentLimiter or exception or other
         return doRateOriginalCall(originalCall);
     }
 
