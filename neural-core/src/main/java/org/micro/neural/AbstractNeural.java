@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 /**
- * The Store Config
+ * The Abstract Neural
  *
  * @param <C> extends {@link RuleConfig}
  * @param <G> extends {@link GlobalConfig}
@@ -24,7 +24,7 @@ import java.util.concurrent.*;
  **/
 @SPI
 @Slf4j
-public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfig> implements Neural<C, G> {
+public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfig> implements EndpointNeural<C, G> {
 
     private final Class<C> ruleClass;
     private final Class<G> globalClass;
@@ -41,19 +41,20 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
         Type[] args = ((ParameterizedType) type).getActualTypeArguments();
         this.ruleClass = (Class<C>) args[0];
         this.globalClass = (Class<G>) args[1];
-
-        try {
-            this.globalConfig = globalClass.newInstance();
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
-
         this.extension = this.getClass().getAnnotation(Extension.class);
-        storePool.registerGlobal(extension.value(), this, SerializeUtils.serialize(globalConfig));
+        storePool.registerGlobal(extension.value(), this);
     }
 
     @Override
     public G getGlobalConfig() {
+        if (globalConfig == null) {
+            try {
+                this.globalConfig = globalClass.newInstance();
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+
         return globalConfig;
     }
 

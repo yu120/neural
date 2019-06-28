@@ -9,6 +9,7 @@ import org.micro.neural.common.collection.ConcurrentHashSet;
 
 import static org.micro.neural.common.Constants.*;
 
+import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.*;
 import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.extension.ExtensionLoader;
@@ -51,10 +52,9 @@ public class StorePool implements IStoreListener {
 
     private volatile Set<String> channels = new ConcurrentHashSet<>();
     /**
-     * Map<[module], IStoreListener>
+     * Map<[module], Neural>
      */
     private volatile Map<String, Neural> neuralMap = new ConcurrentHashMap<>();
-    private volatile Map<String, String> globalConfigs = new ConcurrentHashMap<>();
     private volatile Map<String, Map<String, String>> ruleConfigs = new ConcurrentHashMap<>();
 
     private static StorePool INSTANCE = new StorePool();
@@ -66,9 +66,8 @@ public class StorePool implements IStoreListener {
         return INSTANCE;
     }
 
-    public void registerGlobal(String module, Neural neural, String globalConfig) {
+    public void registerGlobal(String module, Neural neural) {
         neuralMap.put(module, neural);
-        globalConfigs.put(module, globalConfig);
     }
 
     public void registerRule(String module, String identity, String ruleConfig) {
@@ -82,7 +81,7 @@ public class StorePool implements IStoreListener {
 
     public void initialize(URL url) {
         this.pullConfigCycle = url.getParameter(PULL_CONFIG_CYCLE_KEY, 5L);
-        this.statisticReportCycle = url.getParameter(STATISTIC_REPORT_CYCLE_KEY, 5000L);
+        this.statisticReportCycle = url.getParameter(STATISTIC_REPORT_CYCLE_KEY, 1000L);
         this.space = url.getParameter(URL.GROUP_KEY, SPACE_DEFAULT);
         if (space.contains(Constants.DELIMITER)) {
             throw new IllegalArgumentException("The space can't include ':'");
@@ -160,9 +159,12 @@ public class StorePool implements IStoreListener {
         Map<String, String> remoteGlobalConfigs = store.pull(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
         if (remoteGlobalConfigs == null || remoteGlobalConfigs.isEmpty()) {
-            if (!globalConfigs.isEmpty()) {
-                store.batchAdd(remoteGlobalConfigKey, globalConfigs);
-                remoteGlobalConfigs = new HashMap<>(globalConfigs);
+            if (!neuralMap.isEmpty()) {
+                remoteGlobalConfigs = new HashMap<>(neuralMap.size());
+                for (Map.Entry<String, Neural> entry : neuralMap.entrySet()) {
+                    remoteGlobalConfigs.put(entry.getKey(), SerializeUtils.serialize(entry.getValue().getGlobalConfig()));
+                }
+                store.batchAdd(remoteGlobalConfigKey, remoteGlobalConfigs);
             }
         }
         if (remoteGlobalConfigs != null && !remoteGlobalConfigs.isEmpty()) {
@@ -184,10 +186,11 @@ public class StorePool implements IStoreListener {
         log.debug("The rule config pull changed: {}", remoteRuleConfigs);
         if (remoteRuleConfigs == null || remoteRuleConfigs.isEmpty()) {
             if (!ruleConfigs.isEmpty()) {
+                remoteRuleConfigs = new HashMap<>(ruleConfigs.size());
                 for (Map.Entry<String, Map<String, String>> entry : ruleConfigs.entrySet()) {
-                    store.batchAdd(remoteRuleConfigKey, entry.getValue());
-                    remoteRuleConfigs = new HashMap<>(entry.getValue());
+                    remoteRuleConfigs.putAll(entry.getValue());
                 }
+                store.batchAdd(remoteRuleConfigKey, remoteRuleConfigs);
             }
         }
         if (remoteRuleConfigs != null && !remoteRuleConfigs.isEmpty()) {

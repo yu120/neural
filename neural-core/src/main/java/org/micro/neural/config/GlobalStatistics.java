@@ -19,6 +19,7 @@ import static org.micro.neural.common.Constants.*;
 /**
  * The Global Statistics.
  *
+ * TODO: 使用Redis存储短期内精准数据,便于实现自动化的治理打下基础？
  * @author lry
  **/
 @Slf4j
