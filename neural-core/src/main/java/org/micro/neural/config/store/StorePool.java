@@ -21,11 +21,11 @@ import java.util.concurrent.*;
  * space=neural
  * module=limiter/degrade
  * <p>
- * 1.GlobalConfig-Hash: GLOBAL:[space]-->[module]-->[json]
- * 2.NeuralConfig-Hash: RULE:[space]-->[module]:[application]:[group]:[resource]-->[json]
+ * 1.GlobalConfig-Hash: [space]:GLOBAL-->[module]-->[json]
+ * 2.NeuralConfig-Hash: [space]:RULE-->[module]:[application]:[group]:[resource]-->[json]
  * <p>
- * 3.GlobalConfig-Channel: GLOBAL:[space]:CHANNEL:[module]-->[message]
- * 4.NeuralConfig-Channel: RULE:[space]:CHANNEL:[module]:[application]:[group]:[resource]-->[message]
+ * 3.GlobalConfig-Channel: [space]:GLOBAL:CHANNEL:[module]-->[message]
+ * 4.NeuralConfig-Channel: [space]:RULE:CHANNEL:[module]:[application]:[group]:[resource]-->[message]
  * <p>
  * identity=GLOBAL
  * identity=RULE:[application]:[group]:[resource]
@@ -35,7 +35,7 @@ import java.util.concurrent.*;
 @Slf4j
 public class StorePool implements IStoreListener {
 
-    public static final String SPACE_DEFAULT = "neural";
+    public static final String SPACE_DEFAULT = "NEURAL";
     public static final String PULL_CONFIG_CYCLE_KEY = "pullConfigCycle";
     public static final String STATISTIC_REPORT_CYCLE_KEY = "statisticReportCycle";
 
@@ -76,9 +76,8 @@ public class StorePool implements IStoreListener {
         this.pullConfigCycle = url.getParameter(PULL_CONFIG_CYCLE_KEY, 5L);
         this.statisticReportCycle = url.getParameter(STATISTIC_REPORT_CYCLE_KEY, 5000L);
         this.space = url.getParameter(URL.GROUP_KEY);
-        if (space == null || space.length() == 0) {
-            space = SPACE_DEFAULT;
-        }
+        space = (space == null || space.length() == 0) ? SPACE_DEFAULT : space.toUpperCase();
+
         this.store = ExtensionLoader.getLoader(IStore.class).getExtension(url.getProtocol());
         store.initialize(url);
 
@@ -102,10 +101,10 @@ public class StorePool implements IStoreListener {
     public void publish(String module, Object object) {
         String channel;
         if (object instanceof GlobalConfig) {
-            channel = Category.GLOBAL.name() + DELIMITER + space + DELIMITER + module;
+            channel = space + DELIMITER + Category.GLOBAL.name() + DELIMITER + module;
         } else if (object instanceof RuleConfig) {
             RuleConfig ruleConfig = (RuleConfig) object;
-            channel = Category.RULE.name() + DELIMITER + space +
+            channel = space + DELIMITER + Category.RULE.name() +
                     DELIMITER + module + DELIMITER + ruleConfig.identity();
         } else {
             throw new IllegalArgumentException("Illegal object type");
@@ -146,7 +145,7 @@ public class StorePool implements IStoreListener {
     private void pullConfigs() {
         List<String> remoteChannels = new ArrayList<>();
         // pull remote global configs
-        String remoteGlobalConfigKey = String.join(DELIMITER, Category.GLOBAL.name(), space);
+        String remoteGlobalConfigKey = String.join(DELIMITER, space, Category.GLOBAL.name());
         Map<String, String> remoteGlobalConfigs = store.pull(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
         if (remoteGlobalConfigs == null || remoteGlobalConfigs.isEmpty()) {
@@ -169,7 +168,7 @@ public class StorePool implements IStoreListener {
         }
 
         // pull remote rule configs
-        String remoteRuleConfigKey = String.join(DELIMITER, Category.RULE.name(), space);
+        String remoteRuleConfigKey = String.join(DELIMITER, space, Category.RULE.name());
         Map<String, String> remoteRuleConfigs = store.pull(remoteRuleConfigKey);
         log.debug("The rule config pull changed: {}", remoteRuleConfigs);
         if (remoteRuleConfigs != null && !remoteRuleConfigs.isEmpty()) {
