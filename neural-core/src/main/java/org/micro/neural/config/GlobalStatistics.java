@@ -18,8 +18,9 @@ import static org.micro.neural.common.Constants.*;
 
 /**
  * The Global Statistics.
- *
+ * <p>
  * TODO: 使用Redis存储短期内精准数据,便于实现自动化的治理打下基础？
+ *
  * @author lry
  **/
 @Slf4j
@@ -200,45 +201,30 @@ public class GlobalStatistics implements Serializable {
      *
      * @return statistics data map
      */
-    protected Map<String, Long> getAndReset(String identity, Long time) {
+    protected Map<String, Long> getAndReset() {
         Map<String, Long> map = new LinkedHashMap<>();
         // statistics trade
         long totalRequest = requestCounter.sumThenReset();
-        long totalSuccess = successCounter.sumThenReset();
-        long totalFailure = failureCounter.sumThenReset();
-        // timeout/rejection
-        long totalTimeout = timeoutCounter.sumThenReset();
-        long totalRejection = rejectionCounter.sumThenReset();
-        // statistics elapsed
-        long totalElapsed = elapsedCounter.sumThenReset();
-        long maxElapsed = maxElapsedCounter.getThenReset();
-        // statistics concurrent
-        long concurrent = concurrentCounter.sumThenReset();
-        long maxConcurrent = maxConcurrentCounter.getThenReset();
-        // statistics rate
-        long rate = rateCounter.sumThenReset();
-        long maxRate = maxRateCounter.getThenReset();
-
         if (totalRequest < 1) {
             return map;
         }
 
         // statistics trade
-        map.put(String.format(STATISTICS, REQUEST_KEY, identity, time), totalRequest);
-        map.put(String.format(STATISTICS, SUCCESS_KEY, identity, time), totalSuccess);
-        map.put(String.format(STATISTICS, FAILURE_KEY, identity, time), totalFailure);
+        map.put(REQUEST_KEY, totalRequest);
+        map.put(SUCCESS_KEY, successCounter.sumThenReset());
+        map.put(FAILURE_KEY, failureCounter.sumThenReset());
         // timeout/rejection
-        map.put(String.format(STATISTICS, TIMEOUT_KEY, identity, time), totalTimeout);
-        map.put(String.format(STATISTICS, REJECTION_KEY, identity, time), totalRejection);
+        map.put(TIMEOUT_KEY, timeoutCounter.sumThenReset());
+        map.put(REJECTION_KEY, rejectionCounter.sumThenReset());
         // statistics elapsed
-        map.put(String.format(STATISTICS, ELAPSED_KEY, identity, time), totalElapsed);
-        map.put(String.format(STATISTICS, MAX_ELAPSED_KEY, identity, time), maxElapsed);
+        map.put(ELAPSED_KEY, elapsedCounter.sumThenReset());
+        map.put(MAX_ELAPSED_KEY, maxElapsedCounter.getThenReset());
         // statistics concurrent
-        map.put(String.format(STATISTICS, CONCURRENT_KEY, identity, time), concurrent);
-        map.put(String.format(STATISTICS, MAX_CONCURRENT_KEY, identity, time), maxConcurrent);
+        map.put(CONCURRENT_KEY, concurrentCounter.sumThenReset());
+        map.put(MAX_CONCURRENT_KEY, maxConcurrentCounter.getThenReset());
         // statistics concurrent
-        map.put(String.format(STATISTICS, RATE_KEY, identity, time), rate);
-        map.put(String.format(STATISTICS, MAX_RATE_KEY, identity, time), maxRate);
+        map.put(RATE_KEY, rateCounter.sumThenReset());
+        map.put(MAX_RATE_KEY, maxRateCounter.getThenReset());
 
         return map;
     }

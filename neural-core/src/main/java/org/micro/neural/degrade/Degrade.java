@@ -85,7 +85,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
         Map<String, Map<String, Long>> dataMap = new HashMap<>();
         try {
             degradeStatistics.forEach((identity, statistics) -> {
-                Map<String, Long> temp = statistics.getAndReset(identity, globalConfig.getStatisticReportCycle());
+                Map<String, Long> temp = statistics.getAndReset();
                 if (null == temp || temp.isEmpty()) {
                     return;
                 }

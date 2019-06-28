@@ -33,9 +33,8 @@ public class DegradeStatistics extends GlobalStatistics {
      * @return statistics data map
      */
     @Override
-    public synchronized Map<String, Long> getAndReset(String identity, Long reportStatisticCycle) {
-        Long time = super.buildStatisticsTime(reportStatisticCycle);
-        Map<String, Long> map = super.getAndReset(identity, time);
+    public synchronized Map<String, Long> getAndReset() {
+        Map<String, Long> map = super.getAndReset();
 
         // statistics exceed
         long totalDegrade = counter.sumThenReset();
@@ -44,7 +43,7 @@ public class DegradeStatistics extends GlobalStatistics {
         }
 
         // statistics exceed
-        map.put(String.format(STATISTICS, DEGRADE_TIMES_KEY, identity, time), totalDegrade);
+        map.put(DEGRADE_TIMES_KEY, totalDegrade);
 
         return map;
     }

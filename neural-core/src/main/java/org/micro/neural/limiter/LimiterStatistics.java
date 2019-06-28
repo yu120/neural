@@ -59,9 +59,8 @@ public class LimiterStatistics extends GlobalStatistics {
      * @return statistics data map
      */
     @Override
-    public synchronized Map<String, Long> getAndReset(String identity, Long statisticReportCycle) {
-        Long time = super.buildStatisticsTime(statisticReportCycle);
-        Map<String, Long> map = super.getAndReset(identity, time);
+    public synchronized Map<String, Long> getAndReset() {
+        Map<String, Long> map = super.getAndReset();
 
         // statistics exceed
         long concurrentExceed = concurrentExceedCounter.sumThenReset();
@@ -71,8 +70,8 @@ public class LimiterStatistics extends GlobalStatistics {
         }
 
         // statistics exceed
-        map.put(String.format(STATISTICS, CONCURRENT_EXCEED_KEY, identity, time), concurrentExceed);
-        map.put(String.format(STATISTICS, RATE_EXCEED_KEY, identity, time), rateExceed);
+        map.put(CONCURRENT_EXCEED_KEY, concurrentExceed);
+        map.put(RATE_EXCEED_KEY, rateExceed);
 
         return map;
     }

@@ -53,8 +53,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
         Map<String, Map<String, Long>> dataMap = super.collect();
         try {
             limiters.forEach((identity, limiter) -> {
-                Map<String, Long> tempDataMap = limiter.getStatistics().getAndReset(
-                        identity, globalConfig.getStatisticReportCycle());
+                Map<String, Long> tempDataMap = limiter.getStatistics().getAndReset();
                 if (null == tempDataMap || tempDataMap.isEmpty()) {
                     return;
                 }
