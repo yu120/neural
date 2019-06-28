@@ -3,6 +3,7 @@ package org.micro.neural.common.utils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -31,6 +32,7 @@ public class NetUtils {
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
     private static final Map<String, String> HOST_NAME_CACHE = new LinkedHashMap<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
+    private static volatile Integer PROCESS_ID = null;
 
     public static int getAvailablePort() {
         try (ServerSocket ss = new ServerSocket()) {
@@ -209,6 +211,14 @@ public class NetUtils {
         }
 
         return new InetSocketAddress(host, port);
+    }
+
+    public static int getProcessId() {
+        if (PROCESS_ID != null) {
+            return PROCESS_ID;
+        }
+
+        return PROCESS_ID = Integer.valueOf(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
     }
 
 }
