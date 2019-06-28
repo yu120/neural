@@ -52,6 +52,13 @@ public class RuleConfig implements Serializable {
     private String remarks;
 
     public String identity() {
+        if (module.contains(Constants.DELIMITER) ||
+                application.contains(Constants.DELIMITER) ||
+                group.contains(Constants.DELIMITER) ||
+                resource.contains(Constants.DELIMITER)) {
+            throw new IllegalArgumentException("The identity key can't include ':'");
+        }
+
         return (module + Constants.DELIMITER + application +
                 Constants.DELIMITER + group + Constants.DELIMITER + resource).toUpperCase();
     }

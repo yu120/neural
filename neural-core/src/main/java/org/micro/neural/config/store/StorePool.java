@@ -3,6 +3,7 @@ package org.micro.neural.config.store;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.Neural;
+import org.micro.neural.common.Constants;
 import org.micro.neural.common.URL;
 import org.micro.neural.common.collection.ConcurrentHashSet;
 
@@ -35,9 +36,9 @@ import java.util.concurrent.*;
 @Slf4j
 public class StorePool implements IStoreListener {
 
-    public static final String SPACE_DEFAULT = "NEURAL";
-    public static final String PULL_CONFIG_CYCLE_KEY = "pullConfigCycle";
-    public static final String STATISTIC_REPORT_CYCLE_KEY = "statisticReportCycle";
+    private static final String SPACE_DEFAULT = "neural";
+    private static final String PULL_CONFIG_CYCLE_KEY = "pullConfigCycle";
+    private static final String STATISTIC_REPORT_CYCLE_KEY = "statisticReportCycle";
 
     private String space;
     private long pullConfigCycle;
@@ -81,8 +82,11 @@ public class StorePool implements IStoreListener {
     public void initialize(URL url) {
         this.pullConfigCycle = url.getParameter(PULL_CONFIG_CYCLE_KEY, 5L);
         this.statisticReportCycle = url.getParameter(STATISTIC_REPORT_CYCLE_KEY, 5000L);
-        this.space = url.getParameter(URL.GROUP_KEY);
-        space = (space == null || space.length() == 0) ? SPACE_DEFAULT : space.toUpperCase();
+        this.space = url.getParameter(URL.GROUP_KEY, SPACE_DEFAULT);
+        if (space.contains(Constants.DELIMITER)) {
+            throw new IllegalArgumentException("The space can't include ':'");
+        }
+        space = space.toUpperCase();
 
         this.store = ExtensionLoader.getLoader(IStore.class).getExtension(url.getProtocol());
         store.initialize(url);
