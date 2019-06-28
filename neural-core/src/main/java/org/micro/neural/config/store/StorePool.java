@@ -24,12 +24,13 @@ import java.util.concurrent.*;
  * <p>
  * 1.GlobalConfig-Hash: [space]:GLOBAL-->[module]-->[json]
  * 2.NeuralConfig-Hash: [space]:RULE-->[module]:[application]:[group]:[resource]-->[json]
+ * 2.GlobalStatistics-Hash: [space]:STATISTICS-->[module]:[application]:[group]:[resource]-->[json]
  * <p>
- * 3.GlobalConfig-Channel: [space]:GLOBAL:CHANNEL:[module]-->[message]
- * 4.NeuralConfig-Channel: [space]:RULE:CHANNEL:[module]:[application]:[group]:[resource]-->[message]
+ * 3.GlobalConfig-Channel: [space]:GLOBAL:CHANNEL:[module]-->[json]
+ * 4.NeuralConfig-Channel: [space]:RULE:CHANNEL:[module]:[application]:[group]:[resource]-->[json]
  * <p>
- * identity=GLOBAL
- * identity=RULE:[application]:[group]:[resource]
+ * identity=[module]
+ * identity=[module]:[application]:[group]:[resource]
  *
  * @author lry
  */
