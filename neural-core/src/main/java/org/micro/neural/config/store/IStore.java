@@ -24,6 +24,13 @@ public interface IStore {
     void initialize(URL url);
 
     /**
+     * The get generic object
+     *
+     * @return generic object
+     */
+    Object genericObject();
+
+    /**
      * The add Map with key
      *
      * @param space space key

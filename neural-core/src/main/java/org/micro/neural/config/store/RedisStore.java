@@ -62,16 +62,9 @@ public class RedisStore implements IStore {
                 () -> redisClient.connect(), new GenericObjectPoolConfig());
     }
 
-    private StatefulRedisConnection<String, String> borrowObject() {
-        return borrowObject(borrowMaxWaitMillis);
-    }
-
-    private StatefulRedisConnection<String, String> borrowObject(long borrowMaxWaitMillis) {
-        try {
-            return objectPool.borrowObject(borrowMaxWaitMillis);
-        } catch (Exception e) {
-            throw new RuntimeException("The borrow object is exception", e);
-        }
+    @Override
+    public Object genericObject() {
+        return objectPool;
     }
 
     @Override
@@ -227,6 +220,19 @@ public class RedisStore implements IStore {
         }
         if (null != redisClient) {
             redisClient.shutdown();
+        }
+    }
+
+
+    private StatefulRedisConnection<String, String> borrowObject() {
+        return borrowObject(borrowMaxWaitMillis);
+    }
+
+    private StatefulRedisConnection<String, String> borrowObject(long borrowMaxWaitMillis) {
+        try {
+            return objectPool.borrowObject(borrowMaxWaitMillis);
+        } catch (Exception e) {
+            throw new RuntimeException("The borrow object is exception", e);
         }
     }
 
