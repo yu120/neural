@@ -5,6 +5,8 @@ import org.micro.neural.common.Constants;
 import org.micro.neural.config.GlobalConfig.*;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The Neural of Config.
@@ -46,6 +48,10 @@ public class RuleConfig implements Serializable {
      * The resource name
      **/
     private String name;
+    /**
+     * The tag list of limiter
+     */
+    private List<String> tags = new ArrayList<>();
     /**
      * The remarks
      **/
