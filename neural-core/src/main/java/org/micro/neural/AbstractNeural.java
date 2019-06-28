@@ -29,6 +29,9 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
     private final Class<C> ruleClass;
     private final Class<G> globalClass;
 
+    private Extension extension;
+    private StorePool storePool = StorePool.getInstance();
+
     protected volatile G globalConfig;
     protected volatile ConcurrentMap<String, C> configs = new ConcurrentHashMap<>();
 
@@ -45,8 +48,8 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
             throw new IllegalArgumentException(e);
         }
 
-        Extension extension = this.getClass().getAnnotation(Extension.class);
-        StorePool.getInstance().register(extension.value(), this, SerializeUtils.serialize(globalConfig));
+        this.extension = this.getClass().getAnnotation(Extension.class);
+        storePool.registerGlobal(extension.value(), this, SerializeUtils.serialize(globalConfig));
     }
 
     @Override
@@ -61,6 +64,7 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
                 config.getResource() == null || config.getResource().length() == 0) {
             throw new IllegalArgumentException("application, group, resource cannot be empty at the same time");
         }
+        storePool.registerRule(extension.value(), config.identity(), SerializeUtils.serialize(config));
         configs.put(config.identity(), config);
     }
 

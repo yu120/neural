@@ -53,6 +53,7 @@ public class StorePool implements IStoreListener {
      */
     private volatile Map<String, Neural> neuralMap = new ConcurrentHashMap<>();
     private volatile Map<String, String> globalConfigs = new ConcurrentHashMap<>();
+    private volatile Map<String, Map<String, String>> ruleConfigs = new ConcurrentHashMap<>();
 
     private static StorePool INSTANCE = new StorePool();
 
@@ -63,9 +64,14 @@ public class StorePool implements IStoreListener {
         return INSTANCE;
     }
 
-    public void register(String module, Neural neural, String globalConfig) {
+    public void registerGlobal(String module, Neural neural, String globalConfig) {
         neuralMap.put(module, neural);
         globalConfigs.put(module, globalConfig);
+    }
+
+    public void registerRule(String module, String identity, String ruleConfig) {
+        Map<String, String> moduleMap = ruleConfigs.computeIfAbsent(module, k -> new HashMap<>());
+        moduleMap.put(identity, ruleConfig);
     }
 
     public IStore getStore() {
@@ -171,6 +177,14 @@ public class StorePool implements IStoreListener {
         String remoteRuleConfigKey = String.join(DELIMITER, space, Category.RULE.name());
         Map<String, String> remoteRuleConfigs = store.pull(remoteRuleConfigKey);
         log.debug("The rule config pull changed: {}", remoteRuleConfigs);
+        if (remoteRuleConfigs == null || remoteRuleConfigs.isEmpty()) {
+            if (!ruleConfigs.isEmpty()) {
+                for (Map.Entry<String, Map<String, String>> entry : ruleConfigs.entrySet()) {
+                    store.batchAdd(remoteRuleConfigKey, entry.getValue());
+                    remoteRuleConfigs = new HashMap<>(entry.getValue());
+                }
+            }
+        }
         if (remoteRuleConfigs != null && !remoteRuleConfigs.isEmpty()) {
             for (Map.Entry<String, String> entry : remoteRuleConfigs.entrySet()) {
                 String remoteRuleChannel = String.join(DELIMITER, remoteRuleConfigKey, CHANNEL, entry.getKey());
