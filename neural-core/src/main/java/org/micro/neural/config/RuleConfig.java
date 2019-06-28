@@ -19,7 +19,12 @@ import java.io.Serializable;
 public class RuleConfig implements Serializable {
 
     private static final long serialVersionUID = 1587739377558585912L;
-    
+
+    /**
+     * The module name or id
+     **/
+    private String module;
+
     /**
      * The application name or id
      **/
@@ -47,7 +52,8 @@ public class RuleConfig implements Serializable {
     private String remarks;
 
     public String identity() {
-        return application + Constants.DELIMITER + group + Constants.DELIMITER + resource;
+        return (module + Constants.DELIMITER + application +
+                Constants.DELIMITER + group + Constants.DELIMITER + resource).toUpperCase();
     }
 
 }
