@@ -49,8 +49,8 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
     }
 
     @Override
-    public Map<String, Long> collect() {
-        Map<String, Long> dataMap = super.collect();
+    public Map<String, Map<String, Long>> collect() {
+        Map<String, Map<String, Long>> dataMap = super.collect();
         try {
             limiters.forEach((identity, limiter) -> {
                 Map<String, Long> tempDataMap = limiter.getStatistics().getAndReset(
@@ -59,7 +59,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
                     return;
                 }
 
-                dataMap.putAll(tempDataMap);
+                dataMap.put(identity, tempDataMap);
             });
         } catch (Exception e) {
             EventCollect.onEvent(EventType.COLLECT_EXCEPTION);
@@ -70,8 +70,8 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
     }
 
     @Override
-    public Map<String, Long> statistics() {
-        Map<String, Long> dataMap = super.collect();
+    public Map<String, Map<String, Long>> statistics() {
+        Map<String, Map<String, Long>> dataMap = super.collect();
         try {
             limiters.forEach((identity, limiter) -> {
                 Map<String, Long> tempDataMap = limiter.getStatistics().getStatisticsData();
@@ -79,7 +79,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
                     return;
                 }
 
-                dataMap.putAll(tempDataMap);
+                dataMap.put(identity, tempDataMap);
             });
         } catch (Exception e) {
             EventCollect.onEvent(EventType.COLLECT_EXCEPTION);

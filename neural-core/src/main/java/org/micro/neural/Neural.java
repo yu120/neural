@@ -41,14 +41,14 @@ public interface Neural<C extends RuleConfig, G extends GlobalConfig> {
      *
      * @return statistics data
      */
-    Map<String, Long> collect();
+    Map<String, Map<String, Long>> collect();
 
     /**
      * The get statistics data
      *
      * @return statistics data
      */
-    Map<String, Long> statistics();
+    Map<String, Map<String, Long>> statistics();
 
     /**
      * The process of wrapper original call

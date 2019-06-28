@@ -81,8 +81,8 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
     }
 
     @Override
-    public Map<String, Long> collect() {
-        Map<String, Long> dataMap = new HashMap<>();
+    public Map<String, Map<String, Long>> collect() {
+        Map<String, Map<String, Long>> dataMap = new HashMap<>();
         try {
             degradeStatistics.forEach((identity, statistics) -> {
                 Map<String, Long> temp = statistics.getAndReset(identity, globalConfig.getStatisticReportCycle());
@@ -90,7 +90,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
                     return;
                 }
 
-                dataMap.putAll(temp);
+                dataMap.put(identity, temp);
             });
         } catch (Exception e) {
             EventCollect.onEvent(EventType.COLLECT_EXCEPTION);

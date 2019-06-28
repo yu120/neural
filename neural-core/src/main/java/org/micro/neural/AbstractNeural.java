@@ -83,12 +83,12 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
     }
 
     @Override
-    public Map<String, Long> collect() {
+    public Map<String, Map<String, Long>> collect() {
         return new LinkedHashMap<>();
     }
 
     @Override
-    public Map<String, Long> statistics() {
+    public Map<String, Map<String, Long>> statistics() {
         return new LinkedHashMap<>();
     }
 

@@ -272,15 +272,17 @@ public class StorePool implements IStoreListener {
                     Neural neural = entry.getValue();
 
                     // query memory statistics data
-                    Map<String, Long> statisticsData = neural.collect();
+                    Map<String, Map<String, Long>> statisticsData = neural.collect();
                     log.debug("The {} cycle push statistics: {}", space, statisticsData);
                     if (null == statisticsData || statisticsData.isEmpty()) {
                         return;
                     }
 
                     Map<String, Long> sendData = new HashMap<>();
-                    for (Map.Entry<String, Long> tempEntry : statisticsData.entrySet()) {
-                        sendData.put(String.join(DELIMITER, space, tempEntry.getKey()), tempEntry.getValue());
+                    for (Map.Entry<String, Map<String, Long>> identityEntry : statisticsData.entrySet()) {
+                        for (Map.Entry<String, Long> tempEntry : identityEntry.getValue().entrySet()) {
+                            sendData.put(String.join(DELIMITER, space, tempEntry.getKey()), tempEntry.getValue());
+                        }
                     }
 
                     // push statistics data to remote
