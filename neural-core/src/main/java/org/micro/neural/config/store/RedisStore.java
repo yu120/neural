@@ -6,6 +6,7 @@ import io.lettuce.core.RedisURI;
 import io.lettuce.core.ScriptOutputType;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.async.RedisPubSubAsyncCommands;
@@ -81,21 +82,24 @@ public class RedisStore implements IStore {
     @Override
     public void add(String space, String key, Object data) {
         try (StatefulRedisConnection<String, String> connection = borrowObject()) {
-            connection.sync().hset(space, key, SerializeUtils.serialize(data));
+            RedisCommands<String, String> commands = connection.sync();
+            commands.hset(space, key, SerializeUtils.serialize(data));
         }
     }
 
     @Override
     public void batchAdd(String space, Map<String, String> data) {
         try (StatefulRedisConnection<String, String> connection = borrowObject()) {
-            connection.sync().hmset(space, data);
+            RedisCommands<String, String> commands = connection.sync();
+            commands.hmset(space, data);
         }
     }
 
     @Override
     public Set<String> searchKeys(String space, String keyword) {
         try (StatefulRedisConnection<String, String> connection = borrowObject()) {
-            List<String> keys = connection.sync().hkeys(space);
+            RedisCommands<String, String> commands = connection.sync();
+            List<String> keys = commands.hkeys(space);
             if (keys == null || keys.isEmpty()) {
                 return Collections.emptySet();
             }
@@ -107,7 +111,8 @@ public class RedisStore implements IStore {
     @Override
     public <C> C query(String space, String key, Class<C> clz) {
         try (StatefulRedisConnection<String, String> connection = borrowObject()) {
-            String json = connection.sync().hget(space, key);
+            RedisCommands<String, String> commands = connection.sync();
+            String json = commands.hget(space, key);
             if (json == null || json.length() == 0) {
                 return null;
             }
@@ -119,7 +124,8 @@ public class RedisStore implements IStore {
     @Override
     public String get(String key) {
         try (StatefulRedisConnection<String, String> connection = borrowObject()) {
-            return connection.sync().get(key);
+            RedisCommands<String, String> commands = connection.sync();
+            return commands.get(key);
         }
     }
 
@@ -151,14 +157,16 @@ public class RedisStore implements IStore {
     @Override
     public Map<String, String> pull(String key) {
         try (StatefulRedisConnection<String, String> connection = borrowObject()) {
-            return connection.sync().hgetall(key);
+            RedisCommands<String, String> commands = connection.sync();
+            return commands.hgetall(key);
         }
     }
 
     @Override
     public void publish(String channel, Object data) {
         try (StatefulRedisConnection<String, String> connection = borrowObject()) {
-            connection.sync().publish(channel, SerializeUtils.serialize(data));
+            RedisCommands<String, String> commands = connection.sync();
+            commands.publish(channel, SerializeUtils.serialize(data));
         }
     }
 
