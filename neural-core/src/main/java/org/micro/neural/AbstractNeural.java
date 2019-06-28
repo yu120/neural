@@ -24,7 +24,7 @@ import java.util.concurrent.*;
  **/
 @SPI
 @Slf4j
-public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfig> implements EndpointNeural<C, G> {
+public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfig> implements Neural<C, G> {
 
     private final Class<C> ruleClass;
     private final Class<G> globalClass;
