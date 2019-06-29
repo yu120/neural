@@ -165,7 +165,8 @@ public class StorePool implements IStoreListener {
             if (!modules.isEmpty()) {
                 remoteGlobalConfigs = new HashMap<>(modules.size());
                 for (Map.Entry<String, Neural> entry : modules.entrySet()) {
-                    remoteGlobalConfigs.put(entry.getKey(), SerializeUtils.serialize(entry.getValue().getGlobalConfig()));
+                    remoteGlobalConfigs.put(entry.getKey().toUpperCase(),
+                            SerializeUtils.serialize(entry.getValue().getGlobalConfig()));
                 }
                 store.batchAdd(remoteGlobalConfigKey, remoteGlobalConfigs);
             }
