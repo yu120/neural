@@ -54,7 +54,10 @@ public class StorePool implements IStoreListener {
     /**
      * Map<[module], Neural>
      */
-    private volatile Map<String, Neural> neuralMap = new ConcurrentHashMap<>();
+    private volatile Map<String, Neural> modules = new ConcurrentHashMap<>();
+    /**
+     * Map<[module], Map<[identity], [JSON]>>
+     */
     private volatile Map<String, Map<String, String>> ruleConfigs = new ConcurrentHashMap<>();
 
     private static StorePool INSTANCE = new StorePool();
@@ -67,7 +70,7 @@ public class StorePool implements IStoreListener {
     }
 
     public void registerGlobal(String module, Neural neural) {
-        neuralMap.put(module, neural);
+        modules.put(module, neural);
     }
 
     public void registerRule(String module, String identity, String ruleConfig) {
@@ -159,9 +162,9 @@ public class StorePool implements IStoreListener {
         Map<String, String> remoteGlobalConfigs = store.pull(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
         if (remoteGlobalConfigs == null || remoteGlobalConfigs.isEmpty()) {
-            if (!neuralMap.isEmpty()) {
-                remoteGlobalConfigs = new HashMap<>(neuralMap.size());
-                for (Map.Entry<String, Neural> entry : neuralMap.entrySet()) {
+            if (!modules.isEmpty()) {
+                remoteGlobalConfigs = new HashMap<>(modules.size());
+                for (Map.Entry<String, Neural> entry : modules.entrySet()) {
                     remoteGlobalConfigs.put(entry.getKey(), SerializeUtils.serialize(entry.getValue().getGlobalConfig()));
                 }
                 store.batchAdd(remoteGlobalConfigKey, remoteGlobalConfigs);
@@ -173,7 +176,7 @@ public class StorePool implements IStoreListener {
                 remoteChannels.add(remoteGlobalChannel);
 
                 String module = entry.getKey();
-                Neural neural = neuralMap.get(module);
+                Neural neural = modules.get(module);
                 if (neural != null) {
                     neural.notify(Category.GLOBAL, Category.GLOBAL.name(), entry.getValue());
                 }
@@ -200,7 +203,7 @@ public class StorePool implements IStoreListener {
 
                 int index = entry.getKey().indexOf(DELIMITER);
                 String module = entry.getKey().substring(0, index);
-                Neural neural = neuralMap.get(module);
+                Neural neural = modules.get(module);
                 if (neural != null) {
                     String identity = entry.getKey().substring(index + 1);
                     neural.notify(Category.RULE, identity, entry.getValue());
@@ -239,7 +242,7 @@ public class StorePool implements IStoreListener {
         Category remoteCategory = Category.valueOf(channel.split(DELIMITER)[0]);
         String remoteChannel = channel.substring(channel.indexOf(CHANNEL) + 8);
         String module = remoteChannel.split(DELIMITER)[0];
-        Neural neural = neuralMap.get(module);
+        Neural neural = modules.get(module);
         if (neural != null) {
             String identity = null;
             if (Category.RULE == remoteCategory) {
@@ -267,7 +270,7 @@ public class StorePool implements IStoreListener {
 
         // execute schedule push statistics by fixed rate
         this.pushStatisticsExecutor.scheduleAtFixedRate(() -> {
-            for (Map.Entry<String, Neural> entry : neuralMap.entrySet()) {
+            for (Map.Entry<String, Neural> entry : modules.entrySet()) {
                 try {
                     Neural neural = entry.getValue();
 
