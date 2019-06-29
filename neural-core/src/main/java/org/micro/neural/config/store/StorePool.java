@@ -69,11 +69,11 @@ public class StorePool implements IStoreListener {
         return INSTANCE;
     }
 
-    public void registerGlobal(String module, Neural neural) {
+    public void register(String module, Neural neural) {
         modules.put(module, neural);
     }
 
-    public void registerRule(String module, String identity, String ruleConfig) {
+    public void register(String module, String identity, String ruleConfig) {
         Map<String, String> moduleMap = ruleConfigs.computeIfAbsent(module, k -> new HashMap<>());
         moduleMap.put(identity, ruleConfig);
     }
