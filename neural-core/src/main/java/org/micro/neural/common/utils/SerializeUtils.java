@@ -44,4 +44,12 @@ public class SerializeUtils {
         return JSON.parseObject(json, TypeReference.LIST_STRING);
     }
 
+    public static Class<?> newClass(String clazz) {
+        try {
+            return Class.forName(clazz);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("The illegal class type: " + clazz);
+        }
+    }
+
 }

@@ -1,8 +1,6 @@
 package org.micro.neural.degrade;
 
-import org.micro.neural.common.Constants;
 import org.micro.neural.config.event.EventCollect;
-import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.OriginalCall;
 import org.micro.neural.AbstractNeural;
@@ -32,7 +30,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
     public void addConfig(DegradeConfig config) {
         super.addConfig(config);
         degradeStatistics.put(config.identity(), new DegradeStatistics());
-        mockDataMap.put(config.identity(), mockData(config.getMock(), config.getClazz(), config.getData()));
+        mockDataMap.put(config.identity(), config.getMock().getFunction().apply(config.getData(), config.getClazz()));
     }
 
     @Override
@@ -110,7 +108,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
         super.ruleNotify(identity, ruleConfig);
 
         try {
-            Object mockData = mockData(ruleConfig.getMock(), ruleConfig.getClazz(), ruleConfig.getData());
+            Object mockData = ruleConfig.getMock().getFunction().apply(ruleConfig.getData(), ruleConfig.getClazz());
             mockDataMap.put(identity, mockData);
         } catch (Exception e) {
             EventCollect.onEvent(EventType.NOTIFY_EXCEPTION);
@@ -142,59 +140,6 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
 
         // no degrade traffic
         return degradeCall.call();
-    }
-
-    /**
-     * The get mock data
-     *
-     * @param mock  {@link Mock}
-     * @param clazz class name
-     * @param data  data
-     * @return mock data
-     */
-    private Object mockData(Mock mock, String clazz, String data) {
-        switch (mock) {
-            case NULL:
-                return null;
-            case STRING:
-                return String.valueOf(data);
-            case INTEGER:
-                return Integer.valueOf(data);
-            case FLOAT:
-                return Float.valueOf(data);
-            case DOUBLE:
-                return Double.valueOf(data);
-            case LONG:
-                return Long.valueOf(data);
-            case BOOLEAN:
-                return Boolean.valueOf(data);
-            case ARRAY:
-                return data.split(Constants.SEPARATOR);
-            case CLASS:
-                return SerializeUtils.deserialize(newClass(clazz), data);
-            case MAP:
-                return SerializeUtils.parseMap(data);
-            case MAP_STR:
-                return SerializeUtils.parseStringMap(data);
-            case MAP_OBJ:
-                return SerializeUtils.parseObjMap(data);
-            case LIST:
-                return SerializeUtils.parseList(data);
-            case LIST_STR:
-                return SerializeUtils.parseListString(data);
-            case LIST_CLASS:
-                return SerializeUtils.deserialize(newClass(clazz), data);
-            default:
-                throw new IllegalArgumentException("The illegal mock: " + mock);
-        }
-    }
-
-    private Class<?> newClass(String clazz) {
-        try {
-            return Class.forName(clazz);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("The illegal class type: " + clazz);
-        }
     }
 
 }

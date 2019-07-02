@@ -1,12 +1,11 @@
 package org.micro.neural.degrade;
 
-import com.google.common.annotations.Beta;
 import lombok.*;
 import org.micro.neural.common.Constants;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.RuleConfig;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * The Degrade Config
@@ -77,67 +76,65 @@ public class DegradeConfig extends RuleConfig {
         /**
          * The return null type data
          */
-        NULL(s -> null, "The return null type data"),
+        NULL((data, clazz) -> null, "The return null type data"),
         /**
          * The return String type data
          */
-        STRING(s -> s, "The return String type data"),
+        STRING((data, clazz) -> data, "The return String type data"),
         /**
          * The return Integer type data
          */
-        INTEGER(Integer::valueOf, "The return Integer type data"),
+        INTEGER((data, clazz) -> Integer.valueOf(data), "The return Integer type data"),
         /**
          * The return Float type data
          */
-        FLOAT(Float::valueOf, "The return Float type data"),
+        FLOAT((data, clazz) -> Float.valueOf(data), "The return Float type data"),
         /**
          * The return Double type data
          */
-        DOUBLE(Double::valueOf, "The return Double type data"),
+        DOUBLE((data, clazz) -> Double.valueOf(data), "The return Double type data"),
         /**
          * The return Long type data
          */
-        LONG(Long::valueOf, "The return Long type data"),
+        LONG((data, clazz) -> Long.valueOf(data), "The return Long type data"),
         /**
          * The return Boolean type data
          */
-        BOOLEAN(Boolean::valueOf, "The return Boolean type data"),
+        BOOLEAN((data, clazz) -> Boolean.valueOf(data), "The return Boolean type data"),
         /**
          * The return T type data with Class
          */
-        @Beta
-        CLASS(Integer::valueOf, "The return T type data with Class"),
+        CLASS((data, clazz) -> SerializeUtils.deserialize(SerializeUtils.newClass(clazz), data), "The return T type data with Class"),
         /**
          * The return Array_String type data
          */
-        ARRAY(s -> s.split(Constants.SEPARATOR), "The return Array_String type data"),
+        ARRAY((data, clazz) -> data.split(Constants.SEPARATOR), "The return Array_String type data"),
         /**
          * The return Map<Object,Object> type data
          */
-        MAP(SerializeUtils::parseMap, "The return Map<Object,Object> type data"),
+        MAP((data, clazz) -> SerializeUtils.parseMap(data), "The return Map<Object,Object> type data"),
         /**
          * The return Map<String,String> type data
          */
-        MAP_STR(SerializeUtils::parseStringMap, "The return Map<String,String> type data"),
+        MAP_STR((data, clazz) -> SerializeUtils.parseStringMap(data), "The return Map<String,String> type data"),
         /**
          * The return Map<String,Object> type data
          */
-        MAP_OBJ(SerializeUtils::parseObjMap, "The return Map<String,Object> type data"),
+        MAP_OBJ((data, clazz) -> SerializeUtils.parseObjMap(data), "The return Map<String,Object> type data"),
         /**
          * The return List<Object> type data
          */
-        LIST(SerializeUtils::parseList, "The return List<Object> type data"),
+        LIST((data, clazz) -> SerializeUtils.parseList(data), "The return List<Object> type data"),
         /**
          * The return List<String> type data
          */
-        LIST_STR(SerializeUtils::parseListString, "The return List<String> type data"),
+        LIST_STR((data, clazz) -> SerializeUtils.parseListString(data), "The return List<String> type data"),
         /**
          * The return List<T> type data with Class
          */
-        @Beta
-        LIST_CLASS(SerializeUtils::parseListString, "The return List<T> type data with Class");
+        LIST_CLASS((data, clazz) -> SerializeUtils.deserialize(SerializeUtils.newClass(clazz), data), "The return List<T> type data with Class");
 
-        Function<String, Object> function;
+        BiFunction<String, String, Object> function;
         String message;
 
     }
