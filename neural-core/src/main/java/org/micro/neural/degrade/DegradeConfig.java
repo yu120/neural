@@ -3,6 +3,8 @@ package org.micro.neural.degrade;
 import lombok.*;
 import org.micro.neural.config.RuleConfig;
 
+import java.util.function.Function;
+
 /**
  * The Degrade Config
  *
@@ -72,64 +74,65 @@ public class DegradeConfig extends RuleConfig {
         /**
          * The return null type data
          */
-        NULL("The return null type data"),
+        NULL(s -> null, "The return null type data"),
         /**
          * The return String type data
          */
-        STRING("The return String type data"),
+        STRING(s -> s, "The return String type data"),
         /**
          * The return Integer type data
          */
-        INTEGER("The return Integer type data"),
+        INTEGER(Integer::valueOf, "The return Integer type data"),
         /**
          * The return Float type data
          */
-        FLOAT("The return Float type data"),
+        FLOAT(Float::valueOf, "The return Float type data"),
         /**
          * The return Double type data
          */
-        DOUBLE("The return Double type data"),
+        DOUBLE(Double::valueOf, "The return Double type data"),
         /**
          * The return Long type data
          */
-        LONG("The return Long type data"),
+        LONG(Long::valueOf, "The return Long type data"),
         /**
          * The return Boolean type data
          */
-        BOOLEAN("The return Boolean type data"),
+        BOOLEAN(Boolean::valueOf, "The return Boolean type data"),
         /**
          * The return T type data with Class
          */
-        CLASS("The return T type data with Class"),
+        CLASS(Integer::valueOf, "The return T type data with Class"),
         /**
          * The return Array_String type data
          */
-        ARRAY("The return Array_String type data"),
+        ARRAY(Integer::valueOf, "The return Array_String type data"),
         /**
          * The return Map<Object,Object> type data
          */
-        MAP("The return Map<Object,Object> type data"),
+        MAP(Integer::valueOf, "The return Map<Object,Object> type data"),
         /**
          * The return Map<String,String> type data
          */
-        MAP_STR("The return Map<String,String> type data"),
+        MAP_STR(Integer::valueOf, "The return Map<String,String> type data"),
         /**
          * The return Map<String,Object> type data
          */
-        MAP_OBJ("The return Map<String,Object> type data"),
+        MAP_OBJ(Integer::valueOf, "The return Map<String,Object> type data"),
         /**
          * The return List<Object> type data
          */
-        LIST("The return List<Object> type data"),
+        LIST(Integer::valueOf, "The return List<Object> type data"),
         /**
          * The return List<String> type data
          */
-        LIST_STR("The return List<String> type data"),
+        LIST_STR(Integer::valueOf, "The return List<String> type data"),
         /**
          * The return List<T> type data with Class
          */
-        LIST_CLASS("The return List<T> type data with Class");
+        LIST_CLASS(Integer::valueOf, "The return List<T> type data with Class");
 
+        Function<String, Object> function;
         String message;
 
     }
