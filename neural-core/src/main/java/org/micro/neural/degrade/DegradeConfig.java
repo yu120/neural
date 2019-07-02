@@ -1,6 +1,9 @@
 package org.micro.neural.degrade;
 
+import com.google.common.annotations.Beta;
 import lombok.*;
+import org.micro.neural.common.Constants;
+import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.RuleConfig;
 
 import java.util.function.Function;
@@ -102,35 +105,37 @@ public class DegradeConfig extends RuleConfig {
         /**
          * The return T type data with Class
          */
+        @Beta
         CLASS(Integer::valueOf, "The return T type data with Class"),
         /**
          * The return Array_String type data
          */
-        ARRAY(Integer::valueOf, "The return Array_String type data"),
+        ARRAY(s -> s.split(Constants.SEPARATOR), "The return Array_String type data"),
         /**
          * The return Map<Object,Object> type data
          */
-        MAP(Integer::valueOf, "The return Map<Object,Object> type data"),
+        MAP(SerializeUtils::parseMap, "The return Map<Object,Object> type data"),
         /**
          * The return Map<String,String> type data
          */
-        MAP_STR(Integer::valueOf, "The return Map<String,String> type data"),
+        MAP_STR(SerializeUtils::parseStringMap, "The return Map<String,String> type data"),
         /**
          * The return Map<String,Object> type data
          */
-        MAP_OBJ(Integer::valueOf, "The return Map<String,Object> type data"),
+        MAP_OBJ(SerializeUtils::parseObjMap, "The return Map<String,Object> type data"),
         /**
          * The return List<Object> type data
          */
-        LIST(Integer::valueOf, "The return List<Object> type data"),
+        LIST(SerializeUtils::parseList, "The return List<Object> type data"),
         /**
          * The return List<String> type data
          */
-        LIST_STR(Integer::valueOf, "The return List<String> type data"),
+        LIST_STR(SerializeUtils::parseListString, "The return List<String> type data"),
         /**
          * The return List<T> type data with Class
          */
-        LIST_CLASS(Integer::valueOf, "The return List<T> type data with Class");
+        @Beta
+        LIST_CLASS(SerializeUtils::parseListString, "The return List<T> type data with Class");
 
         Function<String, Object> function;
         String message;
