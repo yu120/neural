@@ -35,6 +35,8 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     @Override
     public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
+        super.refresh(limiterConfig);
+
         // rate limiter
         rateLimiter = AdjustableRateLimiter.create(limiterConfig.getMaxPermitRate());
 

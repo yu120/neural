@@ -31,7 +31,14 @@ public abstract class AbstractCheckLimiter implements ILimiter {
     @Override
     public boolean refresh(LimiterConfig limiterConfig) throws Exception {
         log.debug("The refresh {}", limiterConfig);
-        if (null == limiterConfig || this.limiterConfig.equals(limiterConfig)) {
+        if (null == limiterConfig) {
+            return true;
+        }
+        if (null == this.limiterConfig) {
+            this.limiterConfig = limiterConfig;
+            return true;
+        }
+        if (this.limiterConfig.equals(limiterConfig)) {
             return true;
         }
 

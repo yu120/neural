@@ -44,7 +44,7 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
         this.ruleClass = (Class<C>) args[0];
         this.globalClass = (Class<G>) args[1];
         this.extension = this.getClass().getAnnotation(Extension.class);
-        storePool.register(extension.value(), this);
+        storePool.register(extension.value().toUpperCase(), this);
     }
 
     @Override
@@ -73,7 +73,7 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
             throw new IllegalArgumentException("application, group, resource cannot be empty at the same time");
         }
         config.setModule(extension.value());
-        storePool.register(extension.value(), config.identity(), SerializeUtils.serialize(config));
+        storePool.register(extension.value().toUpperCase(), config.identity(), SerializeUtils.serialize(config));
         configs.put(config.identity(), config);
     }
 
