@@ -19,6 +19,7 @@ import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.extension.Extension;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +35,11 @@ import java.util.concurrent.TimeUnit;
 public class RedisStore implements IStore {
 
     static final String IDENTITY = "redis";
+
     private static final String PASSWORD = "password";
+    private static final String DATABASE = "database";
+    private static final String SSL = "ssl";
+    private static final String TIMEOUT = "timeout";
     private static final String BORROW_MAX_WAIT_MILLIS = "borrowMaxWaitMillis";
 
     private RedisClient redisClient = null;
@@ -42,40 +47,27 @@ public class RedisStore implements IStore {
     private GenericObjectPool<StatefulRedisConnection<String, String>> objectPool = null;
     private final Map<IStoreListener, RedisPubSub> subscribed = new ConcurrentHashMap<>();
 
-    @Getter
-    @AllArgsConstructor
-    enum RedisCategory {
-        // ===
-        REDIS("redis"), SENTINEL("sentinel"), CLUSTER("cluster");
-        String category;
-
-        public static RedisCategory parse(String category) {
-            if (category == null || category.length() == 0) {
-                return RedisCategory.REDIS;
-            }
-
-            for (RedisCategory e : values()) {
-                if (e.getCategory().equals(category)) {
-                    return e;
-                }
-            }
-
-            return RedisCategory.REDIS;
-        }
-    }
-
     @Override
     public void initialize(URL url) {
+        String category = url.getParameter(URL.CATEGORY_KEY, IDENTITY);
+        RedisCategory redisCategory = RedisCategory.parse(category);
+
         RedisURI redisURI;
-        RedisCategory redisCategory = RedisCategory.parse(url.getParameter(URL.CATEGORY_KEY, IDENTITY));
+        // build sentinel or redis
         if (RedisCategory.SENTINEL == redisCategory) {
             redisURI = RedisURI.Builder.sentinel(url.getHost(), url.getPort()).build();
         } else if (RedisCategory.REDIS == redisCategory) {
             redisURI = RedisURI.Builder.redis(url.getHost(), url.getPort()).build();
         } else {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Illegal redis category:" + category);
         }
-
+        // set database
+        redisURI.setDatabase(url.getParameter(DATABASE, 0));
+        // set ssl
+        redisURI.setSsl(url.getParameter(SSL, false));
+        // set timeout
+        redisURI.setTimeout(Duration.ofSeconds(url.getParameter(TIMEOUT, 60)));
+        // set password
         String password = url.getParameter(PASSWORD);
         if (password != null && password.length() > 0) {
             redisURI.setPassword(password);
@@ -302,7 +294,29 @@ public class RedisStore implements IStore {
         }
     }
 
-    @Data
+    @Getter
+    @AllArgsConstructor
+    enum RedisCategory {
+        // ===
+        REDIS("redis"), SENTINEL("sentinel");
+        String category;
+
+        public static RedisCategory parse(String category) {
+            if (category == null || category.length() == 0) {
+                return RedisCategory.REDIS;
+            }
+
+            for (RedisCategory e : values()) {
+                if (e.getCategory().equals(category)) {
+                    return e;
+                }
+            }
+
+            return RedisCategory.REDIS;
+        }
+    }
+
+    @Getter
     @AllArgsConstructor
     private class RedisPubSub {
 
