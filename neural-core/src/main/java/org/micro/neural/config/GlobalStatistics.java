@@ -1,5 +1,6 @@
 package org.micro.neural.config;
 
+import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.OriginalCall;
@@ -113,6 +114,7 @@ public class GlobalStatistics implements Serializable {
         } finally {
             // decrement traffic
             decrementTraffic(startTime);
+            System.out.println(JSON.toJSONString(getStatisticsData()));
         }
     }
 
