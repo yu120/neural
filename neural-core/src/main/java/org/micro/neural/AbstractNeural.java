@@ -96,11 +96,6 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
         return new LinkedHashMap<>();
     }
 
-    @Override
-    public void destroy() {
-
-    }
-
     /**
      * The notify of global config
      *
@@ -118,6 +113,11 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
      */
     protected void ruleNotify(String identity, C ruleConfig) {
         log.debug("The rule of global config: {}", globalConfig);
+    }
+
+    @Override
+    public void destroy() {
+
     }
 
 }
