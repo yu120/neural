@@ -19,7 +19,6 @@ import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.extension.Extension;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 public class RedisStore implements IStore {
 
     static final String IDENTITY = "redis";
-    private static final String SENTINEL = "sentinel";
     private static final String PASSWORD = "password";
     private static final String BORROW_MAX_WAIT_MILLIS = "borrowMaxWaitMillis";
 
@@ -44,14 +42,38 @@ public class RedisStore implements IStore {
     private GenericObjectPool<StatefulRedisConnection<String, String>> objectPool = null;
     private final Map<IStoreListener, RedisPubSub> subscribed = new ConcurrentHashMap<>();
 
+    @Getter
+    @AllArgsConstructor
+    enum RedisCategory {
+        // ===
+        REDIS("redis"), SENTINEL("sentinel"), CLUSTER("cluster");
+        String category;
+
+        public static RedisCategory parse(String category) {
+            if (category == null || category.length() == 0) {
+                return RedisCategory.REDIS;
+            }
+
+            for (RedisCategory e : values()) {
+                if (e.getCategory().equals(category)) {
+                    return e;
+                }
+            }
+
+            return RedisCategory.REDIS;
+        }
+    }
+
     @Override
     public void initialize(URL url) {
         RedisURI redisURI;
-        String category = url.getParameter(URL.CATEGORY_KEY, IDENTITY);
-        if (SENTINEL.equals(category)) {
+        RedisCategory redisCategory = RedisCategory.parse(url.getParameter(URL.CATEGORY_KEY, IDENTITY));
+        if (RedisCategory.SENTINEL == redisCategory) {
             redisURI = RedisURI.Builder.sentinel(url.getHost(), url.getPort()).build();
-        } else {
+        } else if (RedisCategory.REDIS == redisCategory) {
             redisURI = RedisURI.Builder.redis(url.getHost(), url.getPort()).build();
+        } else {
+            throw new IllegalArgumentException();
         }
 
         String password = url.getParameter(PASSWORD);
@@ -282,9 +304,7 @@ public class RedisStore implements IStore {
 
     @Data
     @AllArgsConstructor
-    private class RedisPubSub implements Serializable {
-
-        private static final long serialVersionUID = 1L;
+    private class RedisPubSub {
 
         private StatefulRedisPubSubConnection<String, String> connection;
         private RedisPubSubAsyncCommands<String, String> commands;
