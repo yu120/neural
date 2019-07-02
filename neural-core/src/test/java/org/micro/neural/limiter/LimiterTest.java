@@ -1,5 +1,6 @@
 package org.micro.neural.limiter;
 
+import java.time.Duration;
 import java.util.Random;
 
 import org.micro.neural.common.URL;
@@ -13,15 +14,16 @@ public class LimiterTest {
     public static void main(String[] args) throws Throwable {
         String application = "gateway";
         Limiter limiter = new Limiter();
-        limiter.initialize(URL.valueOf("redis://localhost:6379/limiter?minIdle=2"));
+        limiter.initialize(URL.valueOf("redis://localhost:6379?minIdle=2"));
 
         //query order
-        String identity1 = application + ":" + "order" + ":" + "queryOrder";
         LimiterConfig config1 = new LimiterConfig();
         config1.setApplication(application);
         config1.setGroup("order");
         config1.setResource("queryOrder");
         config1.setName("查询订单");
+        config1.setRequestPermit(3);
+        config1.setRequestInterval(Duration.ofSeconds(1));
         limiter.addConfig(config1);
 
         //insert order
@@ -41,7 +43,7 @@ public class LimiterTest {
         limiter.addConfig(config3);
 
         for (int i = 0; i < 100000; i++) {
-            Object result = limiter.wrapperCall(identity1, new OriginalCall() {
+            Object result = limiter.wrapperCall(config1.identity(), new OriginalCall() {
                 @Override
                 public Object call() throws Throwable {
                     Thread.sleep(new Random().nextInt(100) + 20);
@@ -53,7 +55,7 @@ public class LimiterTest {
                     return "fallback";
                 }
             });
-            System.out.println(i+": "+result);
+            System.out.println(i + ": " + result);
             if (i == 50) {
                 config1.setRateTimeout(3000L);
                 System.out.println("1发布配置");

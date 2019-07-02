@@ -39,7 +39,7 @@ public class LimiterConfig extends RuleConfig {
     /**
      * The max concurrent number of concurrent limiter
      */
-    private Integer maxPermitConcurrent = 100;
+    private Integer maxPermitConcurrent = 200;
     /**
      * The concurrent timeout of concurrent limiter
      */
@@ -77,7 +77,7 @@ public class LimiterConfig extends RuleConfig {
     /**
      * The request max permit of request limiter
      */
-    private Long maxPermitRequest = 0L;
+    private Long maxPermitRequest = 1000L;
     /**
      * The request timeout of request limiter
      */
