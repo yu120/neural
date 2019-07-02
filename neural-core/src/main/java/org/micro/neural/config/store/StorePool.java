@@ -168,26 +168,23 @@ public class StorePool implements IStoreListener {
         String remoteGlobalConfigKey = String.join(DELIMITER, space, Category.GLOBAL.name());
         Map<String, String> remoteGlobalConfigs = store.pull(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
-        if (remoteGlobalConfigs == null || remoteGlobalConfigs.isEmpty()) {
-            if (!modules.isEmpty()) {
-                remoteGlobalConfigs = new HashMap<>(modules.size());
-                for (Map.Entry<String, Neural> entry : modules.entrySet()) {
-                    remoteGlobalConfigs.put(entry.getKey().toUpperCase(),
-                            SerializeUtils.serialize(entry.getValue().getGlobalConfig()));
-                }
-                store.batchAdd(remoteGlobalConfigKey, remoteGlobalConfigs);
+        Map<String, String> addRemoteGlobalConfigs = new HashMap<>(modules.size());
+        for (Map.Entry<String, Neural> entry : modules.entrySet()) {
+            String module = entry.getKey().toUpperCase();
+            if (remoteGlobalConfigs.isEmpty() || !remoteGlobalConfigs.containsKey(module)) {
+                addRemoteGlobalConfigs.put(module, SerializeUtils.serialize(entry.getValue().getGlobalConfig()));
             }
         }
-        if (remoteGlobalConfigs != null && !remoteGlobalConfigs.isEmpty()) {
-            for (Map.Entry<String, String> entry : remoteGlobalConfigs.entrySet()) {
-                String remoteGlobalChannel = String.join(DELIMITER, remoteGlobalConfigKey, CHANNEL, entry.getKey());
-                remoteChannels.add(remoteGlobalChannel);
-
-                String module = entry.getKey();
-                Neural neural = modules.get(module);
-                if (neural != null) {
-                    neural.notify(Category.GLOBAL, Category.GLOBAL.name(), entry.getValue());
-                }
+        if (!addRemoteGlobalConfigs.isEmpty()) {
+            store.batchAdd(remoteGlobalConfigKey, addRemoteGlobalConfigs);
+            remoteGlobalConfigs.putAll(addRemoteGlobalConfigs);
+        }
+        for (Map.Entry<String, String> entry : remoteGlobalConfigs.entrySet()) {
+            String remoteGlobalChannel = String.join(DELIMITER, remoteGlobalConfigKey, CHANNEL, entry.getKey());
+            remoteChannels.add(remoteGlobalChannel);
+            Neural neural = modules.get(entry.getKey());
+            if (neural != null) {
+                neural.notify(Category.GLOBAL, Category.GLOBAL.name(), entry.getValue());
             }
         }
 
@@ -195,27 +192,26 @@ public class StorePool implements IStoreListener {
         String remoteRuleConfigKey = String.join(DELIMITER, space, Category.RULE.name());
         Map<String, String> remoteRuleConfigs = store.pull(remoteRuleConfigKey);
         log.debug("The rule config pull changed: {}", remoteRuleConfigs);
-        if (remoteRuleConfigs == null || remoteRuleConfigs.isEmpty()) {
-            if (!ruleConfigs.isEmpty()) {
-                remoteRuleConfigs = new HashMap<>(ruleConfigs.size());
-                for (Map.Entry<String, Map<String, String>> entry : ruleConfigs.entrySet()) {
-                    remoteRuleConfigs.putAll(entry.getValue());
+        Map<String, String> addRemoteRuleConfigs = new HashMap<>(modules.size());
+        for (Map.Entry<String, Map<String, String>> entry : ruleConfigs.entrySet()) {
+            for (Map.Entry<String, String> subEntry : entry.getValue().entrySet()) {
+                String identity = subEntry.getKey();
+                if (remoteRuleConfigs.isEmpty() || !remoteRuleConfigs.containsKey(identity)) {
+                    addRemoteRuleConfigs.put(identity, subEntry.getValue());
                 }
-                store.batchAdd(remoteRuleConfigKey, remoteRuleConfigs);
             }
         }
-        if (remoteRuleConfigs != null && !remoteRuleConfigs.isEmpty()) {
-            for (Map.Entry<String, String> entry : remoteRuleConfigs.entrySet()) {
-                String remoteRuleChannel = String.join(DELIMITER, remoteRuleConfigKey, CHANNEL, entry.getKey());
-                remoteChannels.add(remoteRuleChannel);
-
-                int index = entry.getKey().indexOf(DELIMITER);
-                String module = entry.getKey().substring(0, index);
-                Neural neural = modules.get(module);
-                if (neural != null) {
-                    String identity = entry.getKey().substring(index + 1);
-                    neural.notify(Category.RULE, identity, entry.getValue());
-                }
+        if (!addRemoteRuleConfigs.isEmpty()) {
+            store.batchAdd(remoteRuleConfigKey, addRemoteRuleConfigs);
+            remoteRuleConfigs.putAll(addRemoteRuleConfigs);
+        }
+        for (Map.Entry<String, String> entry : remoteRuleConfigs.entrySet()) {
+            String remoteRuleChannel = String.join(DELIMITER, remoteRuleConfigKey, CHANNEL, entry.getKey());
+            remoteChannels.add(remoteRuleChannel);
+            String identity = entry.getKey();
+            Neural neural = modules.get(identity.substring(0, identity.indexOf(DELIMITER)));
+            if (neural != null) {
+                neural.notify(Category.RULE, identity, entry.getValue());
             }
         }
 

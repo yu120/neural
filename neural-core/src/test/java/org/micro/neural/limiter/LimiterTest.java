@@ -14,7 +14,6 @@ public class LimiterTest {
     public static void main(String[] args) throws Throwable {
         String application = "gateway";
         Limiter limiter = new Limiter();
-        limiter.initialize(URL.valueOf("redis://localhost:6379?minIdle=2"));
 
         //query order
         LimiterConfig config1 = new LimiterConfig();
@@ -41,6 +40,8 @@ public class LimiterTest {
         config3.setResource("deleteOrder");
         config3.setName("删除订单");
         limiter.addConfig(config3);
+
+        limiter.initialize(URL.valueOf("redis://localhost:6379?minIdle=2"));
 
         for (int i = 0; i < 100000; i++) {
             Object result = limiter.wrapperCall(config1.identity(), new OriginalCall() {

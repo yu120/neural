@@ -38,15 +38,17 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
     protected volatile ConcurrentMap<String, C> configs = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
-    @Override
-    public void initialize(URL url) {
+    public AbstractNeural() {
         Type type = this.getClass().getGenericSuperclass();
         Type[] args = ((ParameterizedType) type).getActualTypeArguments();
         this.ruleClass = (Class<C>) args[0];
         this.globalClass = (Class<G>) args[1];
         this.extension = this.getClass().getAnnotation(Extension.class);
         storePool.register(extension.value(), this);
+    }
 
+    @Override
+    public void initialize(URL url) {
         StorePool.getInstance().initialize(url);
     }
 
