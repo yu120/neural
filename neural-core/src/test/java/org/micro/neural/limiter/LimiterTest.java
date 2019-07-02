@@ -41,7 +41,7 @@ public class LimiterTest {
         limiter.addConfig(config3);
 
         for (int i = 0; i < 100000; i++) {
-            Object result = limiter.doWrapperCall(identity1, new OriginalCall() {
+            Object result = limiter.wrapperCall(identity1, new OriginalCall() {
                 @Override
                 public Object call() throws Throwable {
                     Thread.sleep(new Random().nextInt(100) + 20);

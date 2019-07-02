@@ -36,7 +36,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
     }
 
     @Override
-    public Object doWrapperCall(String identity, OriginalCall originalCall) throws Throwable {
+    public Object wrapperCall(String identity, OriginalCall originalCall) throws Throwable {
         // the check global config of degrade
         if (null == globalConfig || null == globalConfig.getEnable() || Switch.OFF == globalConfig.getEnable()) {
             return originalCall.call();

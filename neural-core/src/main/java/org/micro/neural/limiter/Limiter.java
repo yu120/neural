@@ -33,7 +33,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
     }
 
     @Override
-    public Object doWrapperCall(String identity, OriginalCall originalCall) throws Throwable {
+    public Object wrapperCall(String identity, OriginalCall originalCall) throws Throwable {
         // The check global config of limiter
         if (null == globalConfig || null == globalConfig.getEnable() ||
                 GlobalConfig.Switch.OFF == globalConfig.getEnable()) {

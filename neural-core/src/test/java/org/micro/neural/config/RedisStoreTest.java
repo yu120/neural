@@ -24,7 +24,7 @@ public class RedisStoreTest {
         URL url = URL.valueOf("redis://127.0.0.1:6379");
         storePool.initialize(url);
 
-        Object result = limiter.doWrapperCall(key1, new OriginalCall() {
+        Object result = limiter.wrapperCall(key1, new OriginalCall() {
             @Override
             public Object call() throws Throwable {
                 System.out.println("Input call");

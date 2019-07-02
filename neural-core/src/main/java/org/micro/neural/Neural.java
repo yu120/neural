@@ -15,7 +15,7 @@ import java.util.Map;
 public interface Neural<C extends RuleConfig, G extends GlobalConfig> {
 
     /**
-     * The initialize store
+     * The initialize
      *
      * @param url {@link URL}
      */
@@ -66,7 +66,7 @@ public interface Neural<C extends RuleConfig, G extends GlobalConfig> {
      * @return invoke return object
      * @throws Throwable throw exception
      */
-    Object doWrapperCall(String identity, OriginalCall originalCall) throws Throwable;
+    Object wrapperCall(String identity, OriginalCall originalCall) throws Throwable;
 
     /**
      * The destroy store config
