@@ -297,7 +297,7 @@ public class StorePool implements IStoreListener {
                     }
 
                     // push statistics data to remote
-                    store.batchIncrBy(neural.getGlobalConfig().getStatisticExpire(), sendData);
+                    store.batchIncrementBy(neural.getGlobalConfig().getStatisticExpire(), sendData);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }

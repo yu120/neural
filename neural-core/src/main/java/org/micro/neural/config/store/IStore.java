@@ -48,12 +48,12 @@ public interface IStore {
     void batchAdd(String space, Map<String, String> data);
 
     /**
-     * The batch update or add
+     * The batch increment update or add
      *
      * @param expire expire time
      * @param data   config data
      */
-    void batchIncrBy(long expire, Map<String, Long> data);
+    void batchIncrementBy(long expire, Map<String, Long> data);
 
     /**
      * The search keys with keyword

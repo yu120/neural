@@ -7,10 +7,11 @@ import io.lettuce.core.ScriptOutputType;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.pubsub.RedisPubSubListener;
+import io.lettuce.core.pubsub.RedisPubSubAdapter;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.async.RedisPubSubAsyncCommands;
 import io.lettuce.core.support.ConnectionPoolSupport;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -18,6 +19,7 @@ import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.extension.Extension;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -39,8 +41,8 @@ public class RedisStore implements IStore {
 
     private RedisClient redisClient = null;
     private long borrowMaxWaitMillis = 10000;
-    private GenericObjectPool<StatefulRedisConnection<String, String>> objectPool;
-    private final Map<IStoreListener, RedisPubSubAsyncCommands<String, String>> subscribed = new ConcurrentHashMap<>();
+    private GenericObjectPool<StatefulRedisConnection<String, String>> objectPool = null;
+    private final Map<IStoreListener, RedisPubSub> subscribed = new ConcurrentHashMap<>();
 
     @Override
     public void initialize(URL url) {
@@ -69,8 +71,9 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public void batchIncrBy(long expire, Map<String, Long> data) {
+    public void batchIncrementBy(long expire, Map<String, Long> data) {
         StatefulRedisConnection<String, String> connection = null;
+
         try {
             connection = borrowObject(borrowMaxWaitMillis);
             RedisAsyncCommands<String, String> commands = connection.async();
@@ -86,6 +89,7 @@ public class RedisStore implements IStore {
     @Override
     public void add(String space, String key, Object data) {
         StatefulRedisConnection<String, String> connection = null;
+
         try {
             connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
@@ -98,6 +102,7 @@ public class RedisStore implements IStore {
     @Override
     public void batchAdd(String space, Map<String, String> data) {
         StatefulRedisConnection<String, String> connection = null;
+
         try {
             connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
@@ -110,6 +115,7 @@ public class RedisStore implements IStore {
     @Override
     public Set<String> searchKeys(String space, String keyword) {
         StatefulRedisConnection<String, String> connection = null;
+
         try {
             connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
@@ -127,6 +133,7 @@ public class RedisStore implements IStore {
     @Override
     public <C> C query(String space, String key, Class<C> clz) {
         StatefulRedisConnection<String, String> connection = null;
+
         try {
             connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
@@ -144,6 +151,7 @@ public class RedisStore implements IStore {
     @Override
     public String get(String key) {
         StatefulRedisConnection<String, String> connection = null;
+
         try {
             connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
@@ -167,8 +175,8 @@ public class RedisStore implements IStore {
 
         ScriptOutputType scriptOutputType = ScriptOutputType.MULTI;
         long borrowMaxWaitMillis = Double.valueOf(0.8 * timeout).longValue();
-
         StatefulRedisConnection<String, String> connection = null;
+
         try {
             connection = borrowObject(borrowMaxWaitMillis);
             RedisFuture<List<Object>> redisFuture = connection.async().eval(script, scriptOutputType, keyArray);
@@ -210,7 +218,7 @@ public class RedisStore implements IStore {
     @Override
     public void subscribe(Collection<String> channels, IStoreListener listener) {
         StatefulRedisPubSubConnection<String, String> connection = redisClient.connectPubSub();
-        connection.addListener(new RedisPubSubListener<String, String>() {
+        connection.addListener(new RedisPubSubAdapter<String, String>() {
 
             @Override
             public void message(String channel, String message) {
@@ -228,32 +236,18 @@ public class RedisStore implements IStore {
                 log.debug("subscribe: unsubscribed channel={}, count={}", channel, count);
             }
 
-            @Override
-            public void message(String pattern, String channel, String message) {
-                log.debug("subscribe: pattern message={} in channel={}", message, channel);
-            }
-
-            @Override
-            public void psubscribed(String pattern, long count) {
-                log.debug("subscribe: pattern subscribed pattern={}, count={}", pattern, count);
-            }
-
-            @Override
-            public void punsubscribed(String pattern, long count) {
-                log.debug("subscribe: pattern unsubscribed channel={}, count={}", pattern, count);
-            }
-
         });
-        RedisPubSubAsyncCommands<String, String> redisPubSubAsyncCommands = connection.async();
-        subscribed.put(listener, redisPubSubAsyncCommands);
-        redisPubSubAsyncCommands.subscribe(channels.toArray(new String[0]));
+        RedisPubSubAsyncCommands<String, String> commands = connection.async();
+        this.subscribed.put(listener, new RedisPubSub(connection, commands));
+        commands.subscribe(channels.toArray(new String[0]));
     }
 
     @Override
     public void unSubscribe(IStoreListener listener) {
-        RedisPubSubAsyncCommands<String, String> commands = subscribed.get(listener);
-        if (commands != null) {
-            commands.unsubscribe();
+        RedisPubSub redisPubSub = subscribed.get(listener);
+        if (redisPubSub != null) {
+            redisPubSub.getCommands().unsubscribe();
+            redisPubSub.getConnection().closeAsync();
             subscribed.remove(listener);
         }
     }
@@ -282,8 +276,19 @@ public class RedisStore implements IStore {
                 objectPool.returnObject(connection);
             }
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("The return object is exception", e);
         }
+    }
+
+    @Data
+    @AllArgsConstructor
+    private class RedisPubSub implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private StatefulRedisPubSubConnection<String, String> connection;
+        private RedisPubSubAsyncCommands<String, String> commands;
+
     }
 
 }
