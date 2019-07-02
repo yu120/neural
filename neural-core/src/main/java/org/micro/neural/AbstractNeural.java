@@ -1,5 +1,6 @@
 package org.micro.neural;
 
+import com.alibaba.fastjson.JSON;
 import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.GlobalConfig;
@@ -72,6 +73,12 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
         config.setModule(extension.value());
         storePool.register(extension.value(), config.identity(), SerializeUtils.serialize(config));
         configs.put(config.identity(), config);
+    }
+
+    @Override
+    public Object wrapperCall(String identity, OriginalCall originalCall) throws Throwable {
+        System.out.println(JSON.toJSONString(this.statistics()));
+        return null;
     }
 
     @Override
