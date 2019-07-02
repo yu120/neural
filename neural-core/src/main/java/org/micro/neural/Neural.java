@@ -1,5 +1,6 @@
 package org.micro.neural;
 
+import org.micro.neural.common.URL;
 import org.micro.neural.config.GlobalConfig;
 import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.config.RuleConfig;
@@ -12,6 +13,13 @@ import java.util.Map;
  * @author lry
  */
 public interface Neural<C extends RuleConfig, G extends GlobalConfig> {
+
+    /**
+     * The initialize store
+     *
+     * @param url {@link URL}
+     */
+    void initialize(URL url);
 
     /**
      * The get global config

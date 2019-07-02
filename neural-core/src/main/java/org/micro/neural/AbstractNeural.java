@@ -1,5 +1,6 @@
 package org.micro.neural;
 
+import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.GlobalConfig;
 import org.micro.neural.config.GlobalConfig.*;
@@ -26,8 +27,8 @@ import java.util.concurrent.*;
 @Slf4j
 public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfig> implements Neural<C, G> {
 
-    private final Class<C> ruleClass;
-    private final Class<G> globalClass;
+    private Class<C> ruleClass;
+    private Class<G> globalClass;
 
     private Extension extension;
     private StorePool storePool = StorePool.getInstance();
@@ -36,13 +37,16 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
     protected volatile ConcurrentMap<String, C> configs = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
-    public AbstractNeural() {
+    @Override
+    public void initialize(URL url) {
         Type type = this.getClass().getGenericSuperclass();
         Type[] args = ((ParameterizedType) type).getActualTypeArguments();
         this.ruleClass = (Class<C>) args[0];
         this.globalClass = (Class<G>) args[1];
         this.extension = this.getClass().getAnnotation(Extension.class);
         storePool.register(extension.value(), this);
+
+        StorePool.getInstance().initialize(url);
     }
 
     @Override

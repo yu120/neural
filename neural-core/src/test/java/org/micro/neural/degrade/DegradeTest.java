@@ -2,7 +2,6 @@ package org.micro.neural.degrade;
 
 import org.micro.neural.common.URL;
 import org.micro.neural.OriginalCall;
-import org.micro.neural.config.store.StorePool;
 
 import java.util.Random;
 
@@ -11,11 +10,9 @@ import java.util.Random;
  **/
 public class DegradeTest {
     public static void main(String[] args) throws Throwable {
-        URL url = URL.valueOf("redis://localhost:6379/limiter?minIdle=2");
-        StorePool.getInstance().initialize(url);
-
         String application = "gateway";
         Degrade degrade = new Degrade();
+        degrade.initialize(URL.valueOf("redis://localhost:6379/limiter?minIdle=2"));
 
         String identity1 = application + ":" + "order" + ":" + "sendEms";
         DegradeConfig config1 = new DegradeConfig(DegradeGlobalConfig.Level.HINT,

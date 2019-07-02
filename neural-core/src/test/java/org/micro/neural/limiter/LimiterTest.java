@@ -11,11 +11,9 @@ import org.micro.neural.config.store.StorePool;
  **/
 public class LimiterTest {
     public static void main(String[] args) throws Throwable {
-        URL url = URL.valueOf("redis://localhost:6379/limiter?minIdle=2");
-        StorePool.getInstance().initialize(url);
-
         String application = "gateway";
         Limiter limiter = new Limiter();
+        limiter.initialize(URL.valueOf("redis://localhost:6379/limiter?minIdle=2"));
 
         //query order
         String identity1 = application + ":" + "order" + ":" + "queryOrder";

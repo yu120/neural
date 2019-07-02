@@ -42,6 +42,8 @@ public class StorePool implements IStoreListener {
     private static final String PULL_CONFIG_CYCLE_KEY = "pullConfigCycle";
     private static final String STATISTIC_REPORT_CYCLE_KEY = "statisticReportCycle";
 
+    private boolean started;
+
     private String space;
     private long pullConfigCycle;
     private long statisticReportCycle;
@@ -82,7 +84,12 @@ public class StorePool implements IStoreListener {
         return store;
     }
 
-    public void initialize(URL url) {
+    public synchronized void initialize(URL url) {
+        if (started) {
+            return;
+        }
+
+        this.started = true;
         this.pullConfigCycle = url.getParameter(PULL_CONFIG_CYCLE_KEY, 5L);
         this.statisticReportCycle = url.getParameter(STATISTIC_REPORT_CYCLE_KEY, 1000L);
         this.space = url.getParameter(URL.GROUP_KEY, SPACE_DEFAULT);
