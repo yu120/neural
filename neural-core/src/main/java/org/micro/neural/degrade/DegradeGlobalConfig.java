@@ -74,13 +74,13 @@ public class DegradeGlobalConfig extends GlobalConfig {
     public enum EventType implements IEventType {
 
         /**
-         * The notification mock data exception of degrade
+         * The notification mock data exception
          */
-        NOTIFY_EXCEPTION(IDENTITY, "The notify config is exception of degrade"),
+        NOTIFY_EXCEPTION(IDENTITY, "The notify config is exception"),
         /**
          * The collect statistics exception of degrade
          */
-        COLLECT_EXCEPTION(IDENTITY, "The collect statistics is exception of degrade");
+        COLLECT_EXCEPTION(IDENTITY, "The collect statistics is exception");
 
         String module;
         String message;

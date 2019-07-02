@@ -28,25 +28,25 @@ public class LimiterGlobalConfig extends GlobalConfig {
     public enum EventType implements IEventType {
 
         /**
-         * The rate exceed event of limiter
+         * The rate exceed event
          */
-        RATE_EXCEED(IDENTITY, "The rate exceed event of limiter"),
+        RATE_EXCEED(IDENTITY, "The rate exceed event"),
         /**
-         * The concurrent exceed event of limiter
+         * The concurrent exceed event
          */
-        CONCURRENT_EXCEED(IDENTITY, "The concurrent exceed event of limiter"),
+        CONCURRENT_EXCEED(IDENTITY, "The concurrent exceed event"),
         /**
-         * The request exceed event of limiter
+         * The request exceed event
          */
-        REQUEST_EXCEED(IDENTITY, "The request exceed event of limiter"),
+        REQUEST_EXCEED(IDENTITY, "The request exceed event"),
         /**
-         * The notify config exception of limiter
+         * The notify config exception
          */
-        NOTIFY_EXCEPTION(IDENTITY, "The notify config is exception of limiter"),
+        NOTIFY_EXCEPTION(IDENTITY, "The notify config is exception"),
         /**
-         * The collect statistics exception of limiter
+         * The collect statistics exception
          */
-        COLLECT_EXCEPTION(IDENTITY, "The collect statistics is exception of limiter");
+        COLLECT_EXCEPTION(IDENTITY, "The collect statistics is exception");
 
         String module;
         String message;
