@@ -75,8 +75,8 @@ public class RedisStore implements IStore {
 
         this.borrowMaxWaitMillis = url.getParameter(BORROW_MAX_WAIT_MILLIS, borrowMaxWaitMillis);
         this.redisClient = RedisClient.create(redisURI);
-        this.objectPool = ConnectionPoolSupport.createGenericObjectPool(
-                () -> redisClient.connect(), new GenericObjectPoolConfig());
+        this.objectPool = ConnectionPoolSupport.createGenericObjectPool(() ->
+                redisClient.connect(), new GenericObjectPoolConfig());
     }
 
     @Override
@@ -297,7 +297,9 @@ public class RedisStore implements IStore {
     @Getter
     @AllArgsConstructor
     enum RedisCategory {
+
         // ===
+
         REDIS("redis"), SENTINEL("sentinel");
         String category;
 
@@ -314,6 +316,7 @@ public class RedisStore implements IStore {
 
             return RedisCategory.REDIS;
         }
+
     }
 
     @Getter
