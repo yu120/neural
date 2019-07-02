@@ -34,9 +34,9 @@ public class LimiterTest {
 
         //delete order
         LimiterConfig config3 = new LimiterConfig();
-        config2.setApplication(application);
-        config2.setGroup("order");
-        config2.setResource("deleteOrder");
+        config3.setApplication(application);
+        config3.setGroup("order");
+        config3.setResource("deleteOrder");
         config3.setName("删除订单");
         limiter.addConfig(config3);
 
@@ -53,6 +53,7 @@ public class LimiterTest {
                     return "fallback";
                 }
             });
+            System.out.println(i+": "+result);
             if (i == 50) {
                 config1.setRateTimeout(3000L);
                 System.out.println("1发布配置");

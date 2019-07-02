@@ -70,34 +70,48 @@ public class RedisStore implements IStore {
 
     @Override
     public void batchIncrBy(long expire, Map<String, Long> data) {
-        try (StatefulRedisConnection<String, String> connection = borrowObject()) {
+        StatefulRedisConnection<String, String> connection = null;
+        try {
+            connection = borrowObject(borrowMaxWaitMillis);
             RedisAsyncCommands<String, String> commands = connection.async();
             for (Map.Entry<String, Long> entry : data.entrySet()) {
                 commands.incrby(entry.getKey(), entry.getValue());
                 commands.pexpire(entry.getKey(), expire);
             }
+        } finally {
+            borrowObject(connection);
         }
     }
 
     @Override
     public void add(String space, String key, Object data) {
-        try (StatefulRedisConnection<String, String> connection = borrowObject()) {
+        StatefulRedisConnection<String, String> connection = null;
+        try {
+            connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
             commands.hset(space, key, SerializeUtils.serialize(data));
+        } finally {
+            borrowObject(connection);
         }
     }
 
     @Override
     public void batchAdd(String space, Map<String, String> data) {
-        try (StatefulRedisConnection<String, String> connection = borrowObject()) {
+        StatefulRedisConnection<String, String> connection = null;
+        try {
+            connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
             commands.hmset(space, data);
+        } finally {
+            borrowObject(connection);
         }
     }
 
     @Override
     public Set<String> searchKeys(String space, String keyword) {
-        try (StatefulRedisConnection<String, String> connection = borrowObject()) {
+        StatefulRedisConnection<String, String> connection = null;
+        try {
+            connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
             List<String> keys = commands.hkeys(space);
             if (keys == null || keys.isEmpty()) {
@@ -105,12 +119,16 @@ public class RedisStore implements IStore {
             }
 
             return new HashSet<>(keys);
+        } finally {
+            borrowObject(connection);
         }
     }
 
     @Override
     public <C> C query(String space, String key, Class<C> clz) {
-        try (StatefulRedisConnection<String, String> connection = borrowObject()) {
+        StatefulRedisConnection<String, String> connection = null;
+        try {
+            connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
             String json = commands.hget(space, key);
             if (json == null || json.length() == 0) {
@@ -118,14 +136,20 @@ public class RedisStore implements IStore {
             }
 
             return SerializeUtils.deserialize(clz, json);
+        } finally {
+            borrowObject(connection);
         }
     }
 
     @Override
     public String get(String key) {
-        try (StatefulRedisConnection<String, String> connection = borrowObject()) {
+        StatefulRedisConnection<String, String> connection = null;
+        try {
+            connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
             return commands.get(key);
+        } finally {
+            borrowObject(connection);
         }
     }
 
@@ -143,7 +167,10 @@ public class RedisStore implements IStore {
 
         ScriptOutputType scriptOutputType = ScriptOutputType.MULTI;
         long borrowMaxWaitMillis = Double.valueOf(0.8 * timeout).longValue();
-        try (StatefulRedisConnection<String, String> connection = borrowObject(borrowMaxWaitMillis)) {
+
+        StatefulRedisConnection<String, String> connection = null;
+        try {
+            connection = borrowObject(borrowMaxWaitMillis);
             RedisFuture<List<Object>> redisFuture = connection.async().eval(script, scriptOutputType, keyArray);
 
             try {
@@ -151,22 +178,32 @@ public class RedisStore implements IStore {
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
+        } finally {
+            borrowObject(connection);
         }
     }
 
     @Override
     public Map<String, String> pull(String key) {
-        try (StatefulRedisConnection<String, String> connection = borrowObject()) {
+        StatefulRedisConnection<String, String> connection = null;
+        try {
+            connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
             return commands.hgetall(key);
+        } finally {
+            borrowObject(connection);
         }
     }
 
     @Override
     public void publish(String channel, Object data) {
-        try (StatefulRedisConnection<String, String> connection = borrowObject()) {
+        StatefulRedisConnection<String, String> connection = null;
+        try {
+            connection = borrowObject(borrowMaxWaitMillis);
             RedisCommands<String, String> commands = connection.sync();
             commands.publish(channel, SerializeUtils.serialize(data));
+        } finally {
+            borrowObject(connection);
         }
     }
 
@@ -231,16 +268,21 @@ public class RedisStore implements IStore {
         }
     }
 
-
-    private StatefulRedisConnection<String, String> borrowObject() {
-        return borrowObject(borrowMaxWaitMillis);
-    }
-
     private StatefulRedisConnection<String, String> borrowObject(long borrowMaxWaitMillis) {
         try {
             return objectPool.borrowObject(borrowMaxWaitMillis);
         } catch (Exception e) {
             throw new RuntimeException("The borrow object is exception", e);
+        }
+    }
+
+    private void borrowObject(StatefulRedisConnection<String, String> connection) {
+        try {
+            if (connection != null) {
+                objectPool.returnObject(connection);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 
