@@ -31,10 +31,8 @@ import java.util.concurrent.TimeUnit;
  * @author lry
  **/
 @Slf4j
-@Extension(RedisStore.IDENTITY)
+@Extension("redis")
 public class RedisStore implements IStore {
-
-    static final String IDENTITY = "redis";
 
     private static final String PASSWORD = "password";
     private static final String DATABASE = "database";
@@ -49,7 +47,7 @@ public class RedisStore implements IStore {
 
     @Override
     public void initialize(URL url) {
-        String category = url.getParameter(URL.CATEGORY_KEY, IDENTITY);
+        String category = url.getParameter(URL.CATEGORY_KEY);
         RedisCategory redisCategory = RedisCategory.parse(category);
 
         RedisURI redisURI;
