@@ -79,7 +79,7 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
 
     @Override
     public Object wrapperCall(String identity, OriginalCall originalCall) throws Throwable {
-        System.out.println(JSON.toJSONString(this.statistics()));
+        System.out.println(JSON.toJSONString(this.statistics().get(identity)));
         return null;
     }
 
