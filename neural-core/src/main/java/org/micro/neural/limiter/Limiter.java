@@ -90,6 +90,8 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
 
     @Override
     protected void ruleNotify(String identity, LimiterConfig ruleConfig) {
+        super.ruleNotify(identity, ruleConfig);
+
         try {
             ILimiter limiter = limiters.get(identity);
             if (null == limiter) {

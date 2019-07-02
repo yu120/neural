@@ -102,20 +102,22 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
     }
 
     /**
-     * The execute notify
+     * The notify of global config
      *
      * @param globalConfig {@link G}
      */
     protected void globalNotify(G globalConfig) {
-
+        log.debug("The notify of global config: {}", globalConfig);
     }
 
     /**
-     * The execute notify
+     * The notify of rule config
      *
      * @param identity   identity
      * @param ruleConfig {@link C}
      */
-    protected abstract void ruleNotify(String identity, C ruleConfig);
+    protected void ruleNotify(String identity, C ruleConfig) {
+        log.debug("The rule of global config: {}", globalConfig);
+    }
 
 }
