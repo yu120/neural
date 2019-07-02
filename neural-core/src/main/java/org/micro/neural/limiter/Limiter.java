@@ -35,7 +35,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
     @Override
     public Object wrapperCall(String identity, OriginalCall originalCall) throws Throwable {
         super.wrapperCall(identity, originalCall);
-        
+
         // The check global config of limiter
         if (null == globalConfig || null == globalConfig.getEnable() ||
                 GlobalConfig.Switch.OFF == globalConfig.getEnable()) {
@@ -47,7 +47,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
             return originalCall.call();
         }
 
-        return limiters.get(identity).doOriginalCall(originalCall);
+        return limiters.get(identity).originalCall(originalCall);
     }
 
     @Override

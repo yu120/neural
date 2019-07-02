@@ -29,7 +29,7 @@ public interface ILimiter {
      * @return The object of OriginalCall
      * @throws Throwable The Exception is execute doOriginalCall
      */
-    Object doOriginalCall(OriginalCall originalCall) throws Throwable;
+    Object originalCall(OriginalCall originalCall) throws Throwable;
 
     /**
      * The get statistics of limiter.

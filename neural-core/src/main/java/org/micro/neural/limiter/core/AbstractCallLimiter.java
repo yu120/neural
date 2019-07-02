@@ -18,7 +18,7 @@ import org.micro.neural.limiter.LimiterGlobalConfig;
 public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
 
     @Override
-    public Object doOriginalCall(OriginalCall originalCall) throws Throwable {
+    public Object originalCall(OriginalCall originalCall) throws Throwable {
         if (super.checkDisable()) {
             // the don't need limiting
             return originalCall.call();
