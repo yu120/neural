@@ -39,7 +39,7 @@ public interface Neural<C extends RuleConfig, G extends GlobalConfig> {
      * The notify of changed config
      *
      * @param category {@link Category}
-     * @param identity the config identity, format: [application]:[group]:[resource]
+     * @param identity the config identity, format: [module]:[application]:[group]:[resource]
      * @param data     the config data, format: serialize config data
      */
     void notify(Category category, String identity, String data);
@@ -69,7 +69,7 @@ public interface Neural<C extends RuleConfig, G extends GlobalConfig> {
     Object wrapperCall(String identity, OriginalCall originalCall) throws Throwable;
 
     /**
-     * The destroy store config
+     * The destroy
      */
     void destroy();
 
