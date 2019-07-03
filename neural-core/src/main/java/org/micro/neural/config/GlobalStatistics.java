@@ -199,25 +199,34 @@ public class GlobalStatistics implements Serializable {
      */
     protected Map<String, Long> getAndReset() {
         Map<String, Long> map = new LinkedHashMap<>();
-        // statistics trade
-        long totalRequest = requestCounter.sumThenReset();
-        if (totalRequest < 1) {
+        // reset number
+        long success = successCounter.sumThenReset();
+        long request = requestCounter.sumThenReset();
+        long failure = failureCounter.sumThenReset();
+        long timeout = timeoutCounter.sumThenReset();
+        long rejection = rejectionCounter.sumThenReset();
+        // reset elapsed
+        long avgElapsed = success <= 0 ? 0 : (totalElapsedAccumulator.getThenReset() / success);
+        long maxElapsed = maxElapsedAccumulator.getThenReset();
+        // reset concurrent
+        long concurrent = concurrentCounter.get();
+        long maxConcurrent = maxConcurrentAccumulator.getThenReset();
+        if (request < 1 || success < 1) {
             return map;
         }
 
-        // statistics trade
-        long success = successCounter.sumThenReset();
+        // statistics number
         map.put(SUCCESS_KEY, success);
-        map.put(REQUEST_KEY, totalRequest);
-        map.put(FAILURE_KEY, failureCounter.sumThenReset());
-        map.put(TIMEOUT_KEY, timeoutCounter.sumThenReset());
-        map.put(REJECTION_KEY, rejectionCounter.sumThenReset());
+        map.put(REQUEST_KEY, request);
+        map.put(FAILURE_KEY, failure);
+        map.put(TIMEOUT_KEY, timeout);
+        map.put(REJECTION_KEY, rejection);
         // statistics elapsed
-        map.put(AVG_ELAPSED_KEY, success <= 0 ? 0 : (totalElapsedAccumulator.getThenReset() / success));
-        map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.getThenReset());
+        map.put(AVG_ELAPSED_KEY, avgElapsed);
+        map.put(MAX_ELAPSED_KEY, maxElapsed);
         // statistics concurrent
-        map.put(CONCURRENT_KEY, concurrentCounter.get());
-        map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.getThenReset());
+        map.put(CONCURRENT_KEY, concurrent);
+        map.put(MAX_CONCURRENT_KEY, maxConcurrent);
 
         return map;
     }

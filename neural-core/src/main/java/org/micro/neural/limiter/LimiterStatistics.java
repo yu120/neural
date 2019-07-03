@@ -61,10 +61,17 @@ public class LimiterStatistics extends GlobalStatistics {
     @Override
     public synchronized Map<String, Long> getAndReset() {
         Map<String, Long> map = super.getAndReset();
-        // statistics exceed
-        map.put(CONCURRENT_EXCEED_KEY, concurrentExceedCounter.sumThenReset());
-        map.put(RATE_EXCEED_KEY, rateExceedCounter.sumThenReset());
 
+        // reset exceed
+        long concurrentExceed = concurrentExceedCounter.sumThenReset();
+        long rateExceed = rateExceedCounter.sumThenReset();
+        if (map == null || map.isEmpty()) {
+            return map;
+        }
+
+        // statistics exceed
+        map.put(CONCURRENT_EXCEED_KEY, concurrentExceed);
+        map.put(RATE_EXCEED_KEY, rateExceed);
         return map;
     }
 
@@ -76,10 +83,13 @@ public class LimiterStatistics extends GlobalStatistics {
     @Override
     public Map<String, Long> getStatisticsData() {
         Map<String, Long> map = super.getStatisticsData();
-        // statistics exceed
-        map.put(CONCURRENT_EXCEED_KEY, concurrentExceedCounter.longValue());
-        map.put(RATE_EXCEED_KEY, rateExceedCounter.longValue());
+        if (map == null || map.isEmpty()) {
+            return map;
+        }
 
+        // statistics exceed
+        map.put(CONCURRENT_EXCEED_KEY, concurrentExceedCounter.sum());
+        map.put(RATE_EXCEED_KEY, rateExceedCounter.sum());
         return map;
     }
 

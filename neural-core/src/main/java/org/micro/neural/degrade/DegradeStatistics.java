@@ -35,15 +35,12 @@ public class DegradeStatistics extends GlobalStatistics {
     @Override
     public synchronized Map<String, Long> getAndReset() {
         Map<String, Long> map = super.getAndReset();
-
-        // statistics exceed
-        long totalDegrade = counter.sumThenReset();
-        if (map.isEmpty()) {
+        if (map == null || map.isEmpty()) {
             return map;
         }
 
         // statistics exceed
-        map.put(DEGRADE_TIMES_KEY, totalDegrade);
+        map.put(DEGRADE_TIMES_KEY, counter.sumThenReset());
 
         return map;
     }
@@ -56,8 +53,12 @@ public class DegradeStatistics extends GlobalStatistics {
     @Override
     public Map<String, Long> getStatisticsData() {
         Map<String, Long> map = super.getStatisticsData();
+        if (map == null || map.isEmpty()) {
+            return map;
+        }
+
         // statistics trade
-        map.put(DEGRADE_TIMES_KEY, counter.longValue());
+        map.put(DEGRADE_TIMES_KEY, counter.sum());
 
         return map;
     }

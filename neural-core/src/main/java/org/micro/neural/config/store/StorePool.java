@@ -285,6 +285,7 @@ public class StorePool implements IStoreListener {
                         return;
                     }
 
+                    System.out.println(statisticsData);
                     Map<String, Long> sendData = new HashMap<>();
                     for (Map.Entry<String, Map<String, Long>> identityEntry : statisticsData.entrySet()) {
                         for (Map.Entry<String, Long> tempEntry : identityEntry.getValue().entrySet()) {
