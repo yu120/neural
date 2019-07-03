@@ -3,6 +3,7 @@ package org.micro.neural.config;
 import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.micro.neural.NeuralContext;
 import org.micro.neural.OriginalCall;
 
 import java.io.Serializable;
@@ -99,7 +100,7 @@ public class GlobalStatistics implements Serializable {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    public Object wrapperOriginalCall(OriginalCall originalCall) throws Throwable {
+    public Object wrapperOriginalCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable {
         long startTime = System.currentTimeMillis();
 
         try {

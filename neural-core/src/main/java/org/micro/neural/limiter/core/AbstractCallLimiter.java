@@ -29,7 +29,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         statistics.totalRequestTraffic();
 
         // the concurrent limiter and original call
-        return doConcurrentOriginalCall(originalCall);
+        return doConcurrentOriginalCall(neuralContext, originalCall);
     }
 
     /**
@@ -39,18 +39,18 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doConcurrentOriginalCall(OriginalCall originalCall) throws Throwable {
+    private Object doConcurrentOriginalCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable {
         // the check concurrent limiting exceed
         if (super.checkConcurrentEnable()) {
             // try acquire concurrent
             switch (incrementConcurrent()) {
                 case FAILURE:
                     // the concurrent exceed
-                    return doStrategyProcess(LimiterGlobalConfig.EventType.CONCURRENT_EXCEED, originalCall);
+                    return doStrategyProcess(neuralContext, LimiterGlobalConfig.EventType.CONCURRENT_EXCEED, originalCall);
                 case SUCCESS:
                     // the concurrent success must be released
                     try {
-                        return doRateOriginalCall(originalCall);
+                        return doRateOriginalCall(neuralContext, originalCall);
                     } finally {
                         decrementConcurrent();
                     }
@@ -62,7 +62,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         }
 
         // the skip non check ConcurrentLimiter or exception or other
-        return doRateOriginalCall(originalCall);
+        return doRateOriginalCall(neuralContext, originalCall);
     }
 
     /**
@@ -72,13 +72,13 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doRateOriginalCall(OriginalCall originalCall) throws Throwable {
+    private Object doRateOriginalCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable {
         // the check rate limiting exceed
         if (super.checkRateEnable()) {
             switch (tryAcquireRate()) {
                 case FAILURE:
                     // the rate exceed
-                    return doStrategyProcess(LimiterGlobalConfig.EventType.RATE_EXCEED, originalCall);
+                    return doStrategyProcess(neuralContext, LimiterGlobalConfig.EventType.RATE_EXCEED, originalCall);
                 case SUCCESS:
                     // the pass success case
                 case EXCEPTION:
@@ -89,7 +89,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         }
 
         // the skip non check RateLimiter or success or exception or other
-        return doRequestOriginalCall(originalCall);
+        return doRequestOriginalCall(neuralContext, originalCall);
     }
 
     /**
@@ -99,13 +99,13 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doRequestOriginalCall(OriginalCall originalCall) throws Throwable {
+    private Object doRequestOriginalCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable {
         // the check request limiting exceed
         if (super.checkRequestEnable()) {
             switch (tryAcquireRequest()) {
                 case FAILURE:
                     // the request exceed
-                    return doStrategyProcess(LimiterGlobalConfig.EventType.REQUEST_EXCEED, originalCall);
+                    return doStrategyProcess(neuralContext, LimiterGlobalConfig.EventType.REQUEST_EXCEED, originalCall);
                 case SUCCESS:
                     // the pass success case
                 case EXCEPTION:
@@ -116,7 +116,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         }
 
         // the skip non check RateLimiter or success or exception or other
-        return statistics.wrapperOriginalCall(originalCall);
+        return statistics.wrapperOriginalCall(neuralContext, originalCall);
     }
 
     /**
@@ -127,7 +127,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doStrategyProcess(LimiterGlobalConfig.EventType eventType,
+    private Object doStrategyProcess(NeuralContext neuralContext, LimiterGlobalConfig.EventType eventType,
                                      OriginalCall originalCall) throws Throwable {
         // the total exceed of statistical traffic
         statistics.exceedTraffic(eventType);
@@ -153,7 +153,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
         }
 
         // the wrapper of original call
-        return statistics.wrapperOriginalCall(originalCall);
+        return statistics.wrapperOriginalCall(neuralContext, originalCall);
     }
 
     /**

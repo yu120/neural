@@ -76,7 +76,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
             return originalCall.call();
         }
 
-        return statistics.wrapperOriginalCall(originalCall);
+        return statistics.wrapperOriginalCall(neuralContext, originalCall);
     }
 
     @Override
