@@ -25,9 +25,6 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
             return statistics.wrapperOriginalCall(neuralContext, originalCall);
         }
 
-        // the total request of statistical traffic
-        statistics.totalRequestTraffic();
-
         // the concurrent limiter and original call
         return doConcurrentOriginalCall(neuralContext, originalCall);
     }

@@ -57,9 +57,6 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
             return originalCall.call();
         }
 
-        // total request traffic
-        degradeStatistics.get(identity).totalRequestTraffic();
-
         // the check degrade enable, Switch.OFF is opened if degrade
         if (Switch.OFF == degradeConfig.getEnable()) {
             return doDegradeCallWrapper(identity, degradeConfig.getStrategy(), originalCall);

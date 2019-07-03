@@ -37,68 +37,56 @@ public class GlobalStatistics implements Serializable {
     /**
      * The total request counter in the current time window: Calculation QPS
      */
-    protected final LongAdder requestCounter = new LongAdder();
+    private final LongAdder requestCounter = new LongAdder();
     /**
      * The total success counter in the current time window: Calculation TPS
      */
-    protected final LongAdder successCounter = new LongAdder();
+    private final LongAdder successCounter = new LongAdder();
     /**
      * The total failure counter in the current time window
      */
-    protected final LongAdder failureCounter = new LongAdder();
+    private final LongAdder failureCounter = new LongAdder();
     /**
      * The total timeout counter in the current time window
      */
-    protected final LongAdder timeoutCounter = new LongAdder();
+    private final LongAdder timeoutCounter = new LongAdder();
     /**
      * The total rejection counter in the current time window
      */
-    protected final LongAdder rejectionCounter = new LongAdder();
+    private final LongAdder rejectionCounter = new LongAdder();
 
     // === elapsed/maxElapsed
 
     /**
      * The total elapsed counter in the current time window
      */
-    protected final LongAccumulator elapsedAccumulator = new LongAccumulator(Long::sum, 0);
+    private final LongAccumulator elapsedAccumulator = new LongAccumulator(Long::sum, 0);
     /**
      * The max elapsed counter in the current time window
      */
-    protected final LongAccumulator maxElapsedAccumulator = new LongAccumulator(Long::max, 0);
+    private final LongAccumulator maxElapsedAccumulator = new LongAccumulator(Long::max, 0);
 
     // === concurrent/maxConcurrent
 
     /**
      * The total concurrent exceed counter in the current time window
      */
-    protected final AtomicLong concurrentCounter = new AtomicLong(0);
+    private final AtomicLong concurrentCounter = new AtomicLong(0);
     /**
      * The max concurrent counter in the current time window
      */
-    protected final LongAccumulator maxConcurrentAccumulator = new LongAccumulator(Long::max, 0);
+    private final LongAccumulator maxConcurrentAccumulator = new LongAccumulator(Long::max, 0);
 
     // === rate/maxRate
 
     /**
      * The total rate counter in the current time window
      */
-    protected final AtomicLong rateCounter = new AtomicLong(0);
+    private final AtomicLong rateCounter = new AtomicLong(0);
     /**
      * The max rate counter in the current time window
      */
-    protected final LongAccumulator maxRateAccumulator = new LongAccumulator(Long::max, 0);
-
-    /**
-     * The total request of statistical traffic
-     */
-    public void totalRequestTraffic() {
-        try {
-            // increment request times
-            requestCounter.increment();
-        } catch (Exception e) {
-            log.error("The total request traffic is exception", e);
-        }
-    }
+    private final LongAccumulator maxRateAccumulator = new LongAccumulator(Long::max, 0);
 
     /**
      * The wrapper of original call
@@ -131,6 +119,9 @@ public class GlobalStatistics implements Serializable {
      */
     private void incrementTraffic() {
         try {
+            // increment request times
+            requestCounter.increment();
+
             // increment concurrent times
             long concurrentNum = concurrentCounter.incrementAndGet();
             // total max concurrent times
