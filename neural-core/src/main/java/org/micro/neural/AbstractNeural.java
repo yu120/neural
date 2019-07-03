@@ -77,13 +77,18 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
     }
 
     @Override
-    public Object call(String identity, OriginalCall originalCall) throws Throwable {
-        return call(null, identity, originalCall);
+    public Object originalCall(String identity, OriginalCall originalCall) throws Throwable {
+        return originalCall(new NeuralContext(), identity, originalCall);
     }
 
     @Override
-    public Object call(NeuralContext neuralContext, String identity, OriginalCall originalCall) throws Throwable {
-        return wrapperCall(neuralContext, identity, originalCall);
+    public Object originalCall(NeuralContext neuralContext, String identity, OriginalCall originalCall) throws Throwable {
+        try {
+            NeuralContext.set(neuralContext);
+            return wrapperCall(neuralContext, identity, originalCall);
+        } finally {
+            NeuralContext.remove();
+        }
     }
 
     public Object wrapperCall(NeuralContext neuralContext, String identity, OriginalCall originalCall) throws Throwable {

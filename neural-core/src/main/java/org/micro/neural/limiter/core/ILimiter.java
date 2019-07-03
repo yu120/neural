@@ -1,5 +1,6 @@
 package org.micro.neural.limiter.core;
 
+import org.micro.neural.NeuralContext;
 import org.micro.neural.OriginalCall;
 import org.micro.neural.extension.SPI;
 import org.micro.neural.limiter.LimiterConfig;
@@ -16,7 +17,7 @@ public interface ILimiter {
     /**
      * The refresh in-memory data.
      *
-     * @param limiterConfig       The LimiterConfig
+     * @param limiterConfig The LimiterConfig
      * @return true is success
      * @throws Exception The Exception is execute refresh LimiterConfig
      */
@@ -25,11 +26,12 @@ public interface ILimiter {
     /**
      * The process original call.
      *
-     * @param originalCall The Limiter Config
+     * @param neuralContext {@link NeuralContext}
+     * @param originalCall  {@link OriginalCall}
      * @return The object of OriginalCall
      * @throws Throwable The Exception is execute doOriginalCall
      */
-    Object originalCall(OriginalCall originalCall) throws Throwable;
+    Object originalCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable;
 
     /**
      * The get statistics of limiter.

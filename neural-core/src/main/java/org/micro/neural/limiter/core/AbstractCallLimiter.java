@@ -2,6 +2,7 @@ package org.micro.neural.limiter.core;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.micro.neural.NeuralContext;
 import org.micro.neural.OriginalCall;
 import org.micro.neural.config.event.EventCollect;
 import org.micro.neural.limiter.LimiterExceedException;
@@ -18,7 +19,7 @@ import org.micro.neural.limiter.LimiterGlobalConfig;
 public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
 
     @Override
-    public Object originalCall(OriginalCall originalCall) throws Throwable {
+    public Object originalCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable {
         if (super.checkDisable()) {
             // the don't need limiting
             return originalCall.call();

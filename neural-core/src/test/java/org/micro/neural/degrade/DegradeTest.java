@@ -32,7 +32,7 @@ public class DegradeTest {
         degrade.addConfig(config2);
 
         for (int i = 0; i < 100000; i++) {
-            Object result = degrade.call(identity1, new OriginalCall() {
+            Object result = degrade.originalCall(identity1, new OriginalCall() {
                 @Override
                 public Object call() throws Throwable {
                     Thread.sleep(new Random().nextInt(100) + 20);
