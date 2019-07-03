@@ -296,17 +296,16 @@ public class StorePool implements IStoreListener {
                 }
 
                 System.out.println(statisticsData);
-                Map<String, Long> sendData = new HashMap<>();
                 for (Map.Entry<String, Map<String, Long>> identityEntry : statisticsData.entrySet()) {
+                    Map<String, Long> sendData = new HashMap<>();
                     for (Map.Entry<String, Long> tempEntry : identityEntry.getValue().entrySet()) {
-                        String key = String.join(DELIMITER, space, STATISTICS,
-                                String.valueOf(time), tempEntry.getKey().toUpperCase());
-                        sendData.put(key, tempEntry.getValue());
+                        sendData.put(tempEntry.getKey(), tempEntry.getValue());
                     }
-                }
 
-                // push statistics data to remote
-                store.batchIncrementBy(neural.getGlobalConfig().getStatisticExpire(), sendData);
+                    String key = String.join(DELIMITER, space, STATISTICS, identityEntry.getKey(), String.valueOf(time));
+                    // push statistics data to remote
+                    store.batchIncrementBy(key, sendData, neural.getGlobalConfig().getStatisticExpire());
+                }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

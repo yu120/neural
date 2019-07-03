@@ -83,16 +83,16 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public void batchIncrementBy(long expire, Map<String, Long> data) {
+    public void batchIncrementBy(String key, Map<String, Long> data, long expire) {
         StatefulRedisConnection<String, String> connection = null;
 
         try {
             connection = borrowObject(borrowMaxWaitMillis);
             RedisAsyncCommands<String, String> commands = connection.async();
             for (Map.Entry<String, Long> entry : data.entrySet()) {
-                commands.incrby(entry.getKey(), entry.getValue());
-                commands.pexpire(entry.getKey(), expire);
+                commands.hincrby(key, entry.getKey(), entry.getValue());
             }
+            commands.pexpire(key, expire);
         } finally {
             borrowObject(connection);
         }

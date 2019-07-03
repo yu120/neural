@@ -50,10 +50,11 @@ public interface IStore {
     /**
      * The batch increment update or add
      *
-     * @param expire expire time
+     * @param key    key
      * @param data   config data
+     * @param expire expire time
      */
-    void batchIncrementBy(long expire, Map<String, Long> data);
+    void batchIncrementBy(String key, Map<String, Long> data, long expire);
 
     /**
      * The search keys with keyword
