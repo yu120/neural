@@ -15,8 +15,8 @@ public final class Constants {
 
     // ==== common statistics
 
-    public static final String REQUEST_KEY = "request";
     public static final String SUCCESS_KEY = "success";
+    public static final String REQUEST_KEY = "request";
     public static final String FAILURE_KEY = "failure";
     public static final String TIMEOUT_KEY = "timeout";
     public static final String REJECTION_KEY = "rejection";

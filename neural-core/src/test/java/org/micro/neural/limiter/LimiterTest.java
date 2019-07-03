@@ -3,6 +3,7 @@ package org.micro.neural.limiter;
 import java.time.Duration;
 import java.util.Random;
 
+import com.alibaba.fastjson.JSON;
 import org.micro.neural.common.URL;
 import org.micro.neural.OriginalCall;
 import org.micro.neural.config.store.StorePool;
@@ -56,7 +57,7 @@ public class LimiterTest {
                     return "fallback";
                 }
             });
-            System.out.println(i + ": " + result);
+            System.out.println(i + ":" + result + "->" + JSON.toJSONString(limiter.statistics().get(config1.identity())));
             if (i == 50) {
                 config1.setRateTimeout(3000L);
                 System.out.println("1发布配置");

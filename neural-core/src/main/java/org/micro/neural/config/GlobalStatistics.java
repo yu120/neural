@@ -1,6 +1,5 @@
 package org.micro.neural.config;
 
-import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.NeuralContext;
@@ -35,13 +34,13 @@ public class GlobalStatistics implements Serializable {
     // === request/success/failure/timeout/rejection
 
     /**
-     * The total request counter in the current time window: Calculation QPS
-     */
-    private final LongAdder requestCounter = new LongAdder();
-    /**
      * The total success counter in the current time window: Calculation TPS
      */
     private final LongAdder successCounter = new LongAdder();
+    /**
+     * The total request counter in the current time window: Calculation QPS
+     */
+    private final LongAdder requestCounter = new LongAdder();
     /**
      * The total failure counter in the current time window
      */
@@ -97,7 +96,6 @@ public class GlobalStatistics implements Serializable {
             exceptionTraffic(t);
             throw t;
         } finally {
-            System.out.println(JSON.toJSONString(getStatisticsData()));
             // decrement traffic
             decrementTraffic(startTime);
         }
@@ -195,16 +193,17 @@ public class GlobalStatistics implements Serializable {
         }
 
         // statistics trade
+        long success = successCounter.sumThenReset();
+        map.put(SUCCESS_KEY, success);
         map.put(REQUEST_KEY, totalRequest);
-        map.put(SUCCESS_KEY, successCounter.sumThenReset());
         map.put(FAILURE_KEY, failureCounter.sumThenReset());
-        // timeout/rejection
         map.put(TIMEOUT_KEY, timeoutCounter.sumThenReset());
         map.put(REJECTION_KEY, rejectionCounter.sumThenReset());
         // statistics elapsed
-        map.put(AVG_ELAPSED_KEY, totalElapsedAccumulator.getThenReset());
+        map.put(AVG_ELAPSED_KEY, success <= 0 ? 0 : (totalElapsedAccumulator.getThenReset() / success));
         map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.getThenReset());
         // statistics concurrent
+        map.put(CONCURRENT_KEY, concurrentCounter.get());
         map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.getThenReset());
 
         return map;
@@ -219,11 +218,10 @@ public class GlobalStatistics implements Serializable {
         Map<String, Long> map = new LinkedHashMap<>();
 
         // statistics trade
-        map.put(REQUEST_KEY, requestCounter.sum());
         long success = successCounter.sum();
         map.put(SUCCESS_KEY, success);
+        map.put(REQUEST_KEY, requestCounter.sum());
         map.put(FAILURE_KEY, failureCounter.sum());
-        // timeout/rejection
         map.put(TIMEOUT_KEY, timeoutCounter.sum());
         map.put(REJECTION_KEY, rejectionCounter.sum());
         // statistics elapsed
