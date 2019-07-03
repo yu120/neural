@@ -31,7 +31,7 @@ public interface ILimiter {
      * @return The object of OriginalCall
      * @throws Throwable The Exception is execute doOriginalCall
      */
-    Object originalCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable;
+    Object wrapperCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable;
 
     /**
      * The get statistics of limiter.

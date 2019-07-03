@@ -19,7 +19,7 @@ import org.micro.neural.limiter.LimiterGlobalConfig;
 public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
 
     @Override
-    public Object originalCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable {
+    public Object wrapperCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable {
         if (super.checkDisable()) {
             // the don't need limiting
             return statistics.wrapperOriginalCall(neuralContext, originalCall);

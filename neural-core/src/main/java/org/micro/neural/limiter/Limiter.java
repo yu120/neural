@@ -48,7 +48,7 @@ public class Limiter extends AbstractNeural<LimiterConfig, LimiterGlobalConfig> 
             return originalCall.call();
         }
 
-        return limiters.get(identity).originalCall(neuralContext, originalCall);
+        return limiters.get(identity).wrapperCall(neuralContext, originalCall);
     }
 
     @Override
