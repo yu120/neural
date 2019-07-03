@@ -40,9 +40,4 @@ public class NodeConfig implements Serializable {
      */
     private long time = System.currentTimeMillis();
 
-    public static void main(String[] args) {
-        System.out.println(new NodeConfig());
-    }
-
-
 }
