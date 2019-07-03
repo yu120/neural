@@ -22,7 +22,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
     public Object originalCall(NeuralContext neuralContext, OriginalCall originalCall) throws Throwable {
         if (super.checkDisable()) {
             // the don't need limiting
-            return originalCall.call();
+            return statistics.wrapperOriginalCall(neuralContext, originalCall);
         }
 
         // the total request of statistical traffic
