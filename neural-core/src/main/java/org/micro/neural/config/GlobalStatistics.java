@@ -87,16 +87,19 @@ public class GlobalStatistics implements Serializable {
         long startTime = System.currentTimeMillis();
 
         try {
-            // increment traffic
+            // Step 1: increment traffic
             incrementTraffic();
             // original call
-            return originalCall.call();
+            Object result = originalCall.call();
+            // Step 2: success traffic
+            successTraffic();
+            return result;
         } catch (Throwable t) {
-            // total exception traffic
+            // Step 3: total exception traffic
             exceptionTraffic(t);
             throw t;
         } finally {
-            // decrement traffic
+            // Step 4 decrement traffic
             decrementTraffic(startTime);
         }
     }
@@ -115,6 +118,18 @@ public class GlobalStatistics implements Serializable {
             maxConcurrentAccumulator.accumulate(concurrentNum);
         } catch (Exception e) {
             log.error("The increment traffic is exception", e);
+        }
+    }
+
+    /**
+     * The success of statistical traffic
+     */
+    private void successTraffic() {
+        try {
+            // total all success times
+            successCounter.increment();
+        } catch (Exception e) {
+            log.error("The total success traffic is exception", e);
         }
     }
 
@@ -152,8 +167,6 @@ public class GlobalStatistics implements Serializable {
             // total max elapsed
             maxElapsedAccumulator.accumulate(elapsed);
 
-            // total all success times
-            successCounter.increment();
             // decrement concurrent times
             concurrentCounter.decrementAndGet();
         } catch (Exception e) {
