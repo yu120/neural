@@ -6,8 +6,7 @@ import org.micro.neural.NeuralContext;
 import org.micro.neural.OriginalCall;
 
 import java.io.Serializable;
-import java.util.Calendar;
-import java.util.Date;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
@@ -53,6 +52,14 @@ public class GlobalStatistics implements Serializable {
      * The total rejection counter in the current time window
      */
     private final LongAdder rejectionCounter = new LongAdder();
+    /**
+     * The total sql exception counter in the current time window
+     */
+    private final LongAdder sqlExceptionCounter = new LongAdder();
+    /**
+     * The total runtime exception counter in the current time window
+     */
+    private final LongAdder runtimeExceptionCounter = new LongAdder();
 
     // === elapsed/maxElapsed
 
@@ -148,6 +155,12 @@ public class GlobalStatistics implements Serializable {
             } else if (t instanceof RejectedExecutionException) {
                 // total all rejection times
                 rejectionCounter.increment();
+            } else if (t instanceof SQLException) {
+                // total all sql exception times
+                sqlExceptionCounter.increment();
+            } else if (t instanceof RuntimeException) {
+                // total all runtime exception times
+                runtimeExceptionCounter.increment();
             }
         } catch (Exception e) {
             log.error("The exception traffic is exception", e);
