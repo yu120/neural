@@ -1,6 +1,5 @@
 package org.micro.neural;
 
-import com.alibaba.fastjson.JSON;
 import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.GlobalConfig;
