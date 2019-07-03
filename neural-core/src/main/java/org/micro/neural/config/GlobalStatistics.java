@@ -56,11 +56,11 @@ public class GlobalStatistics implements Serializable {
     /**
      * The total elapsed counter in the current time window
      */
-    protected final LongAccumulator elapsedCounter = new LongAccumulator(Long::sum, 0);
+    protected final LongAccumulator elapsedAccumulator = new LongAccumulator(Long::sum, 0);
     /**
      * The max elapsed counter in the current time window
      */
-    protected final LongAccumulator maxElapsedCounter = new LongAccumulator(Long::max, 0);
+    protected final LongAccumulator maxElapsedAccumulator = new LongAccumulator(Long::max, 0);
 
     /**
      * The total concurrent exceed counter in the current time window
@@ -69,7 +69,7 @@ public class GlobalStatistics implements Serializable {
     /**
      * The max concurrent counter in the current time window
      */
-    protected final LongAccumulator maxConcurrentCounter = new LongAccumulator(Long::max, 0);
+    protected final LongAccumulator maxConcurrentAccumulator = new LongAccumulator(Long::max, 0);
 
     /**
      * The total rate counter in the current time window
@@ -78,7 +78,7 @@ public class GlobalStatistics implements Serializable {
     /**
      * The max rate counter in the current time window
      */
-    protected final LongAccumulator maxRateCounter = new LongAccumulator(Long::max, 0);
+    protected final LongAccumulator maxRateAccumulator = new LongAccumulator(Long::max, 0);
 
     /**
      * The total request of statistical traffic
@@ -126,12 +126,12 @@ public class GlobalStatistics implements Serializable {
             // increment concurrent times
             long concurrentNum = concurrentCounter.incrementAndGet();
             // total max concurrent times
-            maxConcurrentCounter.accumulate(concurrentNum);
+            maxConcurrentAccumulator.accumulate(concurrentNum);
 
             // increment request rate times
             long rateNum = rateCounter.incrementAndGet();
             // total request max rate times
-            maxRateCounter.accumulate(rateNum);
+            maxRateAccumulator.accumulate(rateNum);
         } catch (Exception e) {
             log.error("The increment traffic is exception", e);
         }
@@ -167,9 +167,9 @@ public class GlobalStatistics implements Serializable {
         try {
             long elapsed = System.currentTimeMillis() - startTime;
             // total all elapsed
-            elapsedCounter.accumulate(elapsed);
+            elapsedAccumulator.accumulate(elapsed);
             // total max elapsed
-            maxElapsedCounter.accumulate(elapsed);
+            maxElapsedAccumulator.accumulate(elapsed);
 
             // total all success times
             successCounter.incrementAndGet();
@@ -219,14 +219,14 @@ public class GlobalStatistics implements Serializable {
         map.put(TIMEOUT_KEY, timeoutCounter.getAndSet(0));
         map.put(REJECTION_KEY, rejectionCounter.getAndSet(0));
         // statistics elapsed
-        map.put(ELAPSED_KEY, elapsedCounter.getThenReset());
-        map.put(MAX_ELAPSED_KEY, maxElapsedCounter.getThenReset());
+        map.put(ELAPSED_KEY, elapsedAccumulator.getThenReset());
+        map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.getThenReset());
         // statistics concurrent
         map.put(CONCURRENT_KEY, concurrentCounter.getAndSet(0));
-        map.put(MAX_CONCURRENT_KEY, maxConcurrentCounter.getThenReset());
+        map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.getThenReset());
         // statistics concurrent
         map.put(RATE_KEY, rateCounter.getAndSet(0));
-        map.put(MAX_RATE_KEY, maxRateCounter.getThenReset());
+        map.put(MAX_RATE_KEY, maxRateAccumulator.getThenReset());
 
         return map;
     }
@@ -246,14 +246,14 @@ public class GlobalStatistics implements Serializable {
         map.put(TIMEOUT_KEY, timeoutCounter.get());
         map.put(REJECTION_KEY, rejectionCounter.get());
         // statistics elapsed
-        map.put(ELAPSED_KEY, elapsedCounter.get());
-        map.put(MAX_ELAPSED_KEY, maxElapsedCounter.get());
+        map.put(ELAPSED_KEY, elapsedAccumulator.get());
+        map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.get());
         // statistics concurrent
         map.put(CONCURRENT_KEY, concurrentCounter.get());
-        map.put(MAX_CONCURRENT_KEY, maxConcurrentCounter.get());
+        map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.get());
         // statistics rate
         map.put(RATE_KEY, rateCounter.get());
-        map.put(MAX_RATE_KEY, maxRateCounter.get());
+        map.put(MAX_RATE_KEY, maxRateAccumulator.get());
 
         return map;
     }
