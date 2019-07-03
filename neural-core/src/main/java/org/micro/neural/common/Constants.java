@@ -11,7 +11,7 @@ public final class Constants {
     public static final String DELIMITER = ":";
     public static final String CHANNEL = "CHANNEL";
 
-    public static final String STATISTICS = "statistics";
+    public static final String STATISTICS = "STATISTICS";
 
     // ==== common statistics
 

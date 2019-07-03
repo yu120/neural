@@ -281,9 +281,12 @@ public class StorePool implements IStoreListener {
      */
     @SuppressWarnings("unchecked")
     private void collect() {
+        NodeConfig nodeConfig = new NodeConfig();
         for (Map.Entry<String, Neural> entry : modules.entrySet()) {
             try {
                 Neural neural = entry.getValue();
+                GlobalConfig globalConfig = neural.getGlobalConfig();
+                long time = buildStatisticsTime(globalConfig.getStatisticReportCycle());
 
                 // query memory statistics data
                 Map<String, Map<String, Long>> statisticsData = neural.collect();
@@ -296,7 +299,9 @@ public class StorePool implements IStoreListener {
                 Map<String, Long> sendData = new HashMap<>();
                 for (Map.Entry<String, Map<String, Long>> identityEntry : statisticsData.entrySet()) {
                     for (Map.Entry<String, Long> tempEntry : identityEntry.getValue().entrySet()) {
-                        sendData.put(String.join(DELIMITER, space, tempEntry.getKey()), tempEntry.getValue());
+                        String key = String.join(DELIMITER, space, STATISTICS,
+                                String.valueOf(time), tempEntry.getKey().toUpperCase());
+                        sendData.put(key, tempEntry.getValue());
                     }
                 }
 
@@ -306,6 +311,24 @@ public class StorePool implements IStoreListener {
                 log.error(e.getMessage(), e);
             }
         }
+    }
+
+    /**
+     * The build statistics time
+     *
+     * @param statisticReportCycle statistic report cycle milliseconds
+     * @return statistics time
+     */
+    private long buildStatisticsTime(long statisticReportCycle) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+
+        int second = (int) statisticReportCycle / 1000;
+        int tempSecond = calendar.get(Calendar.SECOND) % second;
+        second = tempSecond >= second / 2 ? second : 0;
+        calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) + second - tempSecond);
+
+        return calendar.getTimeInMillis();
     }
 
     /**

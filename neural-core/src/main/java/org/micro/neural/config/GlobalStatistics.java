@@ -175,24 +175,6 @@ public class GlobalStatistics implements Serializable {
     }
 
     /**
-     * The build statistics time
-     *
-     * @param statisticReportCycle statistic report cycle milliseconds
-     * @return statistics time
-     */
-    protected long buildStatisticsTime(long statisticReportCycle) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-
-        int second = (int) statisticReportCycle / 1000;
-        int tempSecond = calendar.get(Calendar.SECOND) % second;
-        second = tempSecond >= second / 2 ? second : 0;
-        calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) + second - tempSecond);
-
-        return calendar.getTimeInMillis();
-    }
-
-    /**
      * The get statistics and reset
      *
      * @return statistics data map
