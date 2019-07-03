@@ -175,6 +175,10 @@ public class GlobalStatistics implements Serializable {
             successCounter.increment();
             // decrement concurrent times
             concurrentCounter.decrement();
+            long d = concurrentCounter.longValue();
+            if (d < 0) {
+                int ds = 1 + 1;
+            }
         } catch (Exception e) {
             log.error("The decrement traffic is exception", e);
         }

@@ -1,5 +1,6 @@
 package org.micro.neural.degrade;
 
+import org.micro.neural.NeuralContext;
 import org.micro.neural.config.event.EventCollect;
 import org.micro.neural.config.GlobalConfig.*;
 import org.micro.neural.OriginalCall;
@@ -34,7 +35,7 @@ public class Degrade extends AbstractNeural<DegradeConfig, DegradeGlobalConfig> 
     }
 
     @Override
-    public Object wrapperCall(String identity, OriginalCall originalCall) throws Throwable {
+    public Object wrapperCall(NeuralContext neuralContext, String identity, OriginalCall originalCall) throws Throwable {
         // the check global config of degrade
         if (null == globalConfig || null == globalConfig.getEnable() || Switch.OFF == globalConfig.getEnable()) {
             return originalCall.call();

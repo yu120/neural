@@ -35,14 +35,25 @@ public interface Neural<C extends RuleConfig, G extends GlobalConfig> {
     void addConfig(C config);
 
     /**
-     * The process of wrapper original call
+     * The process of original call
      *
      * @param identity     {@link org.micro.neural.config.RuleConfig}
      * @param originalCall {@link OriginalCall}
      * @return invoke return object
      * @throws Throwable throw exception
      */
-    Object wrapperCall(String identity, OriginalCall originalCall) throws Throwable;
+    Object call(String identity, OriginalCall originalCall) throws Throwable;
+
+    /**
+     * The process of original call
+     *
+     * @param neuralContext {@link NeuralContext}
+     * @param identity      {@link org.micro.neural.config.RuleConfig}
+     * @param originalCall  {@link OriginalCall}
+     * @return invoke return object
+     * @throws Throwable throw exception
+     */
+    Object call(NeuralContext neuralContext, String identity, OriginalCall originalCall) throws Throwable;
 
     /**
      * The notify of changed config

@@ -44,7 +44,7 @@ public class LimiterTest {
         limiter.initialize(URL.valueOf("redis://localhost:6379?minIdle=2"));
 
         for (int i = 0; i < 100000; i++) {
-            Object result = limiter.wrapperCall(config1.identity(), new OriginalCall() {
+            Object result = limiter.call(config1.identity(), new OriginalCall() {
                 @Override
                 public Object call() throws Throwable {
                     Thread.sleep(new Random().nextInt(100) + 20);
