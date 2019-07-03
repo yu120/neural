@@ -32,11 +32,12 @@ public class GlobalStatistics implements Serializable {
 
     private static final long serialVersionUID = 2972356738274634556L;
 
+    // === request/success/failure/timeout/rejection
+
     /**
      * The total request counter in the current time window: Calculation QPS
      */
     protected final LongAdder requestCounter = new LongAdder();
-
     /**
      * The total success counter in the current time window: Calculation TPS
      */
@@ -45,7 +46,6 @@ public class GlobalStatistics implements Serializable {
      * The total failure counter in the current time window
      */
     protected final LongAdder failureCounter = new LongAdder();
-
     /**
      * The total timeout counter in the current time window
      */
@@ -54,6 +54,8 @@ public class GlobalStatistics implements Serializable {
      * The total rejection counter in the current time window
      */
     protected final LongAdder rejectionCounter = new LongAdder();
+
+    // === elapsed/maxElapsed
 
     /**
      * The total elapsed counter in the current time window
@@ -64,6 +66,8 @@ public class GlobalStatistics implements Serializable {
      */
     protected final LongAccumulator maxElapsedAccumulator = new LongAccumulator(Long::max, 0);
 
+    // === concurrent/maxConcurrent
+
     /**
      * The total concurrent exceed counter in the current time window
      */
@@ -72,6 +76,8 @@ public class GlobalStatistics implements Serializable {
      * The max concurrent counter in the current time window
      */
     protected final LongAccumulator maxConcurrentAccumulator = new LongAccumulator(Long::max, 0);
+
+    // === rate/maxRate
 
     /**
      * The total rate counter in the current time window
