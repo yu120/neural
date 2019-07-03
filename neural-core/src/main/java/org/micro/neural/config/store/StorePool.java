@@ -1,5 +1,6 @@
 package org.micro.neural.config.store;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.Neural;
@@ -297,7 +298,7 @@ public class StorePool implements IStoreListener {
 
                 System.out.println(statisticsData);
                 for (Map.Entry<String, Map<String, Long>> identityEntry : statisticsData.entrySet()) {
-                    Map<String, Long> sendData = new HashMap<>();
+                    Map<String, Object> sendData = new HashMap<>(JSON.parseObject(JSON.toJSONString(nodeConfig), Map.class));
                     for (Map.Entry<String, Long> tempEntry : identityEntry.getValue().entrySet()) {
                         sendData.put(tempEntry.getKey(), tempEntry.getValue());
                     }

@@ -30,14 +30,14 @@ public class NodeConfig implements Serializable {
     /**
      * The port of node
      */
-    private Integer port;
+    private String port;
     /**
      * The process id of node
      */
-    private Integer processId = NetUtils.getProcessId();
+    private String processId = NetUtils.getProcessId();
     /**
      * The current time id of node
      */
-    private long time = System.currentTimeMillis();
+    private String time = String.valueOf(System.currentTimeMillis());
 
 }

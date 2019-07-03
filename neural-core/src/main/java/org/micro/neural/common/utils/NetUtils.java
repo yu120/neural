@@ -32,7 +32,7 @@ public class NetUtils {
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
     private static final Map<String, String> HOST_NAME_CACHE = new LinkedHashMap<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
-    private static volatile Integer PROCESS_ID = null;
+    private static volatile String PROCESS_ID = null;
 
     public static int getAvailablePort() {
         try (ServerSocket ss = new ServerSocket()) {
@@ -213,12 +213,12 @@ public class NetUtils {
         return new InetSocketAddress(host, port);
     }
 
-    public static int getProcessId() {
+    public static String getProcessId() {
         if (PROCESS_ID != null) {
             return PROCESS_ID;
         }
 
-        return PROCESS_ID = Integer.valueOf(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
+        return PROCESS_ID = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
     }
 
 }

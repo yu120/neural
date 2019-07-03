@@ -54,7 +54,7 @@ public interface IStore {
      * @param data   config data
      * @param expire expire time
      */
-    void batchIncrementBy(String key, Map<String, Long> data, long expire);
+    void batchIncrementBy(String key, Map<String, Object> data, long expire);
 
     /**
      * The search keys with keyword
