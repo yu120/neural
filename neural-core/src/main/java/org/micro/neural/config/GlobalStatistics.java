@@ -60,7 +60,7 @@ public class GlobalStatistics implements Serializable {
     /**
      * The total elapsed counter in the current time window
      */
-    private final LongAccumulator elapsedAccumulator = new LongAccumulator(Long::sum, 0);
+    private final LongAccumulator totalElapsedAccumulator = new LongAccumulator(Long::sum, 0);
     /**
      * The max elapsed counter in the current time window
      */
@@ -76,17 +76,6 @@ public class GlobalStatistics implements Serializable {
      * The max concurrent counter in the current time window
      */
     private final LongAccumulator maxConcurrentAccumulator = new LongAccumulator(Long::max, 0);
-
-    // === rate/maxRate
-
-    /**
-     * The total rate counter in the current time window
-     */
-    private final AtomicLong rateCounter = new AtomicLong(0);
-    /**
-     * The max rate counter in the current time window
-     */
-    private final LongAccumulator maxRateAccumulator = new LongAccumulator(Long::max, 0);
 
     /**
      * The wrapper of original call
@@ -108,9 +97,9 @@ public class GlobalStatistics implements Serializable {
             exceptionTraffic(t);
             throw t;
         } finally {
+            System.out.println(JSON.toJSONString(getStatisticsData()));
             // decrement traffic
             decrementTraffic(startTime);
-            System.out.println(JSON.toJSONString(getStatisticsData()));
         }
     }
 
@@ -126,11 +115,6 @@ public class GlobalStatistics implements Serializable {
             long concurrentNum = concurrentCounter.incrementAndGet();
             // total max concurrent times
             maxConcurrentAccumulator.accumulate(concurrentNum);
-
-            // increment request rate times
-            long rateNum = rateCounter.incrementAndGet();
-            // total request max rate times
-            maxRateAccumulator.accumulate(rateNum);
         } catch (Exception e) {
             log.error("The increment traffic is exception", e);
         }
@@ -166,7 +150,7 @@ public class GlobalStatistics implements Serializable {
         try {
             long elapsed = System.currentTimeMillis() - startTime;
             // total all elapsed
-            elapsedAccumulator.accumulate(elapsed);
+            totalElapsedAccumulator.accumulate(elapsed);
             // total max elapsed
             maxElapsedAccumulator.accumulate(elapsed);
 
@@ -218,14 +202,10 @@ public class GlobalStatistics implements Serializable {
         map.put(TIMEOUT_KEY, timeoutCounter.sumThenReset());
         map.put(REJECTION_KEY, rejectionCounter.sumThenReset());
         // statistics elapsed
-        map.put(ELAPSED_KEY, elapsedAccumulator.getThenReset());
+        map.put(AVG_ELAPSED_KEY, totalElapsedAccumulator.getThenReset());
         map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.getThenReset());
         // statistics concurrent
-        // map.put(CONCURRENT_KEY, concurrentCounter.getAndSet(0));
         map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.getThenReset());
-        // statistics concurrent
-        map.put(RATE_KEY, rateCounter.getAndSet(0));
-        map.put(MAX_RATE_KEY, maxRateAccumulator.getThenReset());
 
         return map;
     }
@@ -237,22 +217,21 @@ public class GlobalStatistics implements Serializable {
      */
     public Map<String, Long> getStatisticsData() {
         Map<String, Long> map = new LinkedHashMap<>();
+
         // statistics trade
         map.put(REQUEST_KEY, requestCounter.sum());
-        map.put(SUCCESS_KEY, successCounter.sum());
+        long success = successCounter.sum();
+        map.put(SUCCESS_KEY, success);
         map.put(FAILURE_KEY, failureCounter.sum());
         // timeout/rejection
         map.put(TIMEOUT_KEY, timeoutCounter.sum());
         map.put(REJECTION_KEY, rejectionCounter.sum());
         // statistics elapsed
-        map.put(ELAPSED_KEY, elapsedAccumulator.get());
+        map.put(AVG_ELAPSED_KEY, success <= 0 ? 0 : (totalElapsedAccumulator.get() / success));
         map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.get());
         // statistics concurrent
         map.put(CONCURRENT_KEY, concurrentCounter.get());
         map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.get());
-        // statistics rate
-        map.put(RATE_KEY, rateCounter.get());
-        map.put(MAX_RATE_KEY, maxRateAccumulator.get());
 
         return map;
     }
