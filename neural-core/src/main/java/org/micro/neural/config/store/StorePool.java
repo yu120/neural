@@ -259,7 +259,6 @@ public class StorePool implements IStoreListener {
     /**
      * The cycle push statistics scheduled
      */
-    @SuppressWarnings("unchecked")
     private void scheduledPushStatistics() {
         if (null != pushStatisticsExecutor) {
             log.warn("The {} cyclePushStatistics is executed", space);
@@ -273,33 +272,40 @@ public class StorePool implements IStoreListener {
         this.pushStatisticsExecutor = Executors.newScheduledThreadPool(1, pushTreadFactory);
 
         // execute schedule push statistics by fixed rate
-        this.pushStatisticsExecutor.scheduleAtFixedRate(() -> {
-            for (Map.Entry<String, Neural> entry : modules.entrySet()) {
-                try {
-                    Neural neural = entry.getValue();
+        this.pushStatisticsExecutor.scheduleAtFixedRate(this::collect,
+                statisticReportCycle, statisticReportCycle, TimeUnit.MILLISECONDS);
+    }
 
-                    // query memory statistics data
-                    Map<String, Map<String, Long>> statisticsData = neural.collect();
-                    log.debug("The {} cycle push statistics: {}", space, statisticsData);
-                    if (null == statisticsData || statisticsData.isEmpty()) {
-                        return;
-                    }
+    /**
+     * The collect
+     */
+    @SuppressWarnings("unchecked")
+    private void collect() {
+        for (Map.Entry<String, Neural> entry : modules.entrySet()) {
+            try {
+                Neural neural = entry.getValue();
 
-                    System.out.println(statisticsData);
-                    Map<String, Long> sendData = new HashMap<>();
-                    for (Map.Entry<String, Map<String, Long>> identityEntry : statisticsData.entrySet()) {
-                        for (Map.Entry<String, Long> tempEntry : identityEntry.getValue().entrySet()) {
-                            sendData.put(String.join(DELIMITER, space, tempEntry.getKey()), tempEntry.getValue());
-                        }
-                    }
-
-                    // push statistics data to remote
-                    store.batchIncrementBy(neural.getGlobalConfig().getStatisticExpire(), sendData);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                // query memory statistics data
+                Map<String, Map<String, Long>> statisticsData = neural.collect();
+                log.debug("The {} cycle push statistics: {}", space, statisticsData);
+                if (null == statisticsData || statisticsData.isEmpty()) {
+                    return;
                 }
+
+                System.out.println(statisticsData);
+                Map<String, Long> sendData = new HashMap<>();
+                for (Map.Entry<String, Map<String, Long>> identityEntry : statisticsData.entrySet()) {
+                    for (Map.Entry<String, Long> tempEntry : identityEntry.getValue().entrySet()) {
+                        sendData.put(String.join(DELIMITER, space, tempEntry.getKey()), tempEntry.getValue());
+                    }
+                }
+
+                // push statistics data to remote
+                store.batchIncrementBy(neural.getGlobalConfig().getStatisticExpire(), sendData);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
-        }, statisticReportCycle, statisticReportCycle, TimeUnit.MILLISECONDS);
+        }
     }
 
     /**
