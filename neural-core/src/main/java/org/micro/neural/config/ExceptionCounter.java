@@ -3,7 +3,6 @@ package org.micro.neural.config;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,9 +23,7 @@ public enum ExceptionCounter {
     // ===
 
     TIMEOUT_EXCEPTION("timeout", LongAdder::new),
-    REJECTED_EXECUTION_EXCEPTION("rejected", LongAdder::new),
-    SQL_EXCEPTION("sql_exception", LongAdder::new),
-    RUNTIME_EXCEPTION("runtime_exception", LongAdder::new);
+    REJECTED_EXECUTION_EXCEPTION("rejected", LongAdder::new);
 
     String key;
     Supplier<LongAdder> supplier;
@@ -65,12 +62,6 @@ public enum ExceptionCounter {
         } else if (t instanceof RejectedExecutionException) {
             // total all rejection times
             return ExceptionCounter.REJECTED_EXECUTION_EXCEPTION;
-        } else if (t instanceof SQLException) {
-            // total all sql exception times
-            return ExceptionCounter.SQL_EXCEPTION;
-        } else if (t instanceof RuntimeException) {
-            // total all runtime exception times
-            return ExceptionCounter.RUNTIME_EXCEPTION;
         }
 
         return ExceptionCounter.TIMEOUT_EXCEPTION;

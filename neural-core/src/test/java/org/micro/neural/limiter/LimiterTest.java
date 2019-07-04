@@ -2,6 +2,8 @@ package org.micro.neural.limiter;
 
 import java.time.Duration;
 import java.util.Random;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.micro.neural.common.URL;
 import org.micro.neural.OriginalCall;
@@ -44,23 +46,34 @@ public class LimiterTest {
         limiter.initialize(URL.valueOf("redis://localhost:6379?minIdle=2"));
 
         for (int i = 0; i < 100000; i++) {
-            Object result = limiter.originalCall(config1.identity(), new OriginalCall() {
-                @Override
-                public Object call() throws Throwable {
-                    Thread.sleep(new Random().nextInt(100) + 20);
-                    return "ok";
-                }
+            try {
+                int finalI = i;
+                Object result = limiter.originalCall(config1.identity(), new OriginalCall() {
+                    @Override
+                    public Object call() throws Throwable {
+                        Thread.sleep(new Random().nextInt(100) + 20);
+                        if ((finalI % 100) == 10) {
+                            throw new TimeoutException("模拟超时");
+                        }
+                        if ((finalI % 100) == 50) {
+                            throw new RejectedExecutionException("模拟拒绝");
+                        }
+                        return "ok";
+                    }
 
-                @Override
-                public Object fallback() throws Throwable {
-                    return "fallback";
+                    @Override
+                    public Object fallback() throws Throwable {
+                        return "fallback";
+                    }
+                });
+                if (i == 50) {
+                    config1.setRateTimeout(3000L);
+                    System.out.println("1发布配置");
+                    StorePool.getInstance().publish("limiter", config1);
+                    System.out.println("2发布配置");
                 }
-            });
-            if (i == 50) {
-                config1.setRateTimeout(3000L);
-                System.out.println("1发布配置");
-                StorePool.getInstance().publish("limiter", config1);
-                System.out.println("2发布配置");
+            } catch (Exception e) {
+                //e.printStackTrace();
             }
         }
     }
