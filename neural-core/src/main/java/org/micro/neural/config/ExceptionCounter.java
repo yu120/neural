@@ -13,13 +13,13 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
 /**
- * Exception Statistics
+ * Exception Statistics Counter
  *
  * @author lry
  */
 @Getter
 @AllArgsConstructor
-public enum ExceptionStatistics {
+public enum ExceptionCounter {
 
     // ===
 
@@ -31,49 +31,49 @@ public enum ExceptionStatistics {
     String key;
     Supplier<LongAdder> supplier;
 
-    public static Map<ExceptionStatistics, LongAdder> build() {
-        Map<ExceptionStatistics, LongAdder> counter = new ConcurrentHashMap<>();
-        for (ExceptionStatistics e : values()) {
+    public static Map<ExceptionCounter, LongAdder> newInstance() {
+        Map<ExceptionCounter, LongAdder> counter = new ConcurrentHashMap<>();
+        for (ExceptionCounter e : values()) {
             counter.put(e, e.getSupplier().get());
         }
 
         return counter;
     }
 
-    public static Map<String, Long> getAndReset(Map<ExceptionStatistics, LongAdder> counters) {
+    public static Map<String, Long> getAndReset(Map<ExceptionCounter, LongAdder> counters) {
         Map<String, Long> map = new LinkedHashMap<>();
-        for (Map.Entry<ExceptionStatistics, LongAdder> entry : counters.entrySet()) {
+        for (Map.Entry<ExceptionCounter, LongAdder> entry : counters.entrySet()) {
             map.put(entry.getKey().getKey(), entry.getValue().sumThenReset());
         }
 
         return map;
     }
 
-    public static Map<String, Long> get(Map<ExceptionStatistics, LongAdder> counter) {
+    public static Map<String, Long> get(Map<ExceptionCounter, LongAdder> counter) {
         Map<String, Long> map = new LinkedHashMap<>();
-        for (Map.Entry<ExceptionStatistics, LongAdder> entry : counter.entrySet()) {
+        for (Map.Entry<ExceptionCounter, LongAdder> entry : counter.entrySet()) {
             map.put(entry.getKey().getKey(), entry.getValue().sum());
         }
 
         return map;
     }
 
-    public static ExceptionStatistics parse(Throwable t) {
+    public static ExceptionCounter parse(Throwable t) {
         if (t instanceof TimeoutException) {
             // total all timeout times
-            return ExceptionStatistics.TIMEOUT_EXCEPTION;
+            return ExceptionCounter.TIMEOUT_EXCEPTION;
         } else if (t instanceof RejectedExecutionException) {
             // total all rejection times
-            return ExceptionStatistics.REJECTED_EXECUTION_EXCEPTION;
+            return ExceptionCounter.REJECTED_EXECUTION_EXCEPTION;
         } else if (t instanceof SQLException) {
             // total all sql exception times
-            return ExceptionStatistics.SQL_EXCEPTION;
+            return ExceptionCounter.SQL_EXCEPTION;
         } else if (t instanceof RuntimeException) {
             // total all runtime exception times
-            return ExceptionStatistics.RUNTIME_EXCEPTION;
+            return ExceptionCounter.RUNTIME_EXCEPTION;
         }
 
-        return ExceptionStatistics.TIMEOUT_EXCEPTION;
+        return ExceptionCounter.TIMEOUT_EXCEPTION;
     }
 
 }

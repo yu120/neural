@@ -6,12 +6,8 @@ import org.micro.neural.NeuralContext;
 import org.micro.neural.OriginalCall;
 
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.concurrent.atomic.LongAdder;
@@ -73,7 +69,7 @@ public class GlobalStatistics implements Serializable {
     /**
      * The total exception counter in the current time window
      */
-    private final Map<ExceptionStatistics, LongAdder> exceptionCounter = ExceptionStatistics.build();
+    private final Map<ExceptionCounter, LongAdder> exceptionCounter = ExceptionCounter.newInstance();
 
     /**
      * The wrapper of original call
@@ -141,8 +137,8 @@ public class GlobalStatistics implements Serializable {
         try {
             // total all failure times
             failureCounter.increment();
-            ExceptionStatistics exceptionStatistics = ExceptionStatistics.parse(t);
-            exceptionCounter.get(exceptionStatistics).increment();
+            ExceptionCounter exceptionCounter = ExceptionCounter.parse(t);
+            this.exceptionCounter.get(exceptionCounter).increment();
         } catch (Exception e) {
             log.error("The exception traffic is exception", e);
         }
@@ -186,7 +182,7 @@ public class GlobalStatistics implements Serializable {
         long concurrent = concurrentCounter.get();
         long maxConcurrent = maxConcurrentAccumulator.getThenReset();
         // reset exception
-        Map<String, Long> tempExceptionCounter = ExceptionStatistics.getAndReset(exceptionCounter);
+        Map<String, Long> tempExceptionCounter = ExceptionCounter.getAndReset(exceptionCounter);
         if (request < 1 || success < 1) {
             return map;
         }
@@ -230,7 +226,7 @@ public class GlobalStatistics implements Serializable {
         map.put(CONCURRENT_KEY, concurrentCounter.get());
         map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.get());
         // statistics exception
-        Map<String, Long> tempExceptionCounter = ExceptionStatistics.get(exceptionCounter);
+        Map<String, Long> tempExceptionCounter = ExceptionCounter.get(exceptionCounter);
         if (tempExceptionCounter != null && !tempExceptionCounter.isEmpty()) {
             map.putAll(tempExceptionCounter);
         }
