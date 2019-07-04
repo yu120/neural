@@ -259,7 +259,7 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public void unSubscribe(IStoreListener listener) {
+    public void unsubscribe(IStoreListener listener) {
         RedisPubSub redisPubSub = subscribed.get(listener);
         if (redisPubSub != null) {
             redisPubSub.getCommands().unsubscribe();

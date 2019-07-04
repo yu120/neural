@@ -122,7 +122,7 @@ public interface IStore {
      *
      * @param listener {@link IStoreListener}
      */
-    void unSubscribe(IStoreListener listener);
+    void unsubscribe(IStoreListener listener);
 
     /**
      * The destroy
