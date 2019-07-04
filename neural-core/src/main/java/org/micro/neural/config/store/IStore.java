@@ -28,7 +28,7 @@ public interface IStore {
      *
      * @return generic object
      */
-    Object genericObject();
+    Object object();
 
     /**
      * The add Map with key
@@ -63,7 +63,7 @@ public interface IStore {
      * @param keyword config key keyword
      * @return config key list
      */
-    Set<String> searchKeys(String space, String keyword);
+    Set<String> search(String space, String keyword);
 
     /**
      * The query Map with key

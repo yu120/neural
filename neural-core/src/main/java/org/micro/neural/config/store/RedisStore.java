@@ -78,7 +78,7 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public Object genericObject() {
+    public Object object() {
         return objectPool;
     }
 
@@ -129,7 +129,7 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public Set<String> searchKeys(String space, String keyword) {
+    public Set<String> search(String space, String keyword) {
         StatefulRedisConnection<String, String> connection = null;
 
         try {
