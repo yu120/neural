@@ -6,9 +6,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * The Standard Thread Executor
  * <p>
- * 设计思路：coreThread -> maxThread -> queue -> reject
+ * ThreadPoolExecutor: coreThread -> queue -> maxThread -> reject:
+ * 场景优势：比较适合于CPU密集型应用（比如runnable内部执行的操作都在JVM内部: memory copy or compute）
  * <p>
+ * StandardThreadExecutor：coreThread -> maxThread -> queue -> reject
  * 场景优势：比较适合于业务处理需要远程资源的场景
+ * <p>
+ * 思路来源：tomcat : org.apache.catalina.core.StandardThreadExecutor
  *
  * @author lry
  */
@@ -43,31 +47,50 @@ public class StandardThreadExecutor extends ThreadPoolExecutor {
         this(coreThreads, maxThreads, queueCapacity, Executors.defaultThreadFactory());
     }
 
-    public StandardThreadExecutor(
-            int coreThreads, int maxThreads, int queueCapacity, ThreadFactory threadFactory) {
+    public StandardThreadExecutor(int coreThreads, int maxThreads, int queueCapacity, ThreadFactory threadFactory) {
         this(coreThreads, maxThreads, DEFAULT_MAX_IDLE_TIME, TimeUnit.MILLISECONDS, queueCapacity, threadFactory);
     }
 
-    public StandardThreadExecutor(
-            int coreThreads, int maxThreads, long keepAliveTime, TimeUnit unit, int queueCapacity) {
+    public StandardThreadExecutor(int coreThreads, int maxThreads, long keepAliveTime, TimeUnit unit, int queueCapacity) {
         this(coreThreads, maxThreads, keepAliveTime, unit, queueCapacity, Executors.defaultThreadFactory());
     }
 
-    public StandardThreadExecutor(
-            int coreThreads, int maxThreads, long keepAliveTime, TimeUnit unit,
-            int queueCapacity, ThreadFactory threadFactory) {
+    public StandardThreadExecutor(int coreThreads, int maxThreads, long keepAliveTime, TimeUnit unit,
+                                  int queueCapacity, ThreadFactory threadFactory) {
         this(coreThreads, maxThreads, keepAliveTime, unit, queueCapacity, threadFactory, new AbortPolicy());
     }
 
-    public StandardThreadExecutor(
-            int coreThreads, int maxThreads, long keepAliveTime, TimeUnit unit,
-            int queueCapacity, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
-        super(coreThreads, maxThreads, keepAliveTime, unit, new ExecutorQueue(), threadFactory, handler);
-        ((ExecutorQueue) getQueue()).setStandardThreadExecutor(this);
+    public StandardThreadExecutor(int coreThreads, int maxThreads, long keepAliveTime, TimeUnit unit,
+                                  int queueCapacity, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+        super(coreThreads, maxThreads, keepAliveTime, unit, new StandardExecutorQueue(), threadFactory, handler);
+        ((StandardExecutorQueue) getQueue()).setStandardThreadExecutor(this);
+
         submittedTasksCount = new AtomicInteger(0);
 
         // 最大并发任务限制： 队列buffer数 + 最大线程数
         maxSubmittedTaskCount = queueCapacity + maxThreads;
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        int count = submittedTasksCount.incrementAndGet();
+
+        // 超过最大的并发任务限制，进行 reject
+        // 依赖的LinkedTransferQueue没有长度限制，因此这里进行控制
+        if (count > maxSubmittedTaskCount) {
+            submittedTasksCount.decrementAndGet();
+            getRejectedExecutionHandler().rejectedExecution(command, this);
+        }
+
+        try {
+            super.execute(command);
+        } catch (RejectedExecutionException rx) {
+            // there could have been contention around the queue
+            if (!((StandardExecutorQueue) getQueue()).force(command)) {
+                submittedTasksCount.decrementAndGet();
+                getRejectedExecutionHandler().rejectedExecution(command, this);
+            }
+        }
     }
 
     public int getSubmittedTasksCount() {
@@ -79,97 +102,60 @@ public class StandardThreadExecutor extends ThreadPoolExecutor {
     }
 
     @Override
-    public void execute(Runnable command) {
-        int count = submittedTasksCount.incrementAndGet();
-
-        // 超过最大的并发任务限制，进行reject, 依赖的LinkedTransferQueue没有长度限制，因此这里进行控制
-        if (count > maxSubmittedTaskCount) {
-            submittedTasksCount.decrementAndGet();
-            getRejectedExecutionHandler().rejectedExecution(command, this);
-        }
-
-        try {
-            super.execute(command);
-        } catch (RejectedExecutionException rx) {
-            // there could have been contention around the queue
-            if (!((ExecutorQueue) getQueue()).force(command)) {
-                submittedTasksCount.decrementAndGet();
-                getRejectedExecutionHandler().rejectedExecution(command, this);
-            }
-        }
-    }
-
-    @Override
     protected void afterExecute(Runnable r, Throwable t) {
         submittedTasksCount.decrementAndGet();
     }
+}
 
-    /**
-     * LinkedTransferQueue
-     * <p>
-     * 能保证更高性能，相比与LinkedBlockingQueue有明显提升,
-     * 不过LinkedTransferQueue的缺点是没有队列长度控制，需要在外层协助控制
-     *
-     * @author lry
-     */
-    public static class ExecutorQueue extends LinkedTransferQueue<Runnable> {
+/**
+ * LinkedTransferQueue 能保证更高性能，相比与LinkedBlockingQueue有明显提升
+ * <p>
+ * 缺点:没有队列长度控制，需要在外层协助控制
+ *
+ * @author lry
+ */
+class StandardExecutorQueue extends LinkedTransferQueue<Runnable> {
 
-        private static final long serialVersionUID = -265236426751004839L;
+    private StandardThreadExecutor threadPoolExecutor;
 
-        private StandardThreadExecutor threadPoolExecutor;
+    StandardExecutorQueue() {
+        super();
+    }
 
-        public ExecutorQueue() {
-            super();
+    void setStandardThreadExecutor(StandardThreadExecutor threadPoolExecutor) {
+        this.threadPoolExecutor = threadPoolExecutor;
+    }
+
+    boolean force(Runnable o) {
+        if (threadPoolExecutor.isShutdown()) {
+            throw new RejectedExecutionException("Executor not running, can't force a command into the queue");
         }
 
-        public void setStandardThreadExecutor(StandardThreadExecutor threadPoolExecutor) {
-            this.threadPoolExecutor = threadPoolExecutor;
+        // forces the item onto the queue, to be used if the task is rejected
+        return super.offer(o);
+    }
+
+    @Override
+    public boolean offer(Runnable o) {
+        int poolSize = threadPoolExecutor.getPoolSize();
+
+        // we are maxed out on threads, simply queue the object
+        if (poolSize == threadPoolExecutor.getMaximumPoolSize()) {
+            return super.offer(o);
         }
 
-        /**
-         * 代码来源于 tomcat
-         *
-         * @param r {@link Runnable}
-         * @return true/false
-         */
-        public boolean force(Runnable r) {
-            if (threadPoolExecutor.isShutdown()) {
-                throw new RejectedExecutionException(
-                        "Executor not running, can't force a command into the queue");
-            }
-
-            // forces the item onto the queue, to be used if the task is rejected
-            return super.offer(r);
+        // we have idle threads, just add it to the queue note that we don't use getActiveCount(), see BZ 49730
+        if (threadPoolExecutor.getSubmittedTasksCount() <= poolSize) {
+            return super.offer(o);
         }
 
-        /**
-         * tomcat的代码进行一些小变更
-         *
-         * @param r {@link Runnable}
-         * @return true/false
-         */
-        @Override
-        public boolean offer(Runnable r) {
-            int poolSize = threadPoolExecutor.getPoolSize();
-
-            // we are maxed out on threads, simply queue the object
-            if (poolSize == threadPoolExecutor.getMaximumPoolSize()) {
-                return super.offer(r);
-            }
-
-            // we have idle threads, just add it to the queue note that we don't use getActiveCount(), see BZ 49730
-            if (threadPoolExecutor.getSubmittedTasksCount() <= poolSize) {
-                return super.offer(r);
-            }
-
-            // if we have less threads than maximum force creation of a new thread
-            if (poolSize < threadPoolExecutor.getMaximumPoolSize()) {
-                return false;
-            }
-
-            // if we reached here, we need to add it to the queue
-            return super.offer(r);
+        // if we have less threads than maximum force creation of a new thread
+        if (poolSize < threadPoolExecutor.getMaximumPoolSize()) {
+            return false;
         }
+
+        // if we reached here, we need to add it to the queue
+        return super.offer(o);
     }
 
 }
