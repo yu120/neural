@@ -7,13 +7,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * System Clock
+ * Clock Pool
  * <p>
- * 利用ScheduledExecutorService实现高并发场景下System.curentTimeMillis()的性能问题的优化.
+ * 利用ScheduledExecutorService实现高并发场景下System.currentTimeMillis()的性能问题的优化.
  *
  * @author lry
  */
-public enum SystemClock {
+public enum ClockPool {
 
     // ====
 
@@ -24,7 +24,7 @@ public enum SystemClock {
     private boolean started = false;
     private ScheduledExecutorService executorService;
 
-    SystemClock(long period) {
+    ClockPool(long period) {
         this.period = period;
         this.nowTime = new AtomicLong(System.currentTimeMillis());
     }

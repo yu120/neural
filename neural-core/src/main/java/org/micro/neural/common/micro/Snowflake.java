@@ -207,7 +207,7 @@ public final class Snowflake {
      * @return timestamp 毫秒时间戳
      */
     private long timeGen() {
-        return clock ? SystemClock.INSTANCE.currentTimeMillis() : System.currentTimeMillis();
+        return clock ? ClockPool.INSTANCE.currentTimeMillis() : System.currentTimeMillis();
     }
 
     /**
