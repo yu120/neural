@@ -30,7 +30,7 @@ public class NetUtils {
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^\\d{1,3}(\\.\\d{1,3}){3}\\:\\d{1,5}$");
     private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
-    private static final Map<String, String> HOST_NAME_CACHE = new LinkedHashMap<>(1000);
+    private static final Map<String, String> HOST_NAME_CACHE = new LinkedHashMap<>();
     private static volatile InetAddress LOCAL_ADDRESS = null;
     private static volatile String PROCESS_ID = null;
 
