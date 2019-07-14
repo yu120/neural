@@ -1,17 +1,14 @@
 package org.micro.neural.limiter.core;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.micro.neural.common.utils.StreamUtils;
 import org.micro.neural.config.store.StorePool;
 import org.micro.neural.extension.Extension;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +27,9 @@ import java.util.List;
 public class ClusterLimiter extends AbstractCallLimiter {
 
     private StorePool storePool = StorePool.getInstance();
-    public static String CONCURRENT_SCRIPT = loadScript("/script/limiter_concurrent.lua");
-    private static String RATE_SCRIPT = loadScript("/script/limiter_rate.lua");
-    private static String REQUEST_SCRIPT = loadScript("/script/limiter_request.lua");
+    private static String CONCURRENT_SCRIPT = StreamUtils.loadScript("/script/limiter_concurrent.lua");
+    private static String RATE_SCRIPT = StreamUtils.loadScript("/script/limiter_rate.lua");
+    private static String REQUEST_SCRIPT = StreamUtils.loadScript("/script/limiter_request.lua");
 
     @Override
     protected Acquire incrementConcurrent() {
@@ -108,16 +105,6 @@ public class ClusterLimiter extends AbstractCallLimiter {
 
         Acquire acquire = Acquire.valueOf((int) result.get(0));
         return new EvalResult(acquire, (long) result.get(1));
-    }
-
-    private static String loadScript(String name) {
-        try {
-            return CharStreams.toString(new InputStreamReader(
-                    ClusterLimiter.class.getResourceAsStream(name), Charsets.UTF_8));
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-            return null;
-        }
     }
 
     @Data

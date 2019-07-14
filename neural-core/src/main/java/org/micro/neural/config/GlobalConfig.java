@@ -80,4 +80,26 @@ public class GlobalConfig implements Serializable {
 
     }
 
+    /**
+     * The Model.
+     *
+     * @author lry
+     */
+    @Getter
+    @AllArgsConstructor
+    public enum Model {
+
+        /**
+         * The stand-alone model
+         */
+        STAND_ALONE("stand-alone"),
+        /**
+         * The cluster model
+         */
+        CLUSTER("cluster");
+
+        String model;
+
+    }
+
 }

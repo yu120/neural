@@ -1,6 +1,7 @@
 package org.micro.neural.idempotent;
 
 import lombok.*;
+import org.micro.neural.config.GlobalConfig;
 import org.micro.neural.config.RuleConfig;
 
 /**
@@ -20,10 +21,9 @@ public class IdempotentConfig extends RuleConfig {
     /**
      * The model of limiter
      */
-    private String model = "stand-alone";
+    private GlobalConfig.Model model = GlobalConfig.Model.STAND_ALONE;
 
     // === concurrent limiter
-
 
 
 }
