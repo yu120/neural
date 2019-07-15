@@ -98,7 +98,7 @@ public class RedisStore implements IStore {
             }
             commands.pexpire(key, expire);
         } finally {
-            borrowObject(connection);
+            returnObject(connection);
         }
     }
 
@@ -111,7 +111,7 @@ public class RedisStore implements IStore {
             RedisCommands<String, String> commands = connection.sync();
             commands.hset(space, key, SerializeUtils.serialize(data));
         } finally {
-            borrowObject(connection);
+            returnObject(connection);
         }
     }
 
@@ -124,7 +124,7 @@ public class RedisStore implements IStore {
             RedisCommands<String, String> commands = connection.sync();
             commands.hmset(space, data);
         } finally {
-            borrowObject(connection);
+            returnObject(connection);
         }
     }
 
@@ -142,7 +142,7 @@ public class RedisStore implements IStore {
 
             return new HashSet<>(keys);
         } finally {
-            borrowObject(connection);
+            returnObject(connection);
         }
     }
 
@@ -160,7 +160,7 @@ public class RedisStore implements IStore {
 
             return SerializeUtils.deserialize(clz, json);
         } finally {
-            borrowObject(connection);
+            returnObject(connection);
         }
     }
 
@@ -173,7 +173,7 @@ public class RedisStore implements IStore {
             RedisCommands<String, String> commands = connection.sync();
             return commands.get(key);
         } finally {
-            borrowObject(connection);
+            returnObject(connection);
         }
     }
 
@@ -203,7 +203,7 @@ public class RedisStore implements IStore {
                 throw new RuntimeException(e.getMessage(), e);
             }
         } finally {
-            borrowObject(connection);
+            returnObject(connection);
         }
     }
 
@@ -215,7 +215,7 @@ public class RedisStore implements IStore {
             RedisCommands<String, String> commands = connection.sync();
             return commands.hgetall(key);
         } finally {
-            borrowObject(connection);
+            returnObject(connection);
         }
     }
 
@@ -227,7 +227,7 @@ public class RedisStore implements IStore {
             RedisCommands<String, String> commands = connection.sync();
             commands.publish(channel, SerializeUtils.serialize(data));
         } finally {
-            borrowObject(connection);
+            returnObject(connection);
         }
     }
 
@@ -278,7 +278,8 @@ public class RedisStore implements IStore {
         }
     }
 
-    private StatefulRedisConnection<String, String> borrowObject(long borrowMaxWaitMillis) {
+    @Override
+    public StatefulRedisConnection<String, String> borrowObject() {
         try {
             return objectPool.borrowObject(borrowMaxWaitMillis);
         } catch (Exception e) {
@@ -286,7 +287,17 @@ public class RedisStore implements IStore {
         }
     }
 
-    private void borrowObject(StatefulRedisConnection<String, String> connection) {
+    @Override
+    public StatefulRedisConnection<String, String> borrowObject(long borrowMaxWaitMillis) {
+        try {
+            return objectPool.borrowObject(borrowMaxWaitMillis);
+        } catch (Exception e) {
+            throw new RuntimeException("The borrow object is exception", e);
+        }
+    }
+
+    @Override
+    public void returnObject(StatefulRedisConnection<String, String> connection) {
         try {
             if (connection != null) {
                 objectPool.returnObject(connection);

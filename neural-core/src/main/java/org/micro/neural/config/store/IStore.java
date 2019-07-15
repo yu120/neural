@@ -1,5 +1,6 @@
 package org.micro.neural.config.store;
 
+import io.lettuce.core.api.StatefulRedisConnection;
 import org.micro.neural.common.URL;
 import org.micro.neural.extension.SPI;
 
@@ -128,5 +129,11 @@ public interface IStore {
      * The destroy
      */
     void destroy();
+
+    StatefulRedisConnection<String, String> borrowObject();
+
+    StatefulRedisConnection<String, String> borrowObject(long borrowMaxWaitMillis);
+
+    void returnObject(StatefulRedisConnection<String, String> connection);
 
 }
