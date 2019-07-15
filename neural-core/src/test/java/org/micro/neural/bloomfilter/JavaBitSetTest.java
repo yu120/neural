@@ -6,7 +6,7 @@ public class JavaBitSetTest {
 
     public static void main(String[] args) {
         //(falsePositiveProbability, expectedNumberOfElements)
-        BloomFilter<String> filter = new BloomFilter<>(0.0001, 10000);
+        BloomFilterFactory<String> filter = new BloomFilterFactory<>(0.0001, 10000);
         filter.bind(new LocalBitSet());
 
         filter.add("filter");
