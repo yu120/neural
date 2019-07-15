@@ -50,29 +50,29 @@ public class RedisStore implements IStore {
         String category = url.getParameter(URL.CATEGORY_KEY);
         RedisCategory redisCategory = RedisCategory.parse(category);
 
-        RedisURI redisURI;
+        RedisURI redisUri;
         // build sentinel or redis
         if (RedisCategory.SENTINEL == redisCategory) {
-            redisURI = RedisURI.Builder.sentinel(url.getHost(), url.getPort()).build();
+            redisUri = RedisURI.Builder.sentinel(url.getHost(), url.getPort()).build();
         } else if (RedisCategory.REDIS == redisCategory) {
-            redisURI = RedisURI.Builder.redis(url.getHost(), url.getPort()).build();
+            redisUri = RedisURI.Builder.redis(url.getHost(), url.getPort()).build();
         } else {
             throw new IllegalArgumentException("Illegal redis category:" + category);
         }
         // set database
-        redisURI.setDatabase(url.getParameter(DATABASE, 0));
+        redisUri.setDatabase(url.getParameter(DATABASE, 0));
         // set ssl
-        redisURI.setSsl(url.getParameter(SSL, false));
+        redisUri.setSsl(url.getParameter(SSL, false));
         // set timeout
-        redisURI.setTimeout(Duration.ofSeconds(url.getParameter(TIMEOUT, 60)));
+        redisUri.setTimeout(Duration.ofSeconds(url.getParameter(TIMEOUT, 60)));
         // set password
         String password = url.getParameter(PASSWORD);
         if (password != null && password.length() > 0) {
-            redisURI.setPassword(password);
+            redisUri.setPassword(password);
         }
 
         this.borrowMaxWaitMillis = url.getParameter(BORROW_MAX_WAIT_MILLIS, borrowMaxWaitMillis);
-        this.redisClient = RedisClient.create(redisURI);
+        this.redisClient = RedisClient.create(redisUri);
         this.objectPool = ConnectionPoolSupport.createGenericObjectPool(() ->
                 redisClient.connect(), new GenericObjectPoolConfig());
     }
