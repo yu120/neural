@@ -62,7 +62,8 @@ public class BloomFilter<E> implements Serializable {
      * @param expectedNumberOfElements defines the maximum number of elements the filter is expected to contain.
      */
     public BloomFilter(int bitSetSize, int expectedNumberOfElements) {
-        this(bitSetSize / (double) expectedNumberOfElements, expectedNumberOfElements,
+        this(bitSetSize / (double) expectedNumberOfElements,
+                expectedNumberOfElements,
                 (int) Math.round((bitSetSize / (double) expectedNumberOfElements) * Math.log(2.0)));
     }
 
