@@ -1,5 +1,6 @@
 package org.micro.neural.bloomfilter;
 
+import org.micro.neural.bloomfilter.core.NeuralBitSet;
 import org.micro.neural.common.utils.MessageDigestUtils;
 
 import java.io.Serializable;

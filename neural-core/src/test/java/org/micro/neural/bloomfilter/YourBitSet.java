@@ -1,5 +1,7 @@
 package org.micro.neural.bloomfilter;
 
+import org.micro.neural.bloomfilter.core.NeuralBitSet;
+
 import java.util.Arrays;
 
 public class YourBitSet implements NeuralBitSet {

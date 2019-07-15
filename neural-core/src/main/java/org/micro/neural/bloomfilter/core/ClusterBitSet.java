@@ -1,4 +1,4 @@
-package org.micro.neural.bloomfilter;
+package org.micro.neural.bloomfilter.core;
 
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;

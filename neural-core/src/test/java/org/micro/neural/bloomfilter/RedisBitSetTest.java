@@ -1,5 +1,7 @@
 package org.micro.neural.bloomfilter;
 
+import org.micro.neural.bloomfilter.core.LocalBitSet;
+
 public class RedisBitSetTest {
 
     public static void main(String[] args) {

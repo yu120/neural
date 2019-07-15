@@ -1,4 +1,4 @@
-package org.micro.neural.bloomfilter;
+package org.micro.neural.bloomfilter.core;
 
 import org.micro.neural.extension.Extension;
 
