@@ -1,27 +1,18 @@
 package org.micro.neural.bloomfilter;
 
+import org.micro.neural.extension.Extension;
+
 import java.util.BitSet;
 
 /**
- * Implement bloom filter on native java BitSet.
+ * The stand-alone bloom filter on native java BitSet.
  *
  * @author lry
  */
-public class JavaBitSet implements BaseBitSet {
+@Extension("stand-alone")
+public class LocalBitSet implements NeuralBitSet {
 
-    private BitSet bitSet;
-
-    public JavaBitSet() {
-        this.bitSet = new BitSet();
-    }
-
-    public JavaBitSet(BitSet bitSet) {
-        if (bitSet == null) {
-            this.bitSet = new BitSet();
-        } else {
-            this.bitSet = bitSet;
-        }
-    }
+    private BitSet bitSet = new BitSet();
 
     @Override
     public void set(int bitIndex) {

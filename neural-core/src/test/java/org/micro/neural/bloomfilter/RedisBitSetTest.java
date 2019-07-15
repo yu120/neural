@@ -8,19 +8,19 @@ public class RedisBitSetTest {
 
         //(falsePositiveProbability, expectedNumberOfElements)
         BloomFilter<String> filter = new BloomFilter<>(0.0001, 10000);
-        filter.bind(new JavaBitSet());
-        //filter.bind(new RedisBitSet(jedis, "bloomfilter:key:name"));
+        filter.bind(new LocalBitSet());
+        //filter.bind(new ClusterBitSet(jedis, "bloomfilter:key:name"));
 
         //if you have a redis cluster
         //Set<HostAndPort> nodes = new HashSet<>();
         //nodes.add(new HostAndPort("127.0.0.1", 6379));
 
-        //filter.bind(new RedisBitSet(new JedisCluster(nodes), "bloomfilter:key:name"));
+        //filter.bind(new ClusterBitSet(new JedisCluster(nodes), "bloomfilter:key:name"));
 
         //you can also use jedispool
         //JedisPool jedisPool = new JedisPool("127.0.0.1", 6379);
         //Jedis jedis = jedisPool.getResource();
-        //filter.bind(new RedisBitSet(jedis, "bloomfilter:key:name"));
+        //filter.bind(new ClusterBitSet(jedis, "bloomfilter:key:name"));
 
         filter.add("filter");
         System.out.println(filter.contains("filter"));

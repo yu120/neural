@@ -1,5 +1,7 @@
 package org.micro.neural.bloomfilter;
 
+import org.micro.neural.extension.SPI;
+
 import java.io.Serializable;
 
 /**
@@ -8,7 +10,8 @@ import java.io.Serializable;
  *
  * @author lry
  */
-public interface BaseBitSet extends Cloneable, Serializable {
+@SPI("local")
+public interface NeuralBitSet extends Cloneable, Serializable {
 
     /**
      * Set a single bit in the Bloom filter, value default is true.

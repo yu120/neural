@@ -1,6 +1,7 @@
-package org.micro.neural.bloomfilter;
+package org.micro.neural.common.utils;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -15,10 +16,6 @@ public class MessageDigestUtils {
      * SHA1,SHA256
      */
     private static final String MESSAGE_DIGEST_ALGORITHM_NAME = "MD5";
-    /**
-     * encoding used for storing hash values as strings
-     */
-    public static final Charset CHARSET = Charset.forName("UTF-8");
 
     private static MessageDigest MESSAGE_DIGEST;
 
@@ -48,7 +45,7 @@ public class MessageDigestUtils {
      * @return digest as long.
      */
     public static int createHash(String val) {
-        return createHash(val, CHARSET);
+        return createHash(val, StandardCharsets.UTF_8);
     }
 
     /**

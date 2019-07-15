@@ -1,6 +1,9 @@
 package org.micro.neural.bloomfilter;
 
+import org.micro.neural.common.utils.MessageDigestUtils;
+
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 /**
@@ -13,7 +16,7 @@ public class BloomFilter<E> implements Serializable {
 
     private int bitSetSize;
     private double bitsPerElement;
-    private BaseBitSet bitSet;
+    private NeuralBitSet bitSet;
     /**
      * expected (maximum) number of elements to be added
      */
@@ -29,11 +32,11 @@ public class BloomFilter<E> implements Serializable {
 
     /**
      * Bind a bit set for Bloom filter.
-     * It can be any data structure that implements the BaseBitSet interface.
+     * It can be any data structure that implements the NeuralBitSet interface.
      *
-     * @param bitSet {@link BaseBitSet}
+     * @param bitSet {@link NeuralBitSet}
      */
-    public void bind(BaseBitSet bitSet) {
+    public void bind(NeuralBitSet bitSet) {
         this.bitSet = bitSet;
     }
 
@@ -90,7 +93,7 @@ public class BloomFilter<E> implements Serializable {
      * @param actualNumberOfFilterElements   specifies how many elements have been inserted into the <code>filterData</code> BitSet.
      * @param filterData                     a BitSet representing an existing Bloom filter.
      */
-    public BloomFilter(int bitSetSize, int expectedNumberOfFilterElements, int actualNumberOfFilterElements, BaseBitSet filterData) {
+    public BloomFilter(int bitSetSize, int expectedNumberOfFilterElements, int actualNumberOfFilterElements, NeuralBitSet filterData) {
         this(bitSetSize, expectedNumberOfFilterElements);
         this.bitSet = filterData;
         this.numberOfAddedElements = actualNumberOfFilterElements;
@@ -207,7 +210,7 @@ public class BloomFilter<E> implements Serializable {
      * @param element is an element to register in the Bloom filter.
      */
     public void add(E element) {
-        add(element.toString().getBytes(MessageDigestUtils.CHARSET));
+        add(element.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -244,7 +247,7 @@ public class BloomFilter<E> implements Serializable {
      * @return true if the element could have been inserted into the Bloom filter.
      */
     public boolean contains(E element) {
-        return contains(element.toString().getBytes(MessageDigestUtils.CHARSET));
+        return contains(element.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -309,7 +312,7 @@ public class BloomFilter<E> implements Serializable {
      *
      * @return bit set representing the Bloom filter.
      */
-    public BaseBitSet getBitSet() {
+    public NeuralBitSet getBitSet() {
         return bitSet;
     }
 

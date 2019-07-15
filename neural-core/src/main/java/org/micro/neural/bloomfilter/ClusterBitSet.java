@@ -4,13 +4,15 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import org.micro.neural.config.store.IStore;
 import org.micro.neural.config.store.StorePool;
+import org.micro.neural.extension.Extension;
 
 /**
- * The bloom filter on redis bit set.
+ * The cluster bloom filter on redis bit set.
  *
  * @author lry
  */
-public class RedisBitSet implements BaseBitSet {
+@Extension("cluster")
+public class ClusterBitSet implements NeuralBitSet {
 
     private String name;
     private IStore store = StorePool.getInstance().getStore();

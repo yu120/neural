@@ -2,7 +2,7 @@ package org.micro.neural.bloomfilter;
 
 import java.util.Arrays;
 
-public class YourBitSet implements BaseBitSet {
+public class YourBitSet implements NeuralBitSet {
 
     private int[] data;//boolean array
 
