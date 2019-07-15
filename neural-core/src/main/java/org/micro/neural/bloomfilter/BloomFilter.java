@@ -28,7 +28,8 @@ public class BloomFilter<E> implements Serializable {
     private int k;
 
     /**
-     * Bind a bit set for Bloom filter. It can be any data structure that implements the BaseBitSet interface.
+     * Bind a bit set for Bloom filter.
+     * It can be any data structure that implements the BaseBitSet interface.
      *
      * @param bitSet {@link BaseBitSet}
      */
@@ -37,7 +38,8 @@ public class BloomFilter<E> implements Serializable {
     }
 
     /**
-     * Constructs an empty Bloom filter. The total length of the Bloom filter will be c*n.
+     * Constructs an empty Bloom filter.
+     * The total length of the Bloom filter will be c*n.
      *
      * @param c is the number of bits used per element.
      * @param n is the expected number of elements the filter will contain.
@@ -52,10 +54,11 @@ public class BloomFilter<E> implements Serializable {
     }
 
     /**
-     * Constructs an empty Bloom filter. The optimal number of hash functions (k) is estimated from the total size of the Bloom
+     * Constructs an empty Bloom filter.
+     * The optimal number of hash functions (k) is estimated from the total size of the Bloom
      * and the number of expected elements.
      *
-     * @param bitSetSize             defines how many bits should be used in total for the filter.
+     * @param bitSetSize               defines how many bits should be used in total for the filter.
      * @param expectedNumberOfElements defines the maximum number of elements the filter is expected to contain.
      */
     public BloomFilter(int bitSetSize, int expectedNumberOfElements) {
@@ -64,9 +67,8 @@ public class BloomFilter<E> implements Serializable {
     }
 
     /**
-     * Constructs an empty Bloom filter with a given false positive probability. The number of bits per
-     * element and the number of hash functions is estimated
-     * to match the false positive probability.
+     * Constructs an empty Bloom filter with a given false positive probability.
+     * The number of bits per element and the number of hash functions is estimated to match the false positive probability.
      *
      * @param falsePositiveProbability is the desired false positive probability.
      * @param expectedNumberOfElements is the expected number of elements in the Bloom filter.

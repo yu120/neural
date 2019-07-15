@@ -7,9 +7,9 @@ public class RedisBitSetTest {
         //It should be noted that bloomfilter is not responsible for closing and returning redis connection resources.
 
         //(falsePositiveProbability, expectedNumberOfElements)
-        BloomFilter<String> filter = new BloomFilter<String>(0.0001, 10000);
+        BloomFilter<String> filter = new BloomFilter<>(0.0001, 10000);
         filter.bind(new JavaBitSet());
-//        filter.bind(new JavaBitSet(jedis, "bloomfilter:key:name"));
+        //filter.bind(new RedisBitSet(jedis, "bloomfilter:key:name"));
 
         //if you have a redis cluster
         //Set<HostAndPort> nodes = new HashSet<>();
