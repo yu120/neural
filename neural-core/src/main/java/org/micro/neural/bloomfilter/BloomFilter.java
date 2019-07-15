@@ -34,6 +34,16 @@ public class BloomFilter extends AbstractNeural<BloomFilterConfig, BloomFilterGl
 
     @Override
     public Object wrapperCall(NeuralContext neuralContext, String identity, OriginalCall originalCall) throws Throwable {
+        try {
+            if (bloomFilterFactory.contains(neuralContext.getId())) {
+                throw new RuntimeException("Repeated requests");
+            }
+
+            bloomFilterFactory.add(neuralContext.getId());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
         return super.wrapperCall(neuralContext, identity, originalCall);
     }
 
