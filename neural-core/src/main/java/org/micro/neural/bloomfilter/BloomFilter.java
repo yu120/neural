@@ -4,16 +4,16 @@ import java.io.Serializable;
 import java.util.Collection;
 
 /**
- * This program refers to the Java-BloomFilter{@see https://github.com/MagnusS/Java-BloomFilter}.
+ * The Bloom Filter
  *
  * @param <E> Element type
  * @author lry
  */
-public class BloomFilter<E> implements Cloneable, Serializable {
+public class BloomFilter<E> implements Serializable {
 
-    private BaseBitSet bitSet;
     private int bitSetSize;
     private double bitsPerElement;
+    private BaseBitSet bitSet;
     /**
      * expected (maximum) number of elements to be added
      */
@@ -56,11 +56,11 @@ public class BloomFilter<E> implements Cloneable, Serializable {
      * and the number of expected elements.
      *
      * @param bitSetSize             defines how many bits should be used in total for the filter.
-     * @param expectedNumberElements defines the maximum number of elements the filter is expected to contain.
+     * @param expectedNumberOfElements defines the maximum number of elements the filter is expected to contain.
      */
-    public BloomFilter(int bitSetSize, int expectedNumberElements) {
-        this(bitSetSize / (double) expectedNumberElements, expectedNumberElements,
-                (int) Math.round((bitSetSize / (double) expectedNumberElements) * Math.log(2.0)));
+    public BloomFilter(int bitSetSize, int expectedNumberOfElements) {
+        this(bitSetSize / (double) expectedNumberOfElements, expectedNumberOfElements,
+                (int) Math.round((bitSetSize / (double) expectedNumberOfElements) * Math.log(2.0)));
     }
 
     /**
@@ -72,9 +72,11 @@ public class BloomFilter<E> implements Cloneable, Serializable {
      * @param expectedNumberOfElements is the expected number of elements in the Bloom filter.
      */
     public BloomFilter(double falsePositiveProbability, int expectedNumberOfElements) {
-        this(Math.ceil(-(Math.log(falsePositiveProbability) / Math.log(2.0))) / Math.log(2.0), // c = k / ln(2)
+        // c = k / ln(2)
+        this(Math.ceil(-(Math.log(falsePositiveProbability) / Math.log(2.0))) / Math.log(2.0),
                 expectedNumberOfElements,
-                (int) Math.ceil(-(Math.log(falsePositiveProbability) / Math.log(2.0)))); // k = ceil(-log_2(false prob.))
+                // k = ceil(-log_2(false prob.))
+                (int) Math.ceil(-(Math.log(falsePositiveProbability) / Math.log(2.0))));
     }
 
     /**
