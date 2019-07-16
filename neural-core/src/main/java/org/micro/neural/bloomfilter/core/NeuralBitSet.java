@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @author lry
  */
 @SPI("local")
-public interface NeuralBitSet extends Cloneable, Serializable {
+public interface NeuralBitSet extends Serializable {
 
     /**
      * Set a single bit in the Bloom filter, value default is true.

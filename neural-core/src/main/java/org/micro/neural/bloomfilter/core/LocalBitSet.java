@@ -12,7 +12,7 @@ import java.util.BitSet;
 @Extension("stand-alone")
 public class LocalBitSet implements NeuralBitSet {
 
-    private BitSet bitSet = new BitSet();
+    private final BitSet bitSet = new BitSet();
 
     @Override
     public void set(int bitIndex) {
