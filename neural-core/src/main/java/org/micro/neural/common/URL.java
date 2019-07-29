@@ -265,6 +265,45 @@ public final class URL implements Serializable {
         return port <= 0 ? host : (host + ":" + port);
     }
 
+    public String[] getAddresses() {
+        return getAddressList(0).toArray(new String[0]);
+    }
+
+    public List<String> getAddressList() {
+        return getAddressList(0);
+    }
+
+    public List<String> getAddressList(int defaultPort) {
+        List<String> addressList = new ArrayList<>();
+        addressList.add(appendDefaultPort(getAddress(), defaultPort));
+        List<String> backupAddressList = getBackupAddressList(defaultPort);
+        if (backupAddressList != null && backupAddressList.size() > 0) {
+            addressList.addAll(backupAddressList);
+        }
+
+        return addressList;
+    }
+
+    public String[] getBackupAddresses() {
+        return getBackupAddressList(0).toArray(new String[0]);
+    }
+
+    public List<String> getBackupAddressList() {
+        return getBackupAddressList(0);
+    }
+
+    public List<String> getBackupAddressList(int defaultPort) {
+        List<String> addressList = new ArrayList<>();
+        String[] backups = getParameter(BACKUP_KEY, new String[0]);
+        if (backups != null && backups.length > 0) {
+            for (String backup : backups) {
+                addressList.add(appendDefaultPort(backup, defaultPort));
+            }
+        }
+
+        return addressList;
+    }
+
     public String getBackupAddress() {
         return getBackupAddress(0);
     }
