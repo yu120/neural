@@ -21,9 +21,14 @@ public enum RedisFactory {
 
     INSTANCE;
 
+    private boolean started;
     private RedissonClient redissonClient;
 
-    public void initialize(URL url) {
+    public synchronized void initialize(URL url) {
+        if (started) {
+            return;
+        }
+
         Config config = new Config();
 
         String category = url.getParameter(URL.CATEGORY_KEY);
@@ -48,6 +53,7 @@ public enum RedisFactory {
         }
 
         this.redissonClient = Redisson.create(config);
+        this.started = true;
     }
 
     public void destroy() {
