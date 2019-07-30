@@ -64,6 +64,7 @@ public interface IStore {
      * @param keyword config key keyword
      * @return config key list
      */
+    @Deprecated
     Set<String> search(String space, String keyword);
 
     /**
@@ -74,6 +75,7 @@ public interface IStore {
      * @param clz   config object class
      * @return config object
      */
+    @Deprecated
     <C> C query(String space, String key, Class<C> clz);
 
     /**
