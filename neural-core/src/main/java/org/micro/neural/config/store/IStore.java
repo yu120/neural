@@ -1,13 +1,11 @@
 package org.micro.neural.config.store;
 
-import io.lettuce.core.api.StatefulRedisConnection;
 import org.micro.neural.common.URL;
 import org.micro.neural.extension.SPI;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * The Store With Config.
@@ -23,13 +21,6 @@ public interface IStore {
      * @param url {@link URL}
      */
     void initialize(URL url);
-
-    /**
-     * The get generic object
-     *
-     * @return generic object
-     */
-    Object object();
 
     /**
      * The add Map with key
@@ -56,35 +47,6 @@ public interface IStore {
      * @param expire expire time
      */
     void batchIncrementBy(String key, Map<String, Object> data, long expire);
-
-    /**
-     * The search keys with keyword
-     *
-     * @param space   space key
-     * @param keyword config key keyword
-     * @return config key list
-     */
-    @Deprecated
-    Set<String> search(String space, String keyword);
-
-    /**
-     * The query Map with key
-     *
-     * @param space space key
-     * @param key   store key
-     * @param clz   config object class
-     * @return config object
-     */
-    @Deprecated
-    <C> C query(String space, String key, Class<C> clz);
-
-    /**
-     * The get key
-     *
-     * @param key key
-     * @return value
-     */
-    String get(String key);
 
     /**
      * The lua script eval
@@ -119,23 +81,5 @@ public interface IStore {
      * @param listener {@link IStoreListener}
      */
     void subscribe(Collection<String> channels, IStoreListener listener);
-
-    /**
-     * The un subscribe by SubscribeListener
-     *
-     * @param listener {@link IStoreListener}
-     */
-    void unsubscribe(IStoreListener listener);
-
-    /**
-     * The destroy
-     */
-    void destroy();
-
-    StatefulRedisConnection<String, String> borrowObject();
-
-    StatefulRedisConnection<String, String> borrowObject(long borrowMaxWaitMillis);
-
-    void returnObject(StatefulRedisConnection<String, String> connection);
 
 }

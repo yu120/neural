@@ -342,11 +342,6 @@ public class StorePool implements IStoreListener {
         if (null != pushStatisticsExecutor) {
             pushStatisticsExecutor.shutdown();
         }
-
-        store.unsubscribe(this);
-        if (null != store) {
-            store.destroy();
-        }
     }
 
 }

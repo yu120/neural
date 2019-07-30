@@ -1,20 +1,12 @@
 package org.micro.neural.common.redis;
 
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.async.RedisAsyncCommands;
-import io.lettuce.core.api.sync.RedisCommands;
-
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.store.IStore;
 import org.micro.neural.config.store.IStoreListener;
 import org.micro.neural.extension.Extension;
-import org.redisson.api.RFuture;
-import org.redisson.api.RScript;
-import org.redisson.api.RTopic;
-import org.redisson.api.RedissonClient;
-import org.redisson.api.listener.MessageListener;
+import org.redisson.api.*;
 import org.redisson.codec.SerializationCodec;
 
 import java.util.*;
@@ -40,28 +32,15 @@ public class RedisStore implements IStore {
     }
 
     @Override
-    public Object object() {
-        return null;
-    }
-
-    @Override
     public void batchIncrementBy(String key, Map<String, Object> data, long expire) {
-//        StatefulRedisConnection<String, String> connection = null;
-//
-//        try {
-//            connection = borrowObject(borrowMaxWaitMillis);
-//            RedisAsyncCommands<String, String> commands = connection.async();
-//            for (Map.Entry<String, Object> entry : data.entrySet()) {
-//                if (entry.getValue() instanceof Long) {
-//                    commands.hincrby(key, entry.getKey(), (Long) entry.getValue());
-//                } else {
-//                    commands.hset(key, entry.getKey(), String.valueOf(entry.getValue()));
-//                }
-//            }
-//            commands.pexpire(key, expire);
-//        } finally {
-//            returnObject(connection);
-//        }
+        for (Map.Entry<String, Object> entry : data.entrySet()) {
+            if (entry.getValue() instanceof Long) {
+                redissonClient.getMap(key).addAndGet(entry.getKey(), (Long) entry.getValue());
+            } else {
+                redissonClient.getMap(key).put(entry.getKey(), String.valueOf(entry.getValue()));
+            }
+        }
+        redissonClient.getMap(key).expire(expire, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -72,30 +51,6 @@ public class RedisStore implements IStore {
     @Override
     public void batchAdd(String space, Map<String, String> data) {
         redissonClient.getMap(space).putAll(data);
-    }
-
-    @Override
-    public Set<String> search(String space, String keyword) {
-        return null;
-    }
-
-    @Override
-    public <C> C query(String space, String key, Class<C> clz) {
-        return null;
-    }
-
-    @Override
-    public String get(String key) {
-//        StatefulRedisConnection<String, String> connection = null;
-//
-//        try {
-//            connection = borrowObject(borrowMaxWaitMillis);
-//            RedisCommands<String, String> commands = connection.sync();
-//            return commands.get(key);
-//        } finally {
-//            returnObject(connection);
-//        }
-        return null;
     }
 
     @Override
@@ -145,31 +100,6 @@ public class RedisStore implements IStore {
         RTopic topic = redissonClient.getTopic("dw", new SerializationCodec());
         topic.addListener(String.class, (charSequence, message) ->
                 listener.notify(charSequence.toString(), message));
-    }
-
-    @Override
-    public void unsubscribe(IStoreListener listener) {
-
-    }
-
-    @Override
-    public void destroy() {
-
-    }
-
-    @Override
-    public StatefulRedisConnection<String, String> borrowObject() {
-        return null;
-    }
-
-    @Override
-    public StatefulRedisConnection<String, String> borrowObject(long borrowMaxWaitMillis) {
-        return null;
-    }
-
-    @Override
-    public void returnObject(StatefulRedisConnection<String, String> connection) {
-
     }
 
 }

@@ -50,18 +50,18 @@
             <artifactId>redisson</artifactId>
             <version>${redisson.version}</version>
         </dependency>
-        <dependency>
-            <groupId>io.lettuce</groupId>
-            <artifactId>lettuce-core</artifactId>
-            <version>${lettuce-core.version}</version>
-            <!--<scope>provided</scope>-->
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-pool2</artifactId>
-            <version>${commons-pool2.version}</version>
-            <!--<scope>provided</scope>-->
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.lettuce</groupId>-->
+<!--            <artifactId>lettuce-core</artifactId>-->
+<!--            <version>${lettuce-core.version}</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.commons</groupId>-->
+<!--            <artifactId>commons-pool2</artifactId>-->
+<!--            <version>${commons-pool2.version}</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
         <!-- JSON -->
         <dependency>
