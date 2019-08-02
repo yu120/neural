@@ -26,6 +26,11 @@ public enum NeuralStore {
     private RedissonClient redissonClient;
     private Map<String, Integer> channelListenerIds = new ConcurrentHashMap<>();
 
+    /**
+     * The initialize store
+     *
+     * @param url {@link URL}
+     */
     public synchronized void initialize(URL url) {
         if (started) {
             return;
@@ -35,7 +40,6 @@ public enum NeuralStore {
 
         String category = url.getParameter(URL.CATEGORY_KEY);
         RedisModel redisModel = RedisModel.parse(category);
-
         if (RedisModel.SENTINEL == redisModel) {
             SentinelServersConfig sentinelServersConfig = config.useSentinelServers();
             sentinelServersConfig.addSentinelAddress(url.getAddresses());
@@ -73,6 +77,14 @@ public enum NeuralStore {
         redissonClient.getMap(space).putAll(data);
     }
 
+    /**
+     * The execute lua script
+     *
+     * @param script  lua script
+     * @param timeout future timeout
+     * @param keys    key list
+     * @return return object list
+     */
     public List<Object> eval(String script, Long timeout, List<Object> keys) {
         List<Object> keyArray = new ArrayList<>(keys.size());
         for (int i = 0; i < keys.size(); i++) {
@@ -84,17 +96,23 @@ public enum NeuralStore {
             keyArray.add(obj);
         }
 
-        RFuture<List<Object>> redisFuture = redissonClient.getScript().evalAsync(
-                RScript.Mode.READ_WRITE, script, RScript.ReturnType.MAPVALUELIST, keyArray);
         try {
+            RFuture<List<Object>> redisFuture = redissonClient.getScript().evalAsync(
+                    RScript.Mode.READ_WRITE, script, RScript.ReturnType.MULTI, keyArray);
             return redisFuture.get(timeout, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    public Map<String, String> pull(String key) {
-        Map<Object, Object> remoteMap = redissonClient.getMap(key);
+    /**
+     * The get all key-value by name
+     *
+     * @param name map name
+     * @return map
+     */
+    public Map<String, String> query(String name) {
+        Map<Object, Object> remoteMap = redissonClient.getMap(name);
         if (remoteMap == null || remoteMap.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -118,6 +136,9 @@ public enum NeuralStore {
                 listener.notify(charSequence.toString(), message));
     }
 
+    /**
+     * The destroy
+     */
     public void destroy() {
         if (null != redissonClient) {
             redissonClient.shutdown();

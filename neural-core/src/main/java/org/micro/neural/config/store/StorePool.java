@@ -157,7 +157,7 @@ public enum StorePool implements IStoreListener {
         List<String> remoteChannels = new ArrayList<>();
         // pull remote global configs
         String remoteGlobalConfigKey = String.join(DELIMITER, space, Category.GLOBAL.name());
-        Map<String, String> remoteGlobalConfigs = neuralStore.pull(remoteGlobalConfigKey);
+        Map<String, String> remoteGlobalConfigs = neuralStore.query(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
         Map<String, String> addRemoteGlobalConfigs = new HashMap<>(modules.size());
         for (Map.Entry<String, Neural> entry : modules.entrySet()) {
@@ -181,7 +181,7 @@ public enum StorePool implements IStoreListener {
 
         // pull remote rule configs
         String remoteRuleConfigKey = String.join(DELIMITER, space, Category.RULE.name());
-        Map<String, String> remoteRuleConfigs = neuralStore.pull(remoteRuleConfigKey);
+        Map<String, String> remoteRuleConfigs = neuralStore.query(remoteRuleConfigKey);
         log.debug("The rule config pull changed: {}", remoteRuleConfigs);
         Map<String, String> addRemoteRuleConfigs = new HashMap<>(modules.size());
         for (Map.Entry<String, Map<String, String>> entry : ruleConfigs.entrySet()) {
