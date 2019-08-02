@@ -3,6 +3,11 @@ package org.micro.neural.config.store;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * Redis Model
+ *
+ * @author lry
+ */
 @Getter
 @AllArgsConstructor
 public enum RedisModel {

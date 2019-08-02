@@ -6,7 +6,6 @@ import org.micro.neural.common.utils.SerializeUtils;
 import org.redisson.Redisson;
 import org.redisson.api.*;
 import org.redisson.api.listener.PatternMessageListener;
-import org.redisson.client.SubscribeListener;
 import org.redisson.codec.SerializationCodec;
 import org.redisson.config.*;
 

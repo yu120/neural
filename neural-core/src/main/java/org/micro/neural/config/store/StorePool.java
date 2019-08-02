@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.Neural;
 import org.micro.neural.common.Constants;
 import org.micro.neural.common.URL;
-import org.micro.neural.common.collection.ConcurrentHashSet;
 
 import static org.micro.neural.common.Constants.*;
 
@@ -57,7 +56,6 @@ public enum StorePool implements IStoreListener {
     private ScheduledExecutorService pushStatisticsExecutor = null;
 
     private String patternChannel;
-    private volatile Set<String> channels = new ConcurrentHashSet<>();
     /**
      * Map<[module], Neural>
      */
@@ -154,7 +152,6 @@ public enum StorePool implements IStoreListener {
      * The pull all configs
      */
     private void pullConfigs() {
-        List<String> remoteChannels = new ArrayList<>();
         // pull remote global configs
         String remoteGlobalConfigKey = String.join(DELIMITER, space, Category.GLOBAL.name());
         Map<String, String> remoteGlobalConfigs = neuralStore.getMap(remoteGlobalConfigKey);
@@ -171,8 +168,6 @@ public enum StorePool implements IStoreListener {
             remoteGlobalConfigs.putAll(addRemoteGlobalConfigs);
         }
         for (Map.Entry<String, String> entry : remoteGlobalConfigs.entrySet()) {
-            String remoteGlobalChannel = buildGlobalChannel(entry.getKey());
-            remoteChannels.add(remoteGlobalChannel);
             Neural neural = modules.get(entry.getKey());
             if (neural != null) {
                 neural.notify(Category.GLOBAL, Category.GLOBAL.name(), entry.getValue());
@@ -197,19 +192,11 @@ public enum StorePool implements IStoreListener {
             remoteRuleConfigs.putAll(addRemoteRuleConfigs);
         }
         for (Map.Entry<String, String> entry : remoteRuleConfigs.entrySet()) {
-            String remoteRuleChannel = buildRuleChannel(entry.getKey());
-            remoteChannels.add(remoteRuleChannel);
             String identity = entry.getKey();
             Neural neural = modules.get(identity.substring(0, identity.indexOf(DELIMITER)));
             if (neural != null) {
                 neural.notify(Category.RULE, identity, entry.getValue());
             }
-        }
-
-        // update channel list
-        channels.clear();
-        if (!remoteChannels.isEmpty()) {
-            channels.addAll(remoteChannels);
         }
     }
 
@@ -323,10 +310,6 @@ public enum StorePool implements IStoreListener {
 
     private String buildRuleChannel(String module, String identity) {
         return String.join(DELIMITER, space, CHANNEL, Category.RULE.name(), module, identity);
-    }
-
-    private String buildRuleChannel(String moduleIdentity) {
-        return String.join(DELIMITER, space, CHANNEL, Category.RULE.name(), moduleIdentity);
     }
 
     /**
