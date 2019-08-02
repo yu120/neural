@@ -50,7 +50,7 @@ public enum StorePool implements IStoreListener {
     private String space;
     private long pullConfigCycle;
     private long statisticReportCycle;
-    private NeuralStore neuralStore;
+    private NeuralStore neuralStore = NeuralStore.INSTANCE;
 
     private ScheduledExecutorService pullConfigExecutor = null;
     private ScheduledExecutorService pushStatisticsExecutor = null;
@@ -88,7 +88,7 @@ public enum StorePool implements IStoreListener {
         }
         this.patternChannel = String.join(DELIMITER, space, CHANNEL, "*");
 
-        this.neuralStore = NeuralStore.INSTANCE;
+        // initialize store
         neuralStore.initialize(url);
 
         // start cycle pull configs scheduled
