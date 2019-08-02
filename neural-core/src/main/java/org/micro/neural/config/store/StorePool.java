@@ -120,7 +120,7 @@ public enum StorePool implements IStoreListener {
         } else {
             throw new IllegalArgumentException("Illegal object type");
         }
-        neuralStore.publish(channel, object);
+        neuralStore.publish(channel, SerializeUtils.serialize(object));
     }
 
     /**
@@ -224,7 +224,7 @@ public enum StorePool implements IStoreListener {
         }
 
         // the execute subscribe
-        neuralStore.subscribe(channels, this);
+        neuralStore.subscribe(null, this);
     }
 
     @Override

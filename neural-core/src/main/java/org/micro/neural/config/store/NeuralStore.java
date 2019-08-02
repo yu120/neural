@@ -1,9 +1,12 @@
 package org.micro.neural.config.store;
 
+import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.redisson.Redisson;
 import org.redisson.api.*;
+import org.redisson.api.listener.PatternMessageListener;
+import org.redisson.client.SubscribeListener;
 import org.redisson.codec.SerializationCodec;
 import org.redisson.config.*;
 
@@ -16,6 +19,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author lry
  */
+@Slf4j
 public enum NeuralStore {
 
     //===
@@ -24,7 +28,7 @@ public enum NeuralStore {
 
     private boolean started;
     private RedissonClient redissonClient;
-    private Map<String, Integer> channelListenerIds = new ConcurrentHashMap<>();
+    private Map<String, PatternMessageListener> patternListeners = new ConcurrentHashMap<>();
 
     /**
      * The initialize store
@@ -131,21 +135,61 @@ public enum NeuralStore {
         return map;
     }
 
-    public void publish(String channel, Object data) {
+    /**
+     * The publish
+     *
+     * @param channel channel
+     * @param data    data
+     */
+    public void publish(String channel, String data) {
         RTopic topic = redissonClient.getTopic(channel, new SerializationCodec());
         topic.publish(SerializeUtils.serialize(data));
     }
 
-    public void subscribe(Collection<String> channels, IStoreListener listener) {
-        RTopic topic = redissonClient.getTopic("dw", new SerializationCodec());
-        topic.addListener(String.class, (charSequence, message) ->
-                listener.notify(charSequence.toString(), message));
+    /**
+     * The subscribe by pattern
+     *
+     * @param pattern  pattern
+     * @param listener {@link IStoreListener}
+     */
+    public void subscribe(String pattern, IStoreListener listener) {
+        if (patternListeners.containsKey(pattern)) {
+            log.warn("The repeated subscribe:{}, listener:{}", pattern, listener);
+            return;
+        }
+
+        PatternMessageListener<String> pmListener = (pattern1, channel, msg) -> {
+            log.debug("The notify message pattern:{}, channel:{}, msg: {}", pattern1, channel, msg);
+            listener.notify(channel.toString(), msg);
+        };
+        patternListeners.put(pattern, pmListener);
+
+        RPatternTopic rPatternTopic = redissonClient.getPatternTopic(pattern);
+        rPatternTopic.addListener(String.class, pmListener);
+    }
+
+    /**
+     * The pattern unsubscribe
+     *
+     * @param pattern pattern
+     */
+    public void unsubscribe(String pattern) {
+        PatternMessageListener patternMessageListener = patternListeners.get(pattern);
+        if (patternMessageListener == null) {
+            return;
+        }
+
+        RPatternTopic rPatternTopic = redissonClient.getPatternTopic(pattern);
+        rPatternTopic.removeListener(patternMessageListener);
     }
 
     /**
      * The destroy
      */
     public void destroy() {
+        for (Map.Entry<String, PatternMessageListener> entry : patternListeners.entrySet()) {
+            unsubscribe(entry.getKey());
+        }
         if (null != redissonClient) {
             redissonClient.shutdown();
         }
