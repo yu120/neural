@@ -6,8 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.common.utils.StreamUtils;
-import org.micro.neural.config.store.NeuralStore;
-import org.micro.neural.config.store.StorePool;
+import org.micro.neural.config.store.RedisStore;
 import org.micro.neural.extension.Extension;
 
 import java.io.Serializable;
@@ -98,7 +97,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
     }
 
     private EvalResult eval(String script, Long timeout, List<Object> keys) {
-        List<Object> result = NeuralStore.INSTANCE.eval(script, timeout, keys);
+        List<Object> result = RedisStore.INSTANCE.eval(script, timeout, keys);
         if (result == null || result.size() != 2) {
             return new EvalResult(Acquire.EXCEPTION, 0L);
         }

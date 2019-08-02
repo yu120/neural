@@ -50,7 +50,7 @@ public enum StorePool implements IStoreListener {
     private String space;
     private long pullConfigCycle;
     private long statisticReportCycle;
-    private NeuralStore neuralStore = NeuralStore.INSTANCE;
+    private RedisStore redisStore = RedisStore.INSTANCE;
 
     private ScheduledExecutorService pullConfigExecutor = null;
     private ScheduledExecutorService pushStatisticsExecutor = null;
@@ -89,7 +89,7 @@ public enum StorePool implements IStoreListener {
         this.patternChannel = String.join(DELIMITER, space, CHANNEL, "*");
 
         // initialize store
-        neuralStore.initialize(url);
+        redisStore.initialize(url);
 
         // start cycle pull configs scheduled
         scheduledPullConfigs();
@@ -118,7 +118,7 @@ public enum StorePool implements IStoreListener {
         } else {
             throw new IllegalArgumentException("Illegal object type");
         }
-        neuralStore.publish(channel, SerializeUtils.serialize(object));
+        redisStore.publish(channel, SerializeUtils.serialize(object));
     }
 
     /**
@@ -154,7 +154,7 @@ public enum StorePool implements IStoreListener {
     private void pullConfigs() {
         // pull remote global configs
         String remoteGlobalConfigKey = String.join(DELIMITER, space, Category.GLOBAL.name());
-        Map<String, String> remoteGlobalConfigs = neuralStore.getMap(remoteGlobalConfigKey);
+        Map<String, String> remoteGlobalConfigs = redisStore.getMap(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
         Map<String, String> addRemoteGlobalConfigs = new HashMap<>(modules.size());
         for (Map.Entry<String, Neural> entry : modules.entrySet()) {
@@ -164,7 +164,7 @@ public enum StorePool implements IStoreListener {
             }
         }
         if (!addRemoteGlobalConfigs.isEmpty()) {
-            neuralStore.putAllMap(remoteGlobalConfigKey, addRemoteGlobalConfigs);
+            redisStore.putAllMap(remoteGlobalConfigKey, addRemoteGlobalConfigs);
             remoteGlobalConfigs.putAll(addRemoteGlobalConfigs);
         }
         for (Map.Entry<String, String> entry : remoteGlobalConfigs.entrySet()) {
@@ -176,7 +176,7 @@ public enum StorePool implements IStoreListener {
 
         // pull remote rule configs
         String remoteRuleConfigKey = String.join(DELIMITER, space, Category.RULE.name());
-        Map<String, String> remoteRuleConfigs = neuralStore.getMap(remoteRuleConfigKey);
+        Map<String, String> remoteRuleConfigs = redisStore.getMap(remoteRuleConfigKey);
         log.debug("The rule config pull changed: {}", remoteRuleConfigs);
         Map<String, String> addRemoteRuleConfigs = new HashMap<>(modules.size());
         for (Map.Entry<String, Map<String, String>> entry : ruleConfigs.entrySet()) {
@@ -188,7 +188,7 @@ public enum StorePool implements IStoreListener {
             }
         }
         if (!addRemoteRuleConfigs.isEmpty()) {
-            neuralStore.putAllMap(remoteRuleConfigKey, addRemoteRuleConfigs);
+            redisStore.putAllMap(remoteRuleConfigKey, addRemoteRuleConfigs);
             remoteRuleConfigs.putAll(addRemoteRuleConfigs);
         }
         for (Map.Entry<String, String> entry : remoteRuleConfigs.entrySet()) {
@@ -207,7 +207,7 @@ public enum StorePool implements IStoreListener {
         // start subscribe config data executor
         log.debug("The {} executing subscribe config data executor", space);
         // the execute subscribe
-        neuralStore.subscribe(patternChannel, this);
+        redisStore.subscribe(patternChannel, this);
     }
 
     @Override
@@ -278,7 +278,7 @@ public enum StorePool implements IStoreListener {
 
                     String key = String.join(DELIMITER, space, STATISTICS, identityEntry.getKey(), String.valueOf(time));
                     // push statistics data to remote
-                    neuralStore.batchIncrementBy(key, sendData, neural.getGlobalConfig().getStatisticExpire());
+                    redisStore.batchIncrementBy(key, sendData, neural.getGlobalConfig().getStatisticExpire());
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);

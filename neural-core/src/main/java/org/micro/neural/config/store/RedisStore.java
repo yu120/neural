@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * @author lry
  */
 @Slf4j
-public enum NeuralStore {
+public enum RedisStore {
 
     //===
 
