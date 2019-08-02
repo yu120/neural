@@ -31,7 +31,7 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
     private Class<G> globalClass;
 
     private Extension extension;
-    private StorePool storePool = StorePool.getInstance();
+    private StorePool storePool;
 
     protected volatile G globalConfig;
     protected volatile ConcurrentMap<String, C> configs = new ConcurrentHashMap<>();
@@ -43,12 +43,13 @@ public abstract class AbstractNeural<C extends RuleConfig, G extends GlobalConfi
         this.ruleClass = (Class<C>) args[0];
         this.globalClass = (Class<G>) args[1];
         this.extension = this.getClass().getAnnotation(Extension.class);
+        this.storePool = StorePool.INSTANCE;
         storePool.register(extension.value().toUpperCase(), this);
     }
 
     @Override
     public void initialize(URL url) {
-        StorePool.getInstance().initialize(url);
+        storePool.initialize(url);
     }
 
     @Override

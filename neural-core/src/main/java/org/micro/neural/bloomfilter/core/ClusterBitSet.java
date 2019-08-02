@@ -1,6 +1,5 @@
 package org.micro.neural.bloomfilter.core;
 
-import org.micro.neural.config.store.IStore;
 import org.micro.neural.config.store.StorePool;
 import org.micro.neural.extension.Extension;
 
@@ -13,7 +12,7 @@ import org.micro.neural.extension.Extension;
 public class ClusterBitSet implements NeuralBitSet {
 
     private String name;
-    private IStore store = StorePool.getInstance().getStore();
+//    private IStore store = StorePool.getInstance().getStore();
 
     /**
      * Create a redis BitSet.
@@ -22,7 +21,7 @@ public class ClusterBitSet implements NeuralBitSet {
      */
     public void init(String name) {
         this.name = name;
-        this.store = StorePool.getInstance().getStore();
+//        this.store = StorePool.getInstance().getStore();
     }
 
     @Override

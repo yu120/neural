@@ -69,7 +69,7 @@ public class LimiterTest {
                 if (i == 50) {
                     config1.setRateTimeout(3000L);
                     System.out.println("1发布配置");
-                    StorePool.getInstance().publish("limiter", config1);
+                    StorePool.INSTANCE.publish("limiter", config1);
                     System.out.println("2发布配置");
                 }
             } catch (Exception e) {

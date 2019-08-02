@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.common.utils.StreamUtils;
+import org.micro.neural.config.store.NeuralStore;
 import org.micro.neural.config.store.StorePool;
 import org.micro.neural.extension.Extension;
 
@@ -26,7 +27,6 @@ import java.util.List;
 @Extension("cluster")
 public class ClusterLimiter extends AbstractCallLimiter {
 
-    private StorePool storePool = StorePool.getInstance();
     private static String CONCURRENT_SCRIPT = StreamUtils.loadScript("/script/limiter_concurrent.lua");
     private static String RATE_SCRIPT = StreamUtils.loadScript("/script/limiter_rate.lua");
     private static String REQUEST_SCRIPT = StreamUtils.loadScript("/script/limiter_request.lua");
@@ -98,7 +98,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
     }
 
     private EvalResult eval(String script, Long timeout, List<Object> keys) {
-        List<Object> result = storePool.getStore().eval(script, timeout, keys);
+        List<Object> result = NeuralStore.INSTANCE.eval(script, timeout, keys);
         if (result == null || result.size() != 2) {
             return new EvalResult(Acquire.EXCEPTION, 0L);
         }

@@ -1,6 +1,5 @@
 package org.micro.neural.config.event;
 
-import org.micro.neural.config.store.StorePool;
 import org.micro.neural.extension.Extension;
 
 /**
@@ -10,8 +9,6 @@ import org.micro.neural.extension.Extension;
  **/
 @Extension("redis")
 public class RedisEventListener implements IEventListener {
-
-    private StorePool storePool = StorePool.getInstance();
 
     private EventConfig eventConfig;
 

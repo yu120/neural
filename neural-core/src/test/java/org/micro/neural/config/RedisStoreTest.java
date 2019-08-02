@@ -20,9 +20,8 @@ public class RedisStoreTest {
         limiterConfig1.setRequestEnable(false);
         limiter.addConfig(limiterConfig1);
 
-        StorePool storePool = StorePool.getInstance();
         URL url = URL.valueOf("redis://127.0.0.1:6379");
-        storePool.initialize(url);
+        StorePool.INSTANCE.initialize(url);
 
         Object result = limiter.originalCall(key1, new OriginalCall() {
             @Override

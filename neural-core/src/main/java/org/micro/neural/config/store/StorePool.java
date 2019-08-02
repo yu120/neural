@@ -13,7 +13,6 @@ import static org.micro.neural.common.Constants.*;
 import org.micro.neural.common.utils.SerializeUtils;
 import org.micro.neural.config.*;
 import org.micro.neural.config.GlobalConfig.*;
-import org.micro.neural.extension.ExtensionLoader;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -37,7 +36,11 @@ import java.util.concurrent.*;
  * @author lry
  */
 @Slf4j
-public class StorePool implements IStoreListener {
+public enum StorePool implements IStoreListener {
+
+    // ===
+
+    INSTANCE;
 
     private static final String SPACE_DEFAULT = "neural";
     private static final String PULL_CONFIG_CYCLE_KEY = "pullConfigCycle";
@@ -48,7 +51,7 @@ public class StorePool implements IStoreListener {
     private String space;
     private long pullConfigCycle;
     private long statisticReportCycle;
-    private IStore store;
+    private NeuralStore neuralStore;
 
     private ScheduledExecutorService pullConfigExecutor = null;
     private ScheduledExecutorService pushStatisticsExecutor = null;
@@ -63,15 +66,6 @@ public class StorePool implements IStoreListener {
      */
     private volatile Map<String, Map<String, String>> ruleConfigs = new ConcurrentHashMap<>();
 
-    private static StorePool INSTANCE = new StorePool();
-
-    private StorePool() {
-    }
-
-    public static StorePool getInstance() {
-        return INSTANCE;
-    }
-
     public void register(String module, Neural neural) {
         modules.put(module, neural);
     }
@@ -79,10 +73,6 @@ public class StorePool implements IStoreListener {
     public void register(String module, String identity, String ruleConfig) {
         Map<String, String> moduleMap = ruleConfigs.computeIfAbsent(module, k -> new HashMap<>());
         moduleMap.put(identity, ruleConfig);
-    }
-
-    public IStore getStore() {
-        return store;
     }
 
     public synchronized void initialize(URL url) {
@@ -99,8 +89,8 @@ public class StorePool implements IStoreListener {
         }
         space = space.toUpperCase();
 
-        this.store = ExtensionLoader.getLoader(IStore.class).getExtension(url.getProtocol());
-        store.initialize(url);
+        this.neuralStore = NeuralStore.INSTANCE;
+        neuralStore.initialize(url);
 
         // start cycle pull configs scheduled
         scheduledPullConfigs();
@@ -130,7 +120,7 @@ public class StorePool implements IStoreListener {
         } else {
             throw new IllegalArgumentException("Illegal object type");
         }
-        store.publish(channel, object);
+        neuralStore.publish(channel, object);
     }
 
     /**
@@ -167,7 +157,7 @@ public class StorePool implements IStoreListener {
         List<String> remoteChannels = new ArrayList<>();
         // pull remote global configs
         String remoteGlobalConfigKey = String.join(DELIMITER, space, Category.GLOBAL.name());
-        Map<String, String> remoteGlobalConfigs = store.pull(remoteGlobalConfigKey);
+        Map<String, String> remoteGlobalConfigs = neuralStore.pull(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
         Map<String, String> addRemoteGlobalConfigs = new HashMap<>(modules.size());
         for (Map.Entry<String, Neural> entry : modules.entrySet()) {
@@ -177,7 +167,7 @@ public class StorePool implements IStoreListener {
             }
         }
         if (!addRemoteGlobalConfigs.isEmpty()) {
-            store.batchAdd(remoteGlobalConfigKey, addRemoteGlobalConfigs);
+            neuralStore.batchAdd(remoteGlobalConfigKey, addRemoteGlobalConfigs);
             remoteGlobalConfigs.putAll(addRemoteGlobalConfigs);
         }
         for (Map.Entry<String, String> entry : remoteGlobalConfigs.entrySet()) {
@@ -191,7 +181,7 @@ public class StorePool implements IStoreListener {
 
         // pull remote rule configs
         String remoteRuleConfigKey = String.join(DELIMITER, space, Category.RULE.name());
-        Map<String, String> remoteRuleConfigs = store.pull(remoteRuleConfigKey);
+        Map<String, String> remoteRuleConfigs = neuralStore.pull(remoteRuleConfigKey);
         log.debug("The rule config pull changed: {}", remoteRuleConfigs);
         Map<String, String> addRemoteRuleConfigs = new HashMap<>(modules.size());
         for (Map.Entry<String, Map<String, String>> entry : ruleConfigs.entrySet()) {
@@ -203,7 +193,7 @@ public class StorePool implements IStoreListener {
             }
         }
         if (!addRemoteRuleConfigs.isEmpty()) {
-            store.batchAdd(remoteRuleConfigKey, addRemoteRuleConfigs);
+            neuralStore.batchAdd(remoteRuleConfigKey, addRemoteRuleConfigs);
             remoteRuleConfigs.putAll(addRemoteRuleConfigs);
         }
         for (Map.Entry<String, String> entry : remoteRuleConfigs.entrySet()) {
@@ -234,7 +224,7 @@ public class StorePool implements IStoreListener {
         }
 
         // the execute subscribe
-        store.subscribe(channels, this);
+        neuralStore.subscribe(channels, this);
     }
 
     @Override
@@ -305,7 +295,7 @@ public class StorePool implements IStoreListener {
 
                     String key = String.join(DELIMITER, space, STATISTICS, identityEntry.getKey(), String.valueOf(time));
                     // push statistics data to remote
-                    store.batchIncrementBy(key, sendData, neural.getGlobalConfig().getStatisticExpire());
+                    neuralStore.batchIncrementBy(key, sendData, neural.getGlobalConfig().getStatisticExpire());
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);

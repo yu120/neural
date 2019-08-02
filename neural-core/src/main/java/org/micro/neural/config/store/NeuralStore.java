@@ -1,37 +1,63 @@
-package org.micro.neural.common.redis;
+package org.micro.neural.config.store;
 
-import lombok.extern.slf4j.Slf4j;
 import org.micro.neural.common.URL;
 import org.micro.neural.common.utils.SerializeUtils;
-import org.micro.neural.config.store.IStore;
-import org.micro.neural.config.store.IStoreListener;
-import org.micro.neural.extension.Extension;
+import org.redisson.Redisson;
 import org.redisson.api.*;
 import org.redisson.codec.SerializationCodec;
+import org.redisson.config.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The Store by Redis
- * <p>
+ * Neural Store
  *
  * @author lry
- **/
-@Slf4j
-@Extension("redis")
-public class RedisStore implements IStore {
+ */
+public enum NeuralStore {
 
+    //===
+
+    INSTANCE;
+
+    private boolean started;
     private RedissonClient redissonClient;
+    private Map<String, Integer> channelListenerIds = new ConcurrentHashMap<>();
 
-    @Override
-    public void initialize(URL url) {
-        RedisFactory redisFactory = RedisFactory.INSTANCE;
-        redisFactory.initialize(url);
-        this.redissonClient = redisFactory.getRedissonClient();
+    public synchronized void initialize(URL url) {
+        if (started) {
+            return;
+        }
+
+        Config config = new Config();
+
+        String category = url.getParameter(URL.CATEGORY_KEY);
+        RedisModel redisModel = RedisModel.parse(category);
+
+        if (RedisModel.SENTINEL == redisModel) {
+            SentinelServersConfig sentinelServersConfig = config.useSentinelServers();
+            sentinelServersConfig.addSentinelAddress(url.getAddresses());
+        } else if (RedisModel.CLUSTER == redisModel) {
+            ClusterServersConfig clusterServersConfig = config.useClusterServers();
+            clusterServersConfig.addNodeAddress(url.getAddresses());
+        } else if (RedisModel.MASTER_SLAVE == redisModel) {
+            MasterSlaveServersConfig masterSlaveServersConfig = config.useMasterSlaveServers();
+            masterSlaveServersConfig.setMasterAddress(url.getAddress());
+            masterSlaveServersConfig.setSlaveAddresses(new HashSet<>(url.getBackupAddressList()));
+        } else if (RedisModel.REPLICATED == redisModel) {
+            ReplicatedServersConfig replicatedServersConfig = config.useReplicatedServers();
+            replicatedServersConfig.addNodeAddress(url.getAddresses());
+        } else {
+            SingleServerConfig singleServerConfig = config.useSingleServer();
+            singleServerConfig.setAddress(url.getAddress());
+        }
+
+        this.redissonClient = Redisson.create(config);
+        this.started = true;
     }
 
-    @Override
     public void batchIncrementBy(String key, Map<String, Object> data, long expire) {
         for (Map.Entry<String, Object> entry : data.entrySet()) {
             if (entry.getValue() instanceof Long) {
@@ -43,17 +69,14 @@ public class RedisStore implements IStore {
         redissonClient.getMap(key).expire(expire, TimeUnit.MILLISECONDS);
     }
 
-    @Override
     public void add(String space, String key, Object data) {
         redissonClient.getMap(space).put(key, SerializeUtils.serialize(data));
     }
 
-    @Override
     public void batchAdd(String space, Map<String, String> data) {
         redissonClient.getMap(space).putAll(data);
     }
 
-    @Override
     public List<Object> eval(String script, Long timeout, List<Object> keys) {
         List<Object> keyArray = new ArrayList<>(keys.size());
         for (int i = 0; i < keys.size(); i++) {
@@ -74,7 +97,6 @@ public class RedisStore implements IStore {
         }
     }
 
-    @Override
     public Map<String, String> pull(String key) {
         Map<Object, Object> remoteMap = redissonClient.getMap(key);
         if (remoteMap == null || remoteMap.isEmpty()) {
@@ -89,17 +111,21 @@ public class RedisStore implements IStore {
         return map;
     }
 
-    @Override
     public void publish(String channel, Object data) {
         RTopic topic = redissonClient.getTopic(channel, new SerializationCodec());
         topic.publish(SerializeUtils.serialize(data));
     }
 
-    @Override
     public void subscribe(Collection<String> channels, IStoreListener listener) {
         RTopic topic = redissonClient.getTopic("dw", new SerializationCodec());
         topic.addListener(String.class, (charSequence, message) ->
                 listener.notify(charSequence.toString(), message));
+    }
+
+    public void destroy() {
+        if (null != redissonClient) {
+            redissonClient.shutdown();
+        }
     }
 
 }
