@@ -157,7 +157,7 @@ public enum StorePool implements IStoreListener {
         List<String> remoteChannels = new ArrayList<>();
         // pull remote global configs
         String remoteGlobalConfigKey = String.join(DELIMITER, space, Category.GLOBAL.name());
-        Map<String, String> remoteGlobalConfigs = neuralStore.query(remoteGlobalConfigKey);
+        Map<String, String> remoteGlobalConfigs = neuralStore.getMap(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
         Map<String, String> addRemoteGlobalConfigs = new HashMap<>(modules.size());
         for (Map.Entry<String, Neural> entry : modules.entrySet()) {
@@ -167,7 +167,7 @@ public enum StorePool implements IStoreListener {
             }
         }
         if (!addRemoteGlobalConfigs.isEmpty()) {
-            neuralStore.batchAdd(remoteGlobalConfigKey, addRemoteGlobalConfigs);
+            neuralStore.putAllMap(remoteGlobalConfigKey, addRemoteGlobalConfigs);
             remoteGlobalConfigs.putAll(addRemoteGlobalConfigs);
         }
         for (Map.Entry<String, String> entry : remoteGlobalConfigs.entrySet()) {
@@ -181,7 +181,7 @@ public enum StorePool implements IStoreListener {
 
         // pull remote rule configs
         String remoteRuleConfigKey = String.join(DELIMITER, space, Category.RULE.name());
-        Map<String, String> remoteRuleConfigs = neuralStore.query(remoteRuleConfigKey);
+        Map<String, String> remoteRuleConfigs = neuralStore.getMap(remoteRuleConfigKey);
         log.debug("The rule config pull changed: {}", remoteRuleConfigs);
         Map<String, String> addRemoteRuleConfigs = new HashMap<>(modules.size());
         for (Map.Entry<String, Map<String, String>> entry : ruleConfigs.entrySet()) {
@@ -193,7 +193,7 @@ public enum StorePool implements IStoreListener {
             }
         }
         if (!addRemoteRuleConfigs.isEmpty()) {
-            neuralStore.batchAdd(remoteRuleConfigKey, addRemoteRuleConfigs);
+            neuralStore.putAllMap(remoteRuleConfigKey, addRemoteRuleConfigs);
             remoteRuleConfigs.putAll(addRemoteRuleConfigs);
         }
         for (Map.Entry<String, String> entry : remoteRuleConfigs.entrySet()) {

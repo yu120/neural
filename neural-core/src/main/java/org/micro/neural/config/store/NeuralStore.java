@@ -73,7 +73,13 @@ public enum NeuralStore {
         redissonClient.getMap(key).expire(expire, TimeUnit.MILLISECONDS);
     }
 
-    public void batchAdd(String space, Map<String, String> data) {
+    /**
+     * The put all map
+     *
+     * @param space space
+     * @param data  map data
+     */
+    public void putAllMap(String space, Map<String, String> data) {
         redissonClient.getMap(space).putAll(data);
     }
 
@@ -111,7 +117,7 @@ public enum NeuralStore {
      * @param name map name
      * @return map
      */
-    public Map<String, String> query(String name) {
+    public Map<String, String> getMap(String name) {
         Map<Object, Object> remoteMap = redissonClient.getMap(name);
         if (remoteMap == null || remoteMap.isEmpty()) {
             return Collections.emptyMap();
