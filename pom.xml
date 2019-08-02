@@ -12,7 +12,6 @@
 
     <modules>
         <module>neural-core</module>
-        <module>neural-admin</module>
     </modules>
 
     <dependencyManagement>
@@ -20,11 +19,6 @@
             <dependency>
                 <groupId>org.micro</groupId>
                 <artifactId>neural-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.micro</groupId>
-                <artifactId>neural-admin</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
