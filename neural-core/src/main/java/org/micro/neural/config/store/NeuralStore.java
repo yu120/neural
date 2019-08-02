@@ -69,10 +69,6 @@ public enum NeuralStore {
         redissonClient.getMap(key).expire(expire, TimeUnit.MILLISECONDS);
     }
 
-    public void add(String space, String key, Object data) {
-        redissonClient.getMap(space).put(key, SerializeUtils.serialize(data));
-    }
-
     public void batchAdd(String space, Map<String, String> data) {
         redissonClient.getMap(space).putAll(data);
     }
