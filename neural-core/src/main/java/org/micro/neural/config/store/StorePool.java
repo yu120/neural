@@ -27,8 +27,8 @@ import java.util.concurrent.*;
  * 2.NeuralConfig-Hash: [space]:RULE-->[module]:[application]:[group]:[resource]-->[json]
  * 3.GlobalStatistics-Hash: [space]:STATISTICS-->[module]:[application]:[group]:[resource]-->[json]
  * <p>
- * 1.GlobalConfig-Channel: [space]:GLOBAL:CHANNEL:[module]-->[json]
- * 2.NeuralConfig-Channel: [space]:RULE:CHANNEL:[module]:[application]:[group]:[resource]-->[json]
+ * 1.GlobalConfig-Channel: [space]:CHANNEL:GLOBAL:[module]-->[json]
+ * 2.NeuralConfig-Channel: [space]:CHANNEL:RULE:[module]:[application]:[group]:[resource]-->[json]
  * <p>
  * identity=[module]
  * identity=[module]:[application]:[group]:[resource]
@@ -56,6 +56,7 @@ public enum StorePool implements IStoreListener {
     private ScheduledExecutorService pullConfigExecutor = null;
     private ScheduledExecutorService pushStatisticsExecutor = null;
 
+    private String patternChannel;
     private volatile Set<String> channels = new ConcurrentHashSet<>();
     /**
      * Map<[module], Neural>
@@ -83,11 +84,11 @@ public enum StorePool implements IStoreListener {
         this.started = true;
         this.pullConfigCycle = url.getParameter(PULL_CONFIG_CYCLE_KEY, 5L);
         this.statisticReportCycle = url.getParameter(STATISTIC_REPORT_CYCLE_KEY, 1000L);
-        this.space = url.getParameter(URL.GROUP_KEY, SPACE_DEFAULT);
+        this.space = url.getParameter(URL.GROUP_KEY, SPACE_DEFAULT).toUpperCase();
         if (space.contains(Constants.DELIMITER)) {
             throw new IllegalArgumentException("The space can't include ':'");
         }
-        space = space.toUpperCase();
+        this.patternChannel = String.join(DELIMITER, space, CHANNEL, "*");
 
         this.neuralStore = NeuralStore.INSTANCE;
         neuralStore.initialize(url);
@@ -156,7 +157,7 @@ public enum StorePool implements IStoreListener {
     private void pullConfigs() {
         List<String> remoteChannels = new ArrayList<>();
         // pull remote global configs
-        String remoteGlobalConfigKey = String.join(DELIMITER, space, Category.GLOBAL.name());
+        String remoteGlobalConfigKey = String.join(DELIMITER, space, CHANNEL, Category.GLOBAL.name());
         Map<String, String> remoteGlobalConfigs = neuralStore.getMap(remoteGlobalConfigKey);
         log.debug("The global config pull changed: {}", remoteGlobalConfigs);
         Map<String, String> addRemoteGlobalConfigs = new HashMap<>(modules.size());
@@ -171,7 +172,8 @@ public enum StorePool implements IStoreListener {
             remoteGlobalConfigs.putAll(addRemoteGlobalConfigs);
         }
         for (Map.Entry<String, String> entry : remoteGlobalConfigs.entrySet()) {
-            String remoteGlobalChannel = String.join(DELIMITER, remoteGlobalConfigKey, CHANNEL, entry.getKey());
+            // [space]:CHANNEL:GLOBAL:[key]
+            String remoteGlobalChannel = String.join(DELIMITER, remoteGlobalConfigKey, entry.getKey());
             remoteChannels.add(remoteGlobalChannel);
             Neural neural = modules.get(entry.getKey());
             if (neural != null) {
@@ -180,7 +182,7 @@ public enum StorePool implements IStoreListener {
         }
 
         // pull remote rule configs
-        String remoteRuleConfigKey = String.join(DELIMITER, space, Category.RULE.name());
+        String remoteRuleConfigKey = String.join(DELIMITER, space, CHANNEL, Category.RULE.name());
         Map<String, String> remoteRuleConfigs = neuralStore.getMap(remoteRuleConfigKey);
         log.debug("The rule config pull changed: {}", remoteRuleConfigs);
         Map<String, String> addRemoteRuleConfigs = new HashMap<>(modules.size());
@@ -197,7 +199,8 @@ public enum StorePool implements IStoreListener {
             remoteRuleConfigs.putAll(addRemoteRuleConfigs);
         }
         for (Map.Entry<String, String> entry : remoteRuleConfigs.entrySet()) {
-            String remoteRuleChannel = String.join(DELIMITER, remoteRuleConfigKey, CHANNEL, entry.getKey());
+            // [space]:CHANNEL:RULE:[key]
+            String remoteRuleChannel = String.join(DELIMITER, remoteRuleConfigKey, entry.getKey());
             remoteChannels.add(remoteRuleChannel);
             String identity = entry.getKey();
             Neural neural = modules.get(identity.substring(0, identity.indexOf(DELIMITER)));
@@ -219,12 +222,8 @@ public enum StorePool implements IStoreListener {
     private void subscribeNotifyConfigs() {
         // start subscribe config data executor
         log.debug("The {} executing subscribe config data executor", space);
-        if (channels.isEmpty()) {
-            return;
-        }
-
         // the execute subscribe
-        neuralStore.subscribe(null, this);
+        neuralStore.subscribe(patternChannel, this);
     }
 
     @Override
