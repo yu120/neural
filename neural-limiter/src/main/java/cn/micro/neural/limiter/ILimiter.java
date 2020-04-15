@@ -8,13 +8,26 @@ package cn.micro.neural.limiter;
 public interface ILimiter {
 
     /**
-     * The limit
+     * The initialize limiter
      *
-     * @param key
-     * @param limitCount
-     * @param limitPeriod
-     * @return
+     * @param limiterConfig {@link LimiterConfig}
+     * @throws Exception exception
      */
-    boolean limit(String key, long limitCount, long limitPeriod);
+    void initialize(LimiterConfig limiterConfig) throws Exception;
+
+    /**
+     * The call rate limit
+     *
+     * @param key         limit key
+     * @param maxLimit    max limit count
+     * @param limitPeriod limit period
+     * @return false means current limit
+     */
+    boolean callRate(String key, long maxLimit, long limitPeriod);
+
+    /**
+     * The destroy limiter
+     */
+    void destroy();
 
 }
