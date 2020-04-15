@@ -55,7 +55,7 @@ public class CounterLimiter implements ILimiter {
         /**
          * Limit counter
          */
-        private AtomicLong counter = new AtomicLong(0);
+        private final AtomicLong counter = new AtomicLong(0);
         /**
          * Start time
          */
