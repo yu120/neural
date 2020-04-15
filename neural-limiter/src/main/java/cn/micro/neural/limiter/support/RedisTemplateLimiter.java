@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class RedisTemplateLimiter implements ILimiter {
         String wrapperKey = limiterConfig.getPrefix() + key;
         List<String> keys = Collections.singletonList(wrapperKey);
         Number[] result = FactoryStorage.INSTANCE.getStorage().eval(script, keys, maxLimit, limitPeriod);
-        log.info("Access try count is {} for name={} and key = {}", result, "", key);
+        log.debug("Call[{}] rate count[{}]", wrapperKey, result == null ? null : Arrays.asList(result));
         return result == null || result.length != 2 || result[0].longValue() == 1;
     }
 
