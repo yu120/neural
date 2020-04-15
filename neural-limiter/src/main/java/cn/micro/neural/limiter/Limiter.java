@@ -3,14 +3,14 @@ package cn.micro.neural.limiter;
 import java.lang.annotation.*;
 
 /**
- * 自定义限流注解
+ * Limiter annotation
  *
  * @author lry
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.TYPE})
 public @interface Limiter {
 
     /**

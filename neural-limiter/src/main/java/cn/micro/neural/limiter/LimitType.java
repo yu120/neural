@@ -1,19 +1,19 @@
 package cn.micro.neural.limiter;
 
 /**
- * 限流类型
+ * Limit Type
  *
  * @author lry
  */
 public enum LimitType {
 
     /**
-     * 自定义key
+     * Customer key
      */
     CUSTOMER,
 
     /**
-     * 请求者IP
+     * Request IP
      */
     IP;
 
