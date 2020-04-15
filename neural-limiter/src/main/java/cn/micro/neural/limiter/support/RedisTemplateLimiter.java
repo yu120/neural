@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 public class RedisTemplateLimiter implements ILimiter {
 
-    public static final String FILE_NAME = "/rate_limiter.lua";
+    public static final String RATE_LIMITER = "/rate_limiter.lua";
 
     private String script;
     private LimiterConfig limiterConfig;
@@ -27,7 +27,7 @@ public class RedisTemplateLimiter implements ILimiter {
     @Override
     public void initialize(LimiterConfig limiterConfig) throws Exception {
         this.script = CharStreams.toString(new InputStreamReader(
-                this.getClass().getResource(FILE_NAME).openStream(), StandardCharsets.UTF_8));
+                this.getClass().getResource(RATE_LIMITER).openStream(), StandardCharsets.UTF_8));
         this.limiterConfig = limiterConfig;
     }
 
