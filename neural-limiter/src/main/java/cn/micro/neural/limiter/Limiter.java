@@ -14,32 +14,32 @@ import java.lang.annotation.*;
 public @interface Limiter {
 
     /**
-     * 名字
+     * Limiter name
      */
     String name() default "";
 
     /**
-     * key
+     * Limiter intro
+     */
+    String intro() default "";
+
+    /**
+     * Limiter key
      */
     String key() default "";
 
     /**
-     * Key的前缀
+     * The rate limit time period range, unit (seconds)
      */
-    String prefix() default "";
+    int ratePeriod();
 
     /**
-     * 给定的时间范围 单位(秒)
+     * The rate limit maximum number of visits in a certain time
      */
-    int period();
+    int rateMax();
 
     /**
-     * 一定时间内最多访问次数
-     */
-    int count();
-
-    /**
-     * 限流的类型(用户自定义key 或者 请求ip)
+     * Type of current limit (user-defined key or request ip)
      */
     LimitType type() default LimitType.CUSTOMER;
 
