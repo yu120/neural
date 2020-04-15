@@ -3,6 +3,7 @@ package cn.micro.neural.limiter.support;
 import cn.micro.neural.limiter.ILimiter;
 import cn.micro.neural.limiter.LimiterConfig;
 import cn.micro.neural.limiter.storage.FactoryStorage;
+import cn.neural.common.extension.Extension;
 import com.google.common.io.CharStreams;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,6 +19,7 @@ import java.util.List;
  * @author lry
  */
 @Slf4j
+@Extension("redis-template")
 public class RedisTemplateLimiter implements ILimiter {
 
     public static final String RATE_LIMITER = "/rate_limiter.lua";

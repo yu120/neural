@@ -1,15 +1,15 @@
 package cn.micro.neural.limiter.spring;
 
-import cn.micro.neural.limiter.ILimiter;
-import cn.micro.neural.limiter.LimitType;
-import cn.micro.neural.limiter.Limiter;
-import cn.micro.neural.limiter.LimiterException;
-import cn.micro.neural.limiter.support.RedisTemplateLimiter;
+import cn.micro.neural.limiter.*;
+import cn.neural.common.extension.ExtensionLoader;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -26,7 +26,18 @@ import java.util.Objects;
 @Slf4j
 @Aspect
 @Configuration
-public class LimiterInterceptor {
+@EnableConfigurationProperties(LimiterConfig.class)
+public class LimiterInterceptor implements InitializingBean {
+
+    private ILimiter limiter;
+
+    @Autowired
+    private LimiterConfig limiterConfig;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        this.limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(limiterConfig.getExtension());
+    }
 
     @Around("execution(public * *(..)) && @annotation(cn.micro.neural.limiter.Limiter)")
     public Object interceptor(ProceedingJoinPoint pjp) throws Throwable {
@@ -48,8 +59,7 @@ public class LimiterInterceptor {
 
         boolean result;
         try {
-            ILimiter limit = new RedisTemplateLimiter();
-            result = limit.callRate(key, limiterAnnotation.rateMax(), limiterAnnotation.ratePeriod());
+            result = limiter.callRate(key, limiterAnnotation.rateMax(), limiterAnnotation.ratePeriod());
         } catch (Throwable e) {
             log.error("The call rate exception", e);
             return pjp.proceed();

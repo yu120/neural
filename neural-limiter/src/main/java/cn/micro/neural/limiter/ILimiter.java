@@ -1,10 +1,13 @@
 package cn.micro.neural.limiter;
 
+import cn.neural.common.extension.SPI;
+
 /**
  * ILimiter
  *
  * @author lry
  */
+@SPI
 public interface ILimiter {
 
     /**
