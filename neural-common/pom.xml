@@ -11,13 +11,6 @@
 
     <artifactId>neural-common</artifactId>
 
-    <properties>
-        <guava.version>28.1-jre</guava.version>
-        <slf4j.version>1.7.29</slf4j.version>
-        <lombok.version>1.18.10</lombok.version>
-        <validation-api.version>2.0.1.Final</validation-api.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>

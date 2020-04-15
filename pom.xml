@@ -10,6 +10,14 @@
     <name>neural-parent</name>
     <description>The Micro Service Neural, the focus on solving distributed governance.</description>
 
+    <properties>
+        <guava.version>28.1-jre</guava.version>
+        <slf4j.version>1.7.29</slf4j.version>
+        <lombok.version>1.18.10</lombok.version>
+        <validation-api.version>2.0.1.Final</validation-api.version>
+        <springboot.version>2.1.0.RELEASE</springboot.version>
+    </properties>
+
     <modules>
         <module>neural-common</module>
         <module>neural-retry</module>
