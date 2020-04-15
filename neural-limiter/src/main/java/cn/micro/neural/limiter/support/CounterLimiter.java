@@ -1,52 +1,65 @@
 package cn.micro.neural.limiter.support;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import cn.micro.neural.limiter.ILimiter;
+import cn.micro.neural.limiter.LimiterConfig;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * CountLimiter
  *
  * @author lry
  */
-public class CounterLimiter {
+public class CounterLimiter implements ILimiter {
 
-    /**
-     * 限流的个数
-     */
-    private int maxCount = 10;
-    /**
-     * 指定的时间内
-     */
-    private long interval = 60;
-    /**
-     * 原子类计数器
-     */
-    private AtomicInteger atomicInteger = new AtomicInteger(0);
-    /**
-     * 起始时间
-     */
-    private long startTime = System.currentTimeMillis();
+    private LimiterConfig limiterConfig;
+    private final ConcurrentMap<String, CounterLimiterInfo> counters = new ConcurrentHashMap<>();
 
-    public boolean limit(int maxCount, int interval) {
-        atomicInteger.addAndGet(1);
-        if (atomicInteger.get() == 1) {
-            startTime = System.currentTimeMillis();
-            atomicInteger.addAndGet(1);
-            return true;
+    @Override
+    public void initialize(LimiterConfig limiterConfig) throws Exception {
+        this.limiterConfig = limiterConfig;
+    }
+
+    @Override
+    public boolean callRate(String key, long maxLimit, long limitPeriod) {
+        CounterLimiterInfo limiter = counters.get(key);
+        if (limiter == null) {
+            counters.put(key, limiter = new CounterLimiterInfo());
         }
 
+        AtomicLong counter = limiter.getCounter();
+        counter.addAndGet(1);
+
         // 超过了间隔时间，直接重新开始计数
-        if (System.currentTimeMillis() - startTime > interval * 1000) {
-            startTime = System.currentTimeMillis();
-            atomicInteger.set(1);
+        if (System.currentTimeMillis() - limiter.getStartTime() > limitPeriod) {
+            limiter.setStartTime(System.currentTimeMillis());
+            counter.set(1);
             return true;
         }
 
         // 还在间隔时间内,check有没有超过限流的个数
-        if (atomicInteger.get() > maxCount) {
-            return false;
-        }
+        return counter.get() <= maxLimit;
+    }
 
-        return true;
+    @Override
+    public void destroy() {
+        counters.clear();
+    }
+
+    @Data
+    public static class CounterLimiterInfo implements Serializable {
+        /**
+         * Limit counter
+         */
+        private AtomicLong counter = new AtomicLong(0);
+        /**
+         * Start time
+         */
+        private long startTime = System.currentTimeMillis();
     }
 
 }

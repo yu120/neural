@@ -29,7 +29,7 @@ public @interface Limiter {
     String key() default "";
 
     /**
-     * The rate limit time period range, unit (seconds)
+     * The rate limit time period range, unit (ms)
      */
     int ratePeriod();
 
