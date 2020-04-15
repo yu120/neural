@@ -19,8 +19,8 @@ import java.util.List;
  * @author lry
  */
 @Slf4j
-@Extension("redis-template")
-public class RedisTemplateLimiter implements ILimiter {
+@Extension("redis-lua")
+public class RedisLuaLimiter implements ILimiter {
 
     public static final String RATE_LIMITER = "/rate_limiter.lua";
 
