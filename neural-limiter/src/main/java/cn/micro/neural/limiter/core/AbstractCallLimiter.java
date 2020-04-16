@@ -21,7 +21,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
 
     @Override
     public boolean refresh(LimiterConfig limiterConfig) throws Exception {
-        log.debug("The refresh {}", limiterConfig);
+        log.info("Refresh the current limit configuration information: {}", limiterConfig);
         if (null == limiterConfig || this.config.equals(limiterConfig)) {
             return true;
         }

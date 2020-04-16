@@ -44,19 +44,19 @@ public class LimiterConfig implements Serializable {
     // === limiter config intro
 
     /**
-     * The resource name
-     **/
-    private String name;
-    /**
      * The switch of, default is Switch.ON
      **/
     private Switch enable = Switch.ON;
     /**
-     * The label list of limiter
+     * The limit name
+     **/
+    private String name;
+    /**
+     * The limit label list of limiter
      */
     private List<String> labels = new ArrayList<>();
     /**
-     * The remarks
+     * The limit remarks
      **/
     private String remarks;
 
