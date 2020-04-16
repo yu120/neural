@@ -64,11 +64,12 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      * @return true indicates that it need to be concurrent handled
      */
     boolean checkConcurrentEnable() {
-        if (!limiterConfig.getConcurrentEnable() || limiterConfig.getConcurrentPermit() < 1) {
+        if (LimiterConfig.Switch.OFF == limiterConfig.getConcurrent().getEnable()
+                || limiterConfig.getConcurrent().getPermitUnit() < 1) {
             return false;
         }
 
-        return limiterConfig.getMaxPermitConcurrent() >= limiterConfig.getConcurrentPermit();
+        return limiterConfig.getConcurrent().getMaxPermit() >= limiterConfig.getConcurrent().getPermitUnit();
     }
 
     /**
@@ -77,11 +78,12 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      * @return true indicates that it need to be rate handled
      */
     boolean checkRateEnable() {
-        if (!limiterConfig.getRateEnable() || limiterConfig.getRatePermit() < 1) {
+        if (LimiterConfig.Switch.OFF == limiterConfig.getRate().getEnable()
+                || limiterConfig.getRate().getRateUnit() < 1) {
             return false;
         }
 
-        return limiterConfig.getMaxPermitRate() >= limiterConfig.getRatePermit();
+        return limiterConfig.getRate().getMaxRate() >= limiterConfig.getRate().getRateUnit();
     }
 
     /**
@@ -90,11 +92,12 @@ public abstract class AbstractCheckLimiter implements ILimiter {
      * @return true indicates that it need to be rate handled
      */
     boolean checkRequestEnable() {
-        if (!limiterConfig.getRequestEnable() || limiterConfig.getRequestPermit() < 1) {
+        if (LimiterConfig.Switch.OFF == limiterConfig.getRate().getEnable()
+                || limiterConfig.getRequest().getRequestUnit() < 1) {
             return false;
         }
 
-        return limiterConfig.getMaxPermitRequest() >= limiterConfig.getRequestPermit();
+        return limiterConfig.getRequest().getMaxRequest() >= limiterConfig.getRequest().getRequestUnit();
     }
 
 }

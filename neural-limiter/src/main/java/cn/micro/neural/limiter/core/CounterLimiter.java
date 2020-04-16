@@ -35,14 +35,14 @@ public class CounterLimiter implements ILimiter {
         counter.addAndGet(1);
 
         // 超过了间隔时间，直接重新开始计数
-        if (System.currentTimeMillis() - startTime > limiterConfig.getRateTimeout()) {
+        if (System.currentTimeMillis() - startTime > limiterConfig.getRate().getTimeout()) {
             startTime = System.currentTimeMillis();
             counter.set(1);
             return true;
         }
 
         // 还在间隔时间内,check有没有超过限流的个数
-        return counter.get() <= limiterConfig.getMaxPermitRate();
+        return counter.get() <= limiterConfig.getRate().getMaxRate();
     }
 
     @Override

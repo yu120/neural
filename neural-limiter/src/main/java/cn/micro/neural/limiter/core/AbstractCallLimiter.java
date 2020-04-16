@@ -1,9 +1,6 @@
 package cn.micro.neural.limiter.core;
 
-import cn.micro.neural.limiter.LimiterExceedException;
-import cn.micro.neural.limiter.LimiterGlobalConfig;
-import cn.micro.neural.limiter.LimiterContext;
-import cn.micro.neural.limiter.OriginalCall;
+import cn.micro.neural.limiter.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +39,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
             switch (incrementConcurrent()) {
                 case FAILURE:
                     // the concurrent exceed
-                    return doStrategyProcess(limiterContext, LimiterGlobalConfig.EventType.CONCURRENT_EXCEED, originalCall);
+                    return doStrategyProcess(limiterContext, EventType.CONCURRENT_EXCEED, originalCall);
                 case SUCCESS:
                     // the concurrent success must be released
                     try {
@@ -74,7 +71,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
             switch (tryAcquireRate()) {
                 case FAILURE:
                     // the rate exceed
-                    return doStrategyProcess(limiterContext, LimiterGlobalConfig.EventType.RATE_EXCEED, originalCall);
+                    return doStrategyProcess(limiterContext, EventType.RATE_EXCEED, originalCall);
                 case SUCCESS:
                     // the pass success case
                 case EXCEPTION:
@@ -101,7 +98,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
             switch (tryAcquireRequest()) {
                 case FAILURE:
                     // the request exceed
-                    return doStrategyProcess(limiterContext, LimiterGlobalConfig.EventType.REQUEST_EXCEED, originalCall);
+                    return doStrategyProcess(limiterContext, EventType.REQUEST_EXCEED, originalCall);
                 case SUCCESS:
                     // the pass success case
                 case EXCEPTION:
@@ -123,7 +120,7 @@ public abstract class AbstractCallLimiter extends AbstractCheckLimiter {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doStrategyProcess(LimiterContext limiterContext, LimiterGlobalConfig.EventType eventType,
+    private Object doStrategyProcess(LimiterContext limiterContext, EventType eventType,
                                      OriginalCall originalCall) throws Throwable {
         // the total exceed of statistical traffic
         statistics.exceedTraffic(eventType);

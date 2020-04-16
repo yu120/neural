@@ -1,6 +1,8 @@
 package cn.micro.neural.limiter;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -8,23 +10,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The Limiter Config.
+ * LimiterConfig
  *
  * @author lry
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class LimiterConfig implements Serializable {
 
-    private static final long serialVersionUID = 4076904823256002967L;
+    private static final long serialVersionUID = -2617753757420740743L;
+
     public static final String DELIMITER = ":";
 
-    /**
-     * The module name or id
-     **/
-    private String module;
 
+    // === limiter config identity
+
+    /**
+     * The node name or id
+     **/
+    private String node = "limiter";
     /**
      * The application name or id
      **/
@@ -34,108 +37,69 @@ public class LimiterConfig implements Serializable {
      **/
     private String group = "neural";
     /**
-     * The service or resource id
+     * The service key or resource key
      **/
-    private String resource;
+    private String tag;
 
-    /**
-     * The switch of, default is Switch.ON
-     **/
-    private Switch enable = Switch.ON;
+    // === limiter config intro
+
     /**
      * The resource name
      **/
     private String name;
     /**
-     * The tag list of limiter
+     * The switch of, default is Switch.ON
+     **/
+    private Switch enable = Switch.ON;
+    /**
+     * The label list of limiter
      */
-    private List<String> tags = new ArrayList<>();
+    private List<String> labels = new ArrayList<>();
     /**
      * The remarks
      **/
     private String remarks;
 
-    public String identity() {
-        if (module.contains(DELIMITER) ||
-                application.contains(DELIMITER) ||
-                group.contains(DELIMITER) ||
-                resource.contains(DELIMITER)) {
-            throw new IllegalArgumentException("The identity key can't include ':'");
-        }
-
-        return (module + DELIMITER + application + DELIMITER + group + DELIMITER + resource).toUpperCase();
-    }
+    // === limiter config strategy
 
     /**
      * The model of limiter
      */
-    private String model = "stand-alone";
-
-    // === concurrent limiter
-
-    /**
-     * The enable of concurrent limiter
-     */
-    private Boolean concurrentEnable = true;
-    /**
-     * The concurrent permit unit of concurrent limiter
-     */
-    private Integer concurrentPermit = 1;
-    /**
-     * The max concurrent number of concurrent limiter
-     */
-    private Integer maxPermitConcurrent = 200;
-    /**
-     * The concurrent timeout of concurrent limiter
-     */
-    private Long concurrentTimeout = 0L;
-
-    // === rate limiter
-
-    /**
-     * The enable of rate limiter
-     */
-    private Boolean rateEnable = true;
-    /**
-     * The rate of rate limiter
-     */
-    private Integer ratePermit = 1;
-    /**
-     * The max permit rate of rate limiter
-     */
-    private Integer maxPermitRate = 1000;
-    /**
-     * The rate timeout of rate limiter
-     */
-    private Long rateTimeout = 0L;
-
-    // === request limiter
-
-    /**
-     * The enable of request limiter
-     */
-    private Boolean requestEnable = true;
-    /**
-     * The request of rate limiter
-     */
-    private Integer requestPermit = 1;
-    /**
-     * The request max permit of request limiter
-     */
-    private Long maxPermitRequest = 1000L;
-    /**
-     * The request timeout of request limiter
-     */
-    private Long requestTimeout = 0L;
-    /**
-     * The request interval(windows) of request limiter
-     */
-    private Duration requestInterval = Duration.ofSeconds(60);
-
+    private Mode mode = Mode.STAND_ALONE;
     /**
      * The strategy of limiter, default is Strategy.NON
      */
     private Strategy strategy = Strategy.NON;
+    /**
+     * The concurrent limiter
+     */
+    private ConcurrentLimiterConfig concurrent = new ConcurrentLimiterConfig();
+    /**
+     * The rate limiter
+     */
+    private RateLimiterConfig rate = new RateLimiterConfig();
+    /**
+     * The request limiter
+     */
+    private RequestLimiterConfig request = new RequestLimiterConfig();
+
+
+    /**
+     * Config identity key
+     *
+     * @return identity = {@link LimiterConfig#getNode()} + {@link LimiterConfig#DELIMITER}
+     * + {@link LimiterConfig#getApplication()} + {@link LimiterConfig#DELIMITER}
+     * + {@link LimiterConfig#getGroup()} + {@link LimiterConfig#DELIMITER}
+     * + {@link LimiterConfig#getTag()}
+     */
+    public String identity() {
+        if (node.contains(DELIMITER) || application.contains(DELIMITER)
+                || group.contains(DELIMITER) || tag.contains(DELIMITER)) {
+            throw new IllegalArgumentException("The identity key can't include ':'");
+        }
+
+        return String.join(DELIMITER, node, application, group, tag);
+    }
 
     /**
      * The Switch.
@@ -145,7 +109,6 @@ public class LimiterConfig implements Serializable {
     @Getter
     @AllArgsConstructor
     public enum Switch {
-
         /**
          * The switch is OFF
          */
@@ -155,8 +118,7 @@ public class LimiterConfig implements Serializable {
          */
         ON("The switch is ON");
 
-        String message;
-
+        private final String message;
     }
 
     /**
@@ -167,7 +129,6 @@ public class LimiterConfig implements Serializable {
     @Getter
     @AllArgsConstructor
     public enum Strategy {
-
         /**
          * The skip of limiter, when over flow
          */
@@ -181,7 +142,119 @@ public class LimiterConfig implements Serializable {
          */
         EXCEPTION("The throw 'LimiterExceedException' exception of limiter, when over flow");
 
-        String message;
+        private final String message;
+    }
+
+    /**
+     * The Mode
+     *
+     * @author lry
+     */
+    @Getter
+    @AllArgsConstructor
+    public enum Mode {
+        /**
+         * The stand-alone model
+         */
+        STAND_ALONE("stand-alone", "Stand-alone mode"),
+        /**
+         * The cluster model
+         */
+        CLUSTER("cluster", "Cluster mode");
+
+        private final String value;
+        private final String message;
+    }
+
+    /**
+     * ConcurrentConfig
+     *
+     * @author lry
+     */
+    @Data
+    public static class ConcurrentLimiterConfig implements Serializable {
+
+        private static final long serialVersionUID = -5671416423715135681L;
+
+        /**
+         * Concurrent limiter switch, default is Switch.ON
+         **/
+        private Switch enable = Switch.ON;
+        /**
+         * The concurrent permit unit of concurrent limiter
+         */
+        private Integer permitUnit = 1;
+        /**
+         * The max concurrent number of concurrent limiter
+         */
+        private Integer maxPermit = 200;
+        /**
+         * The concurrent timeout of concurrent limiter
+         */
+        private Long timeout = 0L;
+
+    }
+
+    /**
+     * RateConfig
+     *
+     * @author lry
+     */
+    @Data
+    public static class RateLimiterConfig implements Serializable {
+
+        private static final long serialVersionUID = -7307976708697925384L;
+
+        /**
+         * Rate limiter switch, default is Switch.ON
+         **/
+        private Switch enable = Switch.ON;
+        /**
+         * The rate of rate limiter
+         */
+        private Integer rateUnit = 1;
+        /**
+         * The max permit rate of rate limiter
+         */
+        private Integer maxRate = 1000;
+        /**
+         * The rate timeout of rate limiter
+         */
+        private Long timeout = 0L;
+
+    }
+
+    /**
+     * RequestLimiterConfig
+     *
+     * @author lry
+     */
+    @Data
+    public static class RequestLimiterConfig implements Serializable {
+
+        private static final long serialVersionUID = -8642894858491116612L;
+
+        /**
+         * Request limiter switch, default is Switch.ON
+         **/
+        private Switch enable = Switch.ON;
+        /**
+         * The request of rate limiter
+         */
+        private Integer requestUnit = 1;
+        /**
+         * The request max permit of request limiter
+         */
+        private Long maxRequest = 1000L;
+        /**
+         * The request timeout of request limiter
+         */
+        private Long timeout = 0L;
+        /**
+         * The request interval(windows) of request limiter
+         */
+        private Duration interval = Duration.ofSeconds(60);
+
     }
 
 }

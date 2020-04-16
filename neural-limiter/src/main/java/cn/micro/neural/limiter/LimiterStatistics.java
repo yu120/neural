@@ -59,7 +59,7 @@ public class LimiterStatistics implements Serializable {
     /**
      * The total exceed of statistical traffic
      */
-    public void exceedTraffic(LimiterGlobalConfig.EventType eventType) {
+    public void exceedTraffic(EventType eventType) {
         try {
             switch (eventType) {
                 case CONCURRENT_EXCEED:

@@ -57,50 +57,6 @@ public class LimiterGlobalConfig implements Serializable {
     }
 
     /**
-     * The category of config
-     *
-     * @author lry
-     */
-    @Getter
-    @AllArgsConstructor
-    public enum Category {
-
-        /**
-         * The rule config
-         */
-        RULE("The rule config"),
-        /**
-         * The global config
-         */
-        GLOBAL("he global config");
-
-        String message;
-
-    }
-
-    /**
-     * The Model.
-     *
-     * @author lry
-     */
-    @Getter
-    @AllArgsConstructor
-    public enum Model {
-
-        /**
-         * The stand-alone model
-         */
-        STAND_ALONE("stand-alone"),
-        /**
-         * The cluster model
-         */
-        CLUSTER("cluster");
-
-        String model;
-
-    }
-
-    /**
      * The Limiter Type.
      *
      * @author lry

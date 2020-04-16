@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author lry
  **/
 @Slf4j
-@Extension(LimiterGlobalConfig.IDENTITY)
+@Extension(EventType.IDENTITY)
 public class Limiter {
 
     private LimiterGlobalConfig globalConfig;
@@ -24,7 +24,7 @@ public class Limiter {
     private final ConcurrentMap<String, ILimiter> limiters = new ConcurrentHashMap<>();
 
     public void addConfig(LimiterConfig config) {
-        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(config.getModel());
+        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(config.getMode().getValue());
         limiters.put(config.identity(), limiter);
     }
 
@@ -44,8 +44,8 @@ public class Limiter {
      * The process of original call
      *
      * @param limiterContext {@link LimiterContext}
-     * @param identity      {@link LimiterConfig#identity()}
-     * @param originalCall  {@link OriginalCall}
+     * @param identity       {@link LimiterConfig#identity()}
+     * @param originalCall   {@link OriginalCall}
      * @return invoke return object
      * @throws Throwable throw exception
      */
