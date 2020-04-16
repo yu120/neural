@@ -1,7 +1,7 @@
 package cn.micro.neural.limiter;
 
 /**
- * The Excess Exception of Limiter.
+ * LimiterExceedException
  *
  * @author lry
  */
