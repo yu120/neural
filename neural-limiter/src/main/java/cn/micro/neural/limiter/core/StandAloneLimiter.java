@@ -70,14 +70,14 @@ public class StandAloneLimiter extends AbstractCallLimiter {
     protected Acquire incrementConcurrent() {
         try {
             // the get concurrent timeout
-            Long timeout = limiterConfig.getConcurrent().getTimeout();
+            Long timeout = config.getConcurrent().getTimeout();
             if (timeout > 0) {
                 // the try acquire by timeout
-                return semaphore.tryAcquire(limiterConfig.getConcurrent().getPermitUnit(),
+                return semaphore.tryAcquire(config.getConcurrent().getPermitUnit(),
                         timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
             } else {
                 // the try acquire
-                return semaphore.tryAcquire(limiterConfig.getConcurrent().getPermitUnit()) ? Acquire.SUCCESS : Acquire.FAILURE;
+                return semaphore.tryAcquire(config.getConcurrent().getPermitUnit()) ? Acquire.SUCCESS : Acquire.FAILURE;
             }
         } catch (Exception e) {
             log.error("The try acquire local concurrent is exception", e);
@@ -94,7 +94,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
     protected Acquire tryAcquireRate() {
         try {
             // the get rate timeout
-            Long timeout = limiterConfig.getRate().getTimeout();
+            Long timeout = config.getRate().getTimeout();
             if (timeout > 0) {
                 // the try acquire by timeout
                 return rateLimiter.tryAcquire(timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
@@ -116,7 +116,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
         try {
             LongAdder times = cache.get(System.currentTimeMillis() / 1000, LongAdder::new);
-            if (limiterConfig.getRate().getRateUnit() > times.longValue()) {
+            if (config.getRate().getRateUnit() > times.longValue()) {
                 return Acquire.SUCCESS;
             }
         } catch (Exception e) {
