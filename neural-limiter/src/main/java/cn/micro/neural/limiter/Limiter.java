@@ -19,8 +19,6 @@ import java.util.concurrent.ConcurrentMap;
 @Extension(EventType.IDENTITY)
 public class Limiter {
 
-    private LimiterGlobalConfig globalConfig;
-
     private final ConcurrentMap<String, ILimiter> limiters = new ConcurrentHashMap<>();
 
     public void addConfig(LimiterConfig config) {
@@ -52,13 +50,6 @@ public class Limiter {
     public Object originalCall(LimiterContext limiterContext, String identity, OriginalCall originalCall) throws Throwable {
         try {
             LimiterContext.set(limiterContext);
-
-            // The check global config of limiter
-            if (null == globalConfig || null == globalConfig.getEnable() ||
-                    LimiterGlobalConfig.Switch.OFF == globalConfig.getEnable()) {
-                return originalCall.call();
-            }
-
             // The check limiter object
             if (null == identity || !limiters.containsKey(identity)) {
                 return originalCall.call();
@@ -88,7 +79,7 @@ public class Limiter {
             });
         } catch (Exception e) {
             //EventCollect.onEvent(LimiterGlobalConfig.EventType.COLLECT_EXCEPTION);
-            log.error(LimiterGlobalConfig.EventType.COLLECT_EXCEPTION.getMessage(), e);
+            log.error(EventType.COLLECT_EXCEPTION.getMessage(), e);
         }
 
         return dataMap;
@@ -112,19 +103,10 @@ public class Limiter {
             });
         } catch (Exception e) {
             //EventCollect.onEvent(LimiterGlobalConfig.EventType.COLLECT_EXCEPTION);
-            log.error(LimiterGlobalConfig.EventType.COLLECT_EXCEPTION.getMessage(), e);
+            log.error(EventType.COLLECT_EXCEPTION.getMessage(), e);
         }
 
         return dataMap;
-    }
-
-    /**
-     * The notify of changed config
-     *
-     * @param ruleConfig {@link LimiterConfig}
-     */
-    public void notifyGlobalConfig(LimiterGlobalConfig ruleConfig) {
-
     }
 
     /**
@@ -143,11 +125,11 @@ public class Limiter {
 
             boolean flag = limiter.refresh(ruleConfig);
             if (!flag) {
-                log.warn("The limiter refresh failure:{},{},{}", identity, globalConfig, ruleConfig);
+                log.warn("The limiter refresh failure:{},{}", identity, ruleConfig);
             }
         } catch (Exception e) {
             //EventCollect.onEvent(LimiterGlobalConfig.EventType.NOTIFY_EXCEPTION);
-            log.error(LimiterGlobalConfig.EventType.NOTIFY_EXCEPTION.getMessage(), e);
+            log.error(EventType.NOTIFY_EXCEPTION.getMessage(), e);
         }
     }
 
