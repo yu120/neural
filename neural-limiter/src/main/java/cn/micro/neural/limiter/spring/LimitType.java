@@ -1,4 +1,5 @@
-package cn.micro.neural.limiter;
+package cn.micro.neural.limiter.spring;
+
 
 /**
  * Limit Type

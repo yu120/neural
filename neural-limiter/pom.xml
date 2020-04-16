@@ -16,6 +16,10 @@
             <groupId>cn.micro.neural</groupId>
             <artifactId>neural-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>cn.micro.neural</groupId>
+            <artifactId>neural-storage</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>

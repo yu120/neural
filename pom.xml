@@ -20,6 +20,7 @@
 
     <modules>
         <module>neural-common</module>
+        <module>neural-storage</module>
         <module>neural-retry</module>
         <module>neural-limiter</module>
         <module>neural-downgrade</module>
@@ -32,6 +33,11 @@
             <dependency>
                 <groupId>cn.micro.neural</groupId>
                 <artifactId>neural-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.micro.neural</groupId>
+                <artifactId>neural-storage</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

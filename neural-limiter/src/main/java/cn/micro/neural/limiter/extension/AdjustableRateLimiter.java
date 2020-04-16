@@ -1,14 +1,14 @@
 package cn.micro.neural.limiter.extension;
 
-import static java.lang.Math.max;
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+
+import static java.lang.Math.max;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * The Adjustable Rate Limiter.

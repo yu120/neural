@@ -1,14 +1,13 @@
 package cn.micro.neural.limiter.spring;
 
-import cn.micro.neural.limiter.*;
-import cn.neural.common.extension.ExtensionLoader;
+import cn.micro.neural.limiter.Limiter;
+import cn.micro.neural.limiter.LimiterConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -29,20 +28,16 @@ import java.util.Objects;
 @EnableConfigurationProperties(LimiterConfig.class)
 public class LimiterInterceptor implements InitializingBean {
 
-    private ILimiter limiter;
-
-    @Autowired
-    private LimiterConfig limiterConfig;
+    private Limiter limiter = new Limiter();
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(limiterConfig.getExtension());
     }
 
-    @Around("execution(public * *(..)) && @annotation(cn.micro.neural.limiter.Limiter)")
+    @Around("execution(public * *(..)) && @annotation(cn.micro.neural.limiter.spring.Limit)")
     public Object interceptor(ProceedingJoinPoint pjp) throws Throwable {
         Method method = ((MethodSignature) pjp.getSignature()).getMethod();
-        Limiter limiterAnnotation = method.getAnnotation(Limiter.class);
+        Limit limiterAnnotation = method.getAnnotation(Limit.class);
 
         // 根据限流类型获取不同的key ,如果不传我们会以方法名作为key
         String key;
@@ -57,19 +52,7 @@ public class LimiterInterceptor implements InitializingBean {
             return pjp.proceed();
         }
 
-        boolean result;
-        try {
-            result = limiter.callRate(key, limiterAnnotation.rateMax(), limiterAnnotation.ratePeriod());
-        } catch (Throwable e) {
-            log.error("The call rate exception", e);
-            return pjp.proceed();
-        }
-
-        if (result) {
-            return pjp.proceed();
-        } else {
-            throw new LimiterException("You have been dragged into the blacklist");
-        }
+        return limiter.originalCall(null, pjp::proceed);
     }
 
     /**

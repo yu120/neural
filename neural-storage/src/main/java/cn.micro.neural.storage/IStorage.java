@@ -1,4 +1,4 @@
-package cn.micro.neural.limiter.storage;
+package cn.micro.neural.storage;
 
 import java.util.List;
 

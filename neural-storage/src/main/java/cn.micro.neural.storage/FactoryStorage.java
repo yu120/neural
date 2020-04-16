@@ -1,6 +1,5 @@
-package cn.micro.neural.limiter.storage;
+package cn.micro.neural.storage;
 
-import cn.micro.neural.limiter.LimiterConfig;
 import lombok.Getter;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -21,11 +20,6 @@ public enum FactoryStorage {
     INSTANCE;
 
     private IStorage storage;
-    private LimiterConfig limiterConfig;
-
-    public void initialize(LimiterConfig limiterConfig) throws Exception {
-        this.limiterConfig = limiterConfig;
-    }
 
     public void setRedisTemplate(RedisTemplate<String, Serializable> redisTemplate) {
         this.storage = new IStorage() {
@@ -35,4 +29,5 @@ public enum FactoryStorage {
             }
         };
     }
+
 }
