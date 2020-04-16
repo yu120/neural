@@ -13,37 +13,31 @@ import lombok.extern.slf4j.Slf4j;
  * @apiNote The main implementation of original call limiting
  */
 @Slf4j
+@Getter
 public abstract class AbstractCallLimiter implements ILimiter {
 
-    protected volatile LimiterConfig limiterConfig = null;
+    protected volatile LimiterConfig config = null;
     protected volatile LimiterStatistics statistics = new LimiterStatistics();
 
     @Override
     public boolean refresh(LimiterConfig limiterConfig) throws Exception {
         log.debug("The refresh {}", limiterConfig);
-        if (null == limiterConfig) {
+        if (null == limiterConfig || this.config.equals(limiterConfig)) {
             return true;
         }
-        if (null == this.limiterConfig) {
-            this.limiterConfig = limiterConfig;
-            return true;
-        }
-        if (this.limiterConfig.equals(limiterConfig)) {
-            return true;
-        }
-        if (limiterConfig.getConcurrent().getPermitUnit() < 1
-                || limiterConfig.getConcurrent().getMaxPermit() >= limiterConfig.getConcurrent().getPermitUnit()) {
+        if (limiterConfig.getConcurrent().getPermitUnit() < 1 ||
+                limiterConfig.getConcurrent().getMaxPermit() >= limiterConfig.getConcurrent().getPermitUnit()) {
             return false;
         }
 
-        BeanUtils.copyProperties(limiterConfig, this.limiterConfig);
+        BeanUtils.copyProperties(limiterConfig, this.config);
         return true;
     }
 
     @Override
     public Object wrapperCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
         // the don't need limiting
-        if (null == limiterConfig || LimiterConfig.Switch.OFF == limiterConfig.getEnable()) {
+        if (null == config || LimiterConfig.Switch.OFF == config.getEnable()) {
             return originalCall.call();
         }
 
@@ -60,7 +54,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
      */
     private Object doConcurrentOriginalCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
         // the check concurrent limiting exceed
-        if (LimiterConfig.Switch.ON == limiterConfig.getConcurrent().getEnable()) {
+        if (LimiterConfig.Switch.ON == config.getConcurrent().getEnable()) {
             // try acquire concurrent
             switch (incrementConcurrent()) {
                 case FAILURE:
@@ -93,7 +87,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
      */
     private Object doRateOriginalCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
         // the check rate limiting exceed
-        if (LimiterConfig.Switch.ON == limiterConfig.getRate().getEnable()) {
+        if (LimiterConfig.Switch.ON == config.getRate().getEnable()) {
             switch (tryAcquireRate()) {
                 case FAILURE:
                     // the rate exceed
@@ -120,7 +114,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
      */
     private Object doRequestOriginalCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
         // the check request limiting exceed
-        if (LimiterConfig.Switch.ON == limiterConfig.getRate().getEnable()) {
+        if (LimiterConfig.Switch.ON == config.getRate().getEnable()) {
             switch (tryAcquireRequest()) {
                 case FAILURE:
                     // the request exceed
@@ -151,14 +145,14 @@ public abstract class AbstractCallLimiter implements ILimiter {
         statistics.exceedTraffic(eventType);
 
         // print exceed log
-        log.warn("The {} exceed, [{}]-[{}]", eventType, limiterConfig, statistics);
+        log.warn("The {} exceed, [{}]-[{}]", eventType, config, statistics);
 
         // the broadcast event of traffic exceed
         //EventCollect.onEvent(eventType, limiterConfig, statistics.getStatisticsData());
 
         // the execute strategy with traffic exceed
-        if (null != limiterConfig.getStrategy()) {
-            switch (limiterConfig.getStrategy()) {
+        if (null != config.getStrategy()) {
+            switch (config.getStrategy()) {
                 case FALLBACK:
                     return originalCall.fallback();
                 case EXCEPTION:

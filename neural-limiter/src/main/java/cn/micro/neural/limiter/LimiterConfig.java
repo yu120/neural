@@ -1,8 +1,6 @@
 package cn.micro.neural.limiter;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -15,6 +13,8 @@ import java.util.List;
  * @author lry
  */
 @Data
+@ToString
+@EqualsAndHashCode
 public class LimiterConfig implements Serializable {
 
     private static final long serialVersionUID = -2617753757420740743L;

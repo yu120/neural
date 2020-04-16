@@ -33,12 +33,12 @@ public class ClusterLimiter extends AbstractCallLimiter {
     @Override
     protected Acquire incrementConcurrent() {
         List<Object> keys = new ArrayList<>();
-        keys.add(limiterConfig.identity());
-        keys.add(limiterConfig.getConcurrent().getPermitUnit());
-        keys.add(limiterConfig.getConcurrent().getMaxPermit());
+        keys.add(config.identity());
+        keys.add(config.getConcurrent().getPermitUnit());
+        keys.add(config.getConcurrent().getMaxPermit());
 
         try {
-            EvalResult evalResult = eval(CONCURRENT_SCRIPT, limiterConfig.getConcurrent().getTimeout(), keys);
+            EvalResult evalResult = eval(CONCURRENT_SCRIPT, config.getConcurrent().getTimeout(), keys);
             System.out.println("The increment concurrent:" + evalResult);
             return evalResult.getCode();
         } catch (Exception e) {
@@ -50,12 +50,12 @@ public class ClusterLimiter extends AbstractCallLimiter {
     @Override
     protected void decrementConcurrent() {
         List<Object> keys = new ArrayList<>();
-        keys.add(limiterConfig.identity());
-        keys.add(-limiterConfig.getConcurrent().getPermitUnit());
-        keys.add(limiterConfig.getConcurrent().getMaxPermit());
+        keys.add(config.identity());
+        keys.add(-config.getConcurrent().getPermitUnit());
+        keys.add(config.getConcurrent().getMaxPermit());
 
         try {
-            EvalResult evalResult = eval(CONCURRENT_SCRIPT, limiterConfig.getConcurrent().getTimeout(), keys);
+            EvalResult evalResult = eval(CONCURRENT_SCRIPT, config.getConcurrent().getTimeout(), keys);
             System.out.println("The decrement concurrent:" + evalResult);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -65,13 +65,13 @@ public class ClusterLimiter extends AbstractCallLimiter {
     @Override
     protected Acquire tryAcquireRate() {
         List<Object> keys = new ArrayList<>();
-        keys.add(limiterConfig.identity());
-        keys.add(limiterConfig.getRate().getRateUnit());
+        keys.add(config.identity());
+        keys.add(config.getRate().getRateUnit());
         keys.add(System.currentTimeMillis());
         keys.add("app");
 
         try {
-            EvalResult evalResult = eval(RATE_SCRIPT, limiterConfig.getRate().getTimeout(), keys);
+            EvalResult evalResult = eval(RATE_SCRIPT, config.getRate().getTimeout(), keys);
             return evalResult.getCode();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -82,13 +82,13 @@ public class ClusterLimiter extends AbstractCallLimiter {
     @Override
     protected Acquire tryAcquireRequest() {
         List<Object> keys = new ArrayList<>();
-        keys.add(limiterConfig.identity());
-        keys.add(limiterConfig.getRequest().getRequestUnit());
-        keys.add(limiterConfig.getRequest().getMaxRequest());
-        keys.add(limiterConfig.getRequest().getInterval().toMillis());
+        keys.add(config.identity());
+        keys.add(config.getRequest().getRequestUnit());
+        keys.add(config.getRequest().getMaxRequest());
+        keys.add(config.getRequest().getInterval().toMillis());
 
         try {
-            EvalResult evalResult = eval(REQUEST_SCRIPT, limiterConfig.getRequest().getTimeout(), keys);
+            EvalResult evalResult = eval(REQUEST_SCRIPT, config.getRequest().getTimeout(), keys);
             return evalResult.getCode();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
