@@ -21,9 +21,35 @@ public class Limiter {
 
     private final ConcurrentMap<String, ILimiter> limiters = new ConcurrentHashMap<>();
 
-    public void addConfig(LimiterConfig config) {
-        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(config.getMode().getValue());
-        limiters.put(config.identity(), limiter);
+    /**
+     * The add limiter
+     *
+     * @param limiterConfig {@link LimiterConfig}
+     */
+    public void addLimiter(LimiterConfig limiterConfig) {
+        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(limiterConfig.getMode().getValue());
+        limiters.put(limiterConfig.identity(), limiter);
+    }
+
+    /**
+     * The notify of changed config
+     *
+     * @param limiterConfig {@link LimiterConfig}
+     */
+    public void notify(LimiterConfig limiterConfig) {
+        try {
+            ILimiter limiter = limiters.get(limiterConfig.identity());
+            if (null == limiter) {
+                log.warn("The limiter config is notify is exception, not found limiter: {}", limiterConfig);
+                return;
+            }
+            if (!limiter.refresh(limiterConfig)) {
+                log.warn("The limiter refresh failure: {}", limiterConfig);
+            }
+        } catch (Exception e) {
+            //EventCollect.onEvent(LimiterGlobalConfig.EventType.NOTIFY_EXCEPTION);
+            log.error(EventType.NOTIFY_EXCEPTION.getMessage(), e);
+        }
     }
 
     /**
@@ -47,7 +73,7 @@ public class Limiter {
      * @return invoke return object
      * @throws Throwable throw exception
      */
-    public Object originalCall(LimiterContext limiterContext, String identity, OriginalCall originalCall) throws Throwable {
+    public Object originalCall(final LimiterContext limiterContext, String identity, OriginalCall originalCall) throws Throwable {
         try {
             LimiterContext.set(limiterContext);
             // The check limiter object
@@ -67,7 +93,7 @@ public class Limiter {
      * @return statistics data
      */
     public Map<String, Map<String, Long>> collect() {
-        Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
+        final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
         try {
             limiters.forEach((identity, limiter) -> {
                 Map<String, Long> tempDataMap = limiter.getStatistics().getAndReset();
@@ -91,7 +117,7 @@ public class Limiter {
      * @return statistics data
      */
     public Map<String, Map<String, Long>> statistics() {
-        Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
+        final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
         try {
             limiters.forEach((identity, limiter) -> {
                 Map<String, Long> tempDataMap = limiter.getStatistics().getStatisticsData();
@@ -107,30 +133,6 @@ public class Limiter {
         }
 
         return dataMap;
-    }
-
-    /**
-     * The notify of changed config
-     *
-     * @param identity   {@link LimiterConfig#identity()}
-     * @param ruleConfig {@link LimiterConfig}
-     */
-    public void notifyRuleConfig(String identity, LimiterConfig ruleConfig) {
-        try {
-            ILimiter limiter = limiters.get(identity);
-            if (null == limiter) {
-                log.warn("The limiter config is notify is exception, not found limiter:[{}]", identity);
-                return;
-            }
-
-            boolean flag = limiter.refresh(ruleConfig);
-            if (!flag) {
-                log.warn("The limiter refresh failure:{},{}", identity, ruleConfig);
-            }
-        } catch (Exception e) {
-            //EventCollect.onEvent(LimiterGlobalConfig.EventType.NOTIFY_EXCEPTION);
-            log.error(EventType.NOTIFY_EXCEPTION.getMessage(), e);
-        }
     }
 
 }

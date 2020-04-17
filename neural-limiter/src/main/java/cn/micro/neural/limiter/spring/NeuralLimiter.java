@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-public @interface Limit {
+public @interface NeuralLimiter {
 
     /**
      * Limiter name

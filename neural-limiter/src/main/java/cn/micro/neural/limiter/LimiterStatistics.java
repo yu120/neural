@@ -38,10 +38,6 @@ public class LimiterStatistics implements Serializable {
     public static final String CONCURRENT_EXCEED_KEY = "concurrent_exceed";
     public static final String RATE_EXCEED_KEY = "rate_exceed";
 
-    // ==== degrade statistics
-
-    public static final String DEGRADE_TIMES_KEY = "degrade";
-
     // ==== exception statistics
 
     public static final String TIMEOUT_TIMES_KEY = "timeout";
