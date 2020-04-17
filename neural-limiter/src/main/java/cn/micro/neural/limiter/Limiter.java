@@ -3,6 +3,7 @@ package cn.micro.neural.limiter;
 import cn.micro.neural.limiter.core.ILimiter;
 import cn.neural.common.extension.Extension;
 import cn.neural.common.extension.ExtensionLoader;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.LinkedHashMap;
@@ -16,10 +17,22 @@ import java.util.concurrent.ConcurrentMap;
  * @author lry
  **/
 @Slf4j
+@Getter
 @Extension(EventType.IDENTITY)
 public class Limiter {
 
     private final ConcurrentMap<String, ILimiter> limiters = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<String, LimiterConfig>> rules = new ConcurrentHashMap<>();
+
+    /**
+     * The add limiter
+     *
+     * @param group {@link LimiterConfig#getGroup()}
+     * @param tag   {@link LimiterConfig#getTag()} ()}
+     */
+    public LimiterConfig getLimiterConfig(String group, String tag) {
+        return rules.containsKey(group) ? rules.get(group).get(tag) : null;
+    }
 
     /**
      * The add limiter
@@ -29,6 +42,8 @@ public class Limiter {
     public void addLimiter(LimiterConfig limiterConfig) {
         ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(limiterConfig.getMode().getValue());
         limiters.put(limiterConfig.identity(), limiter);
+        rules.computeIfAbsent(limiterConfig.getGroup(), k -> new ConcurrentHashMap<>())
+                .put(limiterConfig.getTag(), limiterConfig);
     }
 
     /**

@@ -9,18 +9,19 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * LimitInterceptor
@@ -31,7 +32,7 @@ import java.util.Set;
 @Aspect
 @Configuration
 @EnableConfigurationProperties(LimiterRuleConfig.class)
-public class LimiterInterceptor implements InitializingBean {
+public class LimiterInterceptor implements ApplicationContextAware {
 
     private final Limiter limiter = new Limiter();
 
@@ -39,8 +40,13 @@ public class LimiterInterceptor implements InitializingBean {
     private LimiterRuleConfig limiterRuleConfig;
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        Set<Class<?>> classSet = ClassUtils.getClasses("");
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        Map<String, Map<String, LimiterRuleConfig.RuleProperties>> ruleMap = new HashMap<>();
+        limiterRuleConfig.getRules().forEach(ruleConfig -> ruleMap.computeIfAbsent(
+                ruleConfig.getGroup(), k -> new HashMap<>()).put(ruleConfig.getTag(), ruleConfig));
+
+        // scanner class list by spring configuration packages
+        Set<Class<?>> classSet = ClassUtils.getClasses(AutoConfigurationPackages.get(applicationContext));
         for (Class<?> clazz : classSet) {
             Method[] methods = clazz.getDeclaredMethods();
             for (Method method : methods) {
@@ -51,23 +57,31 @@ public class LimiterInterceptor implements InitializingBean {
 
                 LimiterConfig limiterConfig = new LimiterConfig();
                 // description configuration
-                limiterConfig.setTag(neuralLimiter.value());
+                limiterConfig.setTag(neuralLimiter.value().length() != 0 ? neuralLimiter.value() : method.getName().toUpperCase());
                 limiterConfig.setGroup(neuralLimiter.group());
                 limiterConfig.setName(neuralLimiter.name());
                 if (neuralLimiter.labels().length > 0) {
                     limiterConfig.setLabels(Arrays.asList(neuralLimiter.labels()));
                 }
                 limiterConfig.setIntro(neuralLimiter.intro());
-                
-                // rule configuration
                 limiterConfig.setNode(limiterRuleConfig.getNode());
                 limiterConfig.setApplication(limiterRuleConfig.getApplication());
-                limiterConfig.setEnable(limiterRuleConfig.getEnable());
-                limiterConfig.setMode(limiterRuleConfig.getMode());
-                limiterConfig.setStrategy(limiterRuleConfig.getStrategy());
-                limiterConfig.setRate(limiterRuleConfig.getRate());
-                limiterConfig.setRequest(limiterRuleConfig.getRequest());
-                limiterConfig.setConcurrent(limiterRuleConfig.getConcurrent());
+
+                // rule configuration
+                Map<String, LimiterRuleConfig.RuleProperties> tempMap = ruleMap.get(neuralLimiter.group());
+                if (tempMap == null || tempMap.isEmpty()) {
+                    continue;
+                }
+                LimiterRuleConfig.RuleProperties ruleConfig = tempMap.get(limiterConfig.getTag());
+                if (ruleConfig == null) {
+                    continue;
+                }
+                limiterConfig.setEnable(ruleConfig.getEnable());
+                limiterConfig.setMode(ruleConfig.getMode());
+                limiterConfig.setStrategy(ruleConfig.getStrategy());
+                limiterConfig.setRate(ruleConfig.getRate());
+                limiterConfig.setRequest(ruleConfig.getRequest());
+                limiterConfig.setConcurrent(ruleConfig.getConcurrent());
                 limiter.addLimiter(limiterConfig);
             }
         }
@@ -79,17 +93,22 @@ public class LimiterInterceptor implements InitializingBean {
         NeuralLimiter neuralLimiter = method.getAnnotation(NeuralLimiter.class);
 
         // 根据限流类型获取不同的key ,如果不传我们会以方法名作为key
-        String key;
+        String tag;
         if (LimitType.IP == neuralLimiter.type()) {
-            key = getIpAddress();
+            tag = getIpAddress();
         } else if (LimitType.CUSTOMER == neuralLimiter.type()) {
-            key = neuralLimiter.value().length() != 0 ? neuralLimiter.value() : method.getName().toUpperCase();
+            tag = neuralLimiter.value().length() != 0 ? neuralLimiter.value() : method.getName().toUpperCase();
         } else {
             return pjp.proceed();
         }
 
+        LimiterConfig limiterConfig = limiter.getLimiterConfig(neuralLimiter.group(), tag);
+        if (limiterConfig == null) {
+            return pjp.proceed();
+        }
+
         final LimiterContext limiterContext = new LimiterContext();
-        return limiter.originalCall(limiterContext, key, pjp::proceed);
+        return limiter.originalCall(limiterContext, limiterConfig.identity(), pjp::proceed);
     }
 
     /**

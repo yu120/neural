@@ -21,6 +21,9 @@ public class LimiterConfig implements Serializable {
     private static final long serialVersionUID = -2617753757420740743L;
 
     public static final String DELIMITER = ":";
+    public static final String DEFAULT_NODE = "limiter";
+    public static final String DEFAULT_APPLICATION = "micro";
+    public static final String DEFAULT_GROUP = "neural";
 
 
     // === limiter config identity
@@ -28,15 +31,15 @@ public class LimiterConfig implements Serializable {
     /**
      * The node name or id
      **/
-    private String node = "limiter";
+    private String node = DEFAULT_NODE;
     /**
      * The application name or id
      **/
-    private String application = "micro";
+    private String application = DEFAULT_APPLICATION;
     /**
      * The group of service resource
      **/
-    private String group = "neural";
+    private String group = DEFAULT_GROUP;
     /**
      * The service key or resource key
      **/
@@ -72,10 +75,6 @@ public class LimiterConfig implements Serializable {
      */
     private Strategy strategy = Strategy.NON;
     /**
-     * The concurrent limiter
-     */
-    private ConcurrentLimiterConfig concurrent = new ConcurrentLimiterConfig();
-    /**
      * The rate limiter
      */
     private RateLimiterConfig rate = new RateLimiterConfig();
@@ -83,7 +82,10 @@ public class LimiterConfig implements Serializable {
      * The request limiter
      */
     private RequestLimiterConfig request = new RequestLimiterConfig();
-
+    /**
+     * The concurrent limiter
+     */
+    private ConcurrentLimiterConfig concurrent = new ConcurrentLimiterConfig();
 
     /**
      * Config identity key

@@ -21,9 +21,8 @@ public class ClassUtils {
      *
      * @param packageNames package name list
      * @return Class list
-     * @throws Exception exception
      */
-    public static Set<Class<?>> getClasses(String[] packageNames) throws Exception {
+    public static Set<Class<?>> getClasses(String[] packageNames) {
         return getClasses(Arrays.asList(packageNames));
     }
 
@@ -32,13 +31,12 @@ public class ClassUtils {
      *
      * @param packageNames package name list
      * @return Class list
-     * @throws Exception exception
      */
-    public static Set<Class<?>> getClasses(List<String> packageNames) throws Exception {
+    public static Set<Class<?>> getClasses(List<String> packageNames) {
         Set<Class<?>> classes = new HashSet<>();
         for (String packageName : packageNames) {
             Set<Class<?>> tempClasses = getClasses(packageName);
-            if (tempClasses == null || tempClasses.isEmpty()) {
+            if (tempClasses.isEmpty()) {
                 continue;
             }
             classes.addAll(tempClasses);
@@ -52,9 +50,8 @@ public class ClassUtils {
      *
      * @param packageName package name
      * @return Class list
-     * @throws Exception exception
      */
-    public static Set<Class<?>> getClasses(String packageName) throws Exception {
+    public static Set<Class<?>> getClasses(String packageName) {
         return getClasses(true, packageName);
     }
 
@@ -64,43 +61,46 @@ public class ClassUtils {
      * @param recursive   true is recursive
      * @param packageName package name
      * @return Class list
-     * @throws Exception exception
      */
-    public static Set<Class<?>> getClasses(boolean recursive, String packageName) throws Exception {
+    public static Set<Class<?>> getClasses(boolean recursive, String packageName) {
         Set<Class<?>> classes = new LinkedHashSet<>();
         String tempPackageName = packageName;
         String packageDirName = tempPackageName.replace('.', '/');
-        Enumeration<URL> dirs = Thread.currentThread().getContextClassLoader().getResources(packageDirName);
-        while (dirs.hasMoreElements()) {
-            URL url = dirs.nextElement();
-            String protocol = url.getProtocol();
-            if ("file".equals(protocol)) {
-                String filePath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.name());
-                findRecursion(tempPackageName, filePath, recursive, classes);
-            } else if ("jar".equals(protocol)) {
-                JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
-                Enumeration<JarEntry> entries = jar.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
-                    String name = entry.getName();
-                    if (name.charAt(0) == '/') {
-                        name = name.substring(1);
-                    }
-                    if (name.startsWith(packageDirName)) {
-                        int idx = name.lastIndexOf('/');
-                        if (idx != -1) {
-                            tempPackageName = name.substring(0, idx).replace('/', '.');
-                            if (name.endsWith(".class") && !entry.isDirectory()) {
-                                String className = name.substring(tempPackageName.length() + 1, name.length() - 6);
-                                classes.add(Class.forName(tempPackageName + '.' + className));
+        try {
+            Enumeration<URL> dirs = Thread.currentThread().getContextClassLoader().getResources(packageDirName);
+            while (dirs.hasMoreElements()) {
+                URL url = dirs.nextElement();
+                String protocol = url.getProtocol();
+                if ("file".equals(protocol)) {
+                    String filePath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.name());
+                    findRecursion(tempPackageName, filePath, recursive, classes);
+                } else if ("jar".equals(protocol)) {
+                    JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
+                    Enumeration<JarEntry> entries = jar.entries();
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = entries.nextElement();
+                        String name = entry.getName();
+                        if (name.charAt(0) == '/') {
+                            name = name.substring(1);
+                        }
+                        if (name.startsWith(packageDirName)) {
+                            int idx = name.lastIndexOf('/');
+                            if (idx != -1) {
+                                tempPackageName = name.substring(0, idx).replace('/', '.');
+                                if (name.endsWith(".class") && !entry.isDirectory()) {
+                                    String className = name.substring(tempPackageName.length() + 1, name.length() - 6);
+                                    classes.add(Class.forName(tempPackageName + '.' + className));
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        return classes;
+            return classes;
+        } catch (Exception e) {
+            throw new RuntimeException("The get class by package name is exception", e);
+        }
     }
 
     private static void findRecursion(String packageName, String packagePath,

@@ -1,5 +1,7 @@
 package cn.micro.neural.limiter.spring;
 
+import cn.micro.neural.limiter.LimiterConfig;
+
 import java.lang.annotation.*;
 
 /**
@@ -21,7 +23,7 @@ public @interface NeuralLimiter {
     /**
      * The group of service resource
      **/
-    String group() default "";
+    String group() default LimiterConfig.DEFAULT_GROUP;
 
     /**
      * Limiter name
