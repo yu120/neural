@@ -1,7 +1,7 @@
 package cn.micro.neural.limiter.core;
 
 import cn.micro.neural.limiter.*;
-import cn.neural.common.utils.BeanUtils;
+import cn.neural.common.utils.CloneUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
             return false;
         }
 
-        BeanUtils.copyProperties(limiterConfig, this.config);
+        this.config = CloneUtils.clone(limiterConfig);
         return true;
     }
 
