@@ -89,7 +89,10 @@ public class LimiterInterceptor implements ApplicationContextAware {
 
     @Around("execution(public * *(..)) && @annotation(cn.micro.neural.limiter.spring.NeuralLimiter)")
     public Object interceptor(ProceedingJoinPoint pjp) throws Throwable {
-        Method method = ((MethodSignature) pjp.getSignature()).getMethod();
+        MethodSignature methodSignature = (MethodSignature) pjp.getSignature();
+        Method method = methodSignature.getMethod();
+        String[] parameterNames = methodSignature.getParameterNames();
+        Object[] args = pjp.getArgs();
         NeuralLimiter neuralLimiter = method.getAnnotation(NeuralLimiter.class);
 
         // 根据限流类型获取不同的key ,如果不传我们会以方法名作为key

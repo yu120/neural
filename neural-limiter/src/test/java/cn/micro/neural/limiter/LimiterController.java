@@ -3,6 +3,7 @@ package cn.micro.neural.limiter;
 import cn.micro.neural.limiter.spring.LimitType;
 import cn.micro.neural.limiter.spring.NeuralLimiter;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,7 +17,7 @@ public class LimiterController {
 
     @NeuralLimiter(value = "limitTest")
     @GetMapping("/limitTest1")
-    public int testLimiter1() {
+    public int testLimiter1(@RequestParam("key") String key, DemoUser demoUser) {
         return ATOMIC_INTEGER_1.incrementAndGet();
     }
 
