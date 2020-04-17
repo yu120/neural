@@ -1,6 +1,7 @@
 package cn.micro.neural.limiter.core;
 
 import cn.micro.neural.limiter.*;
+import cn.neural.common.utils.BeanUtils;
 import cn.neural.common.utils.CloneUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 public abstract class AbstractCallLimiter implements ILimiter {
 
-    protected volatile LimiterConfig config = null;
+    protected volatile LimiterConfig config = new LimiterConfig();
     protected volatile LimiterStatistics statistics = new LimiterStatistics();
 
     @Override
@@ -25,12 +26,16 @@ public abstract class AbstractCallLimiter implements ILimiter {
         if (null == limiterConfig || this.config.equals(limiterConfig)) {
             return true;
         }
-        if (limiterConfig.getConcurrent().getPermitUnit() < 1 ||
-                limiterConfig.getConcurrent().getMaxPermit() >= limiterConfig.getConcurrent().getPermitUnit()) {
-            return false;
+
+        // check concurrent limiter config
+        LimiterConfig.ConcurrentLimiterConfig concurrent = limiterConfig.getConcurrent();
+        if (LimiterConfig.Switch.ON == concurrent.getEnable()) {
+            if (concurrent.getPermitUnit() < 1 || concurrent.getMaxPermit() < concurrent.getPermitUnit()) {
+                return false;
+            }
         }
 
-        this.config = CloneUtils.clone(limiterConfig);
+        BeanUtils.copyProperties(CloneUtils.clone(limiterConfig), this.config);
         return true;
     }
 

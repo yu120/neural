@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * LimiterConfig
@@ -56,9 +57,9 @@ public class LimiterConfig implements Serializable {
      */
     private List<String> labels = new ArrayList<>();
     /**
-     * The limit remarks
+     * The limit intro
      **/
-    private String remarks;
+    private String intro;
 
     // === limiter config strategy
 
@@ -93,8 +94,7 @@ public class LimiterConfig implements Serializable {
      * + {@link LimiterConfig#getTag()}
      */
     public String identity() {
-        if (node.contains(DELIMITER) || application.contains(DELIMITER)
-                || group.contains(DELIMITER) || tag.contains(DELIMITER)) {
+        if (Stream.of(node, application, group, tag).anyMatch(s -> s.contains(DELIMITER))) {
             throw new IllegalArgumentException("The identity key can't include ':'");
         }
 
@@ -122,6 +122,27 @@ public class LimiterConfig implements Serializable {
     }
 
     /**
+     * The Mode
+     *
+     * @author lry
+     */
+    @Getter
+    @AllArgsConstructor
+    public enum Mode {
+        /**
+         * The stand-alone model
+         */
+        STAND_ALONE("stand-alone", "Stand-alone mode"),
+        /**
+         * The cluster model
+         */
+        CLUSTER("cluster", "Cluster mode");
+
+        private final String value;
+        private final String message;
+    }
+
+    /**
      * The Strategy of Limiter Overflow.
      *
      * @author lry
@@ -142,27 +163,6 @@ public class LimiterConfig implements Serializable {
          */
         EXCEPTION("The throw 'LimiterExceedException' exception of limiter, when over flow");
 
-        private final String message;
-    }
-
-    /**
-     * The Mode
-     *
-     * @author lry
-     */
-    @Getter
-    @AllArgsConstructor
-    public enum Mode {
-        /**
-         * The stand-alone model
-         */
-        STAND_ALONE("stand-alone", "Stand-alone mode"),
-        /**
-         * The cluster model
-         */
-        CLUSTER("cluster", "Cluster mode");
-
-        private final String value;
         private final String message;
     }
 

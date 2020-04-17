@@ -14,6 +14,16 @@ import java.lang.annotation.*;
 public @interface NeuralLimiter {
 
     /**
+     * Limiter tag
+     */
+    String value() default "";
+
+    /**
+     * The group of service resource
+     **/
+    String group() default "";
+
+    /**
      * Limiter name
      */
     String name() default "";
@@ -24,19 +34,9 @@ public @interface NeuralLimiter {
     String intro() default "";
 
     /**
-     * Limiter key
+     * Limiter labels
      */
-    String key() default "";
-
-    /**
-     * The rate limit time period range, unit (ms)
-     */
-    int ratePeriod();
-
-    /**
-     * The rate limit maximum number of visits in a certain time
-     */
-    int rateMax();
+    String[] labels() default "";
 
     /**
      * Type of current limit (user-defined key or request ip)
