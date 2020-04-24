@@ -26,6 +26,7 @@
         <module>neural-downgrade</module>
         <module>neural-circuit-breaker</module>
         <module>neural-core</module>
+        <module>neural-idempotent</module>
     </modules>
 
     <dependencyManagement>
@@ -58,6 +59,11 @@
             <dependency>
                 <groupId>cn.micro.neural</groupId>
                 <artifactId>neural-circuit-breaker</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.micro.neural</groupId>
+                <artifactId>neural-idempotent</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

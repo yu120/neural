@@ -27,6 +27,31 @@ public enum FactoryStorage {
             public Number[] eval(String script, List<String> keys, Object... args) {
                 return redisTemplate.execute(new DefaultRedisScript<>(script, Number[].class), keys, args);
             }
+
+            @Override
+            public boolean set(String key, Object value) {
+                return false;
+            }
+
+            @Override
+            public boolean setEx(String key, Object value, Long expireTime) {
+                return false;
+            }
+
+            @Override
+            public boolean exists(String key) {
+                return false;
+            }
+
+            @Override
+            public Object get(String key) {
+                return null;
+            }
+
+            @Override
+            public boolean remove(String key) {
+                return false;
+            }
         };
     }
 
