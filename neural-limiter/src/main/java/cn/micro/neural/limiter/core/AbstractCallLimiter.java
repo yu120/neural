@@ -22,19 +22,31 @@ public abstract class AbstractCallLimiter implements ILimiter {
 
     @Override
     public boolean refresh(LimiterConfig limiterConfig) throws Exception {
-        log.info("Refresh the current limit configuration information: {}", limiterConfig);
+        log.info("Refresh the current limiter config: {}", limiterConfig);
         if (null == limiterConfig || this.config.equals(limiterConfig)) {
-            return true;
+            return false;
         }
 
         // check concurrent limiter config
         LimiterConfig.ConcurrentLimiterConfig concurrent = limiterConfig.getConcurrent();
-        if (LimiterConfig.Switch.ON == concurrent.getEnable()) {
-            if (concurrent.getPermitUnit() < 1 || concurrent.getMaxPermit() < concurrent.getPermitUnit()) {
-                return false;
-            }
+        if (concurrent.getPermitUnit() < 1 || concurrent.getMaxPermit() < concurrent.getPermitUnit()) {
+            log.warn("Illegal concurrent limiter config: {}", limiterConfig);
+            return false;
+        }
+        // check rate limiter config
+        LimiterConfig.RateLimiterConfig rate = limiterConfig.getRate();
+        if (rate.getRateUnit() < 1 || rate.getMaxRate() < rate.getRateUnit()) {
+            log.warn("Illegal rate limiter config: {}", limiterConfig);
+            return false;
+        }
+        // check request limiter config
+        LimiterConfig.RequestLimiterConfig request = limiterConfig.getRequest();
+        if (request.getRequestUnit() < 1 || request.getMaxRequest() < request.getRequestUnit()) {
+            log.warn("Illegal request limiter config: {}", limiterConfig);
+            return false;
         }
 
+        // Copy properties attributes after deep copy
         BeanUtils.copyProperties(CloneUtils.clone(limiterConfig), this.config);
         return true;
     }

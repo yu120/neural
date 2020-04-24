@@ -1,6 +1,6 @@
 package cn.micro.neural.limiter.spring;
 
-import cn.micro.neural.limiter.Limiter;
+import cn.micro.neural.limiter.LimiterFactory;
 import cn.micro.neural.limiter.LimiterConfig;
 import cn.micro.neural.limiter.LimiterContext;
 import cn.neural.common.utils.ClassUtils;
@@ -34,7 +34,7 @@ import java.util.*;
 @EnableConfigurationProperties(LimiterRuleConfig.class)
 public class LimiterInterceptor implements ApplicationContextAware {
 
-    private final Limiter limiter = new Limiter();
+    private final LimiterFactory limiterFactory = new LimiterFactory();
 
     @Autowired
     private LimiterRuleConfig limiterRuleConfig;
@@ -82,7 +82,7 @@ public class LimiterInterceptor implements ApplicationContextAware {
                 limiterConfig.setRate(ruleConfig.getRate());
                 limiterConfig.setRequest(ruleConfig.getRequest());
                 limiterConfig.setConcurrent(ruleConfig.getConcurrent());
-                limiter.addLimiter(limiterConfig);
+                limiterFactory.addLimiter(limiterConfig);
             }
         }
     }
@@ -105,13 +105,13 @@ public class LimiterInterceptor implements ApplicationContextAware {
             return pjp.proceed();
         }
 
-        LimiterConfig limiterConfig = limiter.getLimiterConfig(neuralLimiter.group(), tag);
+        LimiterConfig limiterConfig = limiterFactory.getLimiterConfig(neuralLimiter.group(), tag);
         if (limiterConfig == null) {
             return pjp.proceed();
         }
 
         final LimiterContext limiterContext = new LimiterContext();
-        return limiter.originalCall(limiterContext, limiterConfig.identity(), pjp::proceed);
+        return limiterFactory.originalCall(limiterContext, limiterConfig.identity(), pjp::proceed);
     }
 
     /**

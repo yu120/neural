@@ -19,9 +19,15 @@ import java.util.concurrent.ConcurrentMap;
 @Slf4j
 @Getter
 @Extension(EventType.IDENTITY)
-public class Limiter {
+public class LimiterFactory {
 
+    /**
+     * Map<key=ILimiter#identity(), ILimiter>
+     */
     private final ConcurrentMap<String, ILimiter> limiters = new ConcurrentHashMap<>();
+    /**
+     * Map<key=group, subKey=tag, value=LimiterConfig>
+     */
     private final ConcurrentMap<String, ConcurrentMap<String, LimiterConfig>> rules = new ConcurrentHashMap<>();
 
     /**
@@ -55,11 +61,13 @@ public class Limiter {
         try {
             ILimiter limiter = limiters.get(limiterConfig.identity());
             if (null == limiter) {
-                log.warn("The limiter config is notify is exception, not found limiter: {}", limiterConfig);
+                log.warn("Notfound limiter, identity={}", limiterConfig.identity());
                 return;
             }
-            if (!limiter.refresh(limiterConfig)) {
-                log.warn("The limiter refresh failure: {}", limiterConfig);
+            if (limiter.refresh(limiterConfig)) {
+                log.info("The limiter config refresh success: {}", limiterConfig);
+            } else {
+                log.warn("The limiter config refresh failure: {}", limiterConfig);
             }
         } catch (Exception e) {
             //EventCollect.onEvent(LimiterGlobalConfig.EventType.NOTIFY_EXCEPTION);
