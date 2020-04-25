@@ -1,15 +1,14 @@
 package cn.micro.neural.limiter.core;
 
 import cn.micro.neural.limiter.*;
+import cn.micro.neural.limiter.EventListener;
 import cn.neural.common.utils.BeanUtils;
 import cn.neural.common.utils.CloneUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 /**
  * The Abstract Call Limiter.
@@ -21,73 +20,53 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter
 public abstract class AbstractCallLimiter implements ILimiter {
 
-    private final Object LISTENER_OBJECT = new Object();
+    private final Set<EventListener> listeners = new LinkedHashSet<>();
     protected volatile LimiterConfig config = new LimiterConfig();
     protected volatile LimiterStatistics statistics = new LimiterStatistics();
-    protected Map<EventListener, Object> listeners = new ConcurrentHashMap<>();
 
     @Override
-    public void addListener(EventListener eventListener) {
-        if (listeners.containsKey(eventListener)) {
-            return;
-        }
-        listeners.put(eventListener, LISTENER_OBJECT);
+    public void addListener(EventListener... eventListeners) {
+        Collections.addAll(listeners, eventListeners);
     }
 
     @Override
-    public Map<String, Long> statistics() {
+    public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
         try {
-            return statistics.getStatisticsData();
+            log.info("Refresh the current limiter config: {}", limiterConfig);
+            if (null == limiterConfig || this.config.equals(limiterConfig)) {
+                return false;
+            }
+
+            // check concurrent limiter config
+            LimiterConfig.ConcurrentLimiterConfig concurrent = limiterConfig.getConcurrent();
+            if (concurrent.getPermitUnit() < 1 || concurrent.getMaxPermit() < 1
+                    || concurrent.getMaxPermit() <= concurrent.getPermitUnit()) {
+                log.warn("Illegal concurrent limiter config: {}", limiterConfig);
+                return false;
+            }
+            // check rate limiter config
+            LimiterConfig.RateLimiterConfig rate = limiterConfig.getRate();
+            if (rate.getRateUnit() < 1 || rate.getMaxRate() < 1
+                    || rate.getMaxRate() <= rate.getRateUnit()) {
+                log.warn("Illegal rate limiter config: {}", limiterConfig);
+                return false;
+            }
+            // check request limiter config
+            LimiterConfig.RequestLimiterConfig request = limiterConfig.getRequest();
+            if (request.getRequestUnit() < 1 || request.getMaxRequest() < 1
+                    || request.getMaxRequest() <= request.getRequestUnit()) {
+                log.warn("Illegal request limiter config: {}", limiterConfig);
+                return false;
+            }
+
+            // Copy properties attributes after deep copy
+            BeanUtils.copyProperties(CloneUtils.clone(limiterConfig), this.config);
+
+            return tryRefresh(limiterConfig);
         } catch (Exception e) {
-            this.collectEvent(EventType.STATISTICS_EXCEPTION);
-            log.error("The limiter[{}] statistics exception", config.identity(), e);
-            return Collections.emptyMap();
+            this.collectEvent(EventType.REFRESH_EXCEPTION);
+            throw e;
         }
-    }
-
-    @Override
-    public Map<String, Long> collect() {
-        try {
-            return statistics.getAndReset();
-        } catch (Exception e) {
-            this.collectEvent(EventType.COLLECT_EXCEPTION);
-            log.error("The limiter[{}] collect exception", config.identity(), e);
-            return Collections.emptyMap();
-        }
-    }
-
-    @Override
-    public boolean refresh(LimiterConfig limiterConfig) throws Exception {
-        log.info("Refresh the current limiter config: {}", limiterConfig);
-        if (null == limiterConfig || this.config.equals(limiterConfig)) {
-            return false;
-        }
-
-        // check concurrent limiter config
-        LimiterConfig.ConcurrentLimiterConfig concurrent = limiterConfig.getConcurrent();
-        if (concurrent.getPermitUnit() < 1 || concurrent.getMaxPermit() < 1
-                || concurrent.getMaxPermit() <= concurrent.getPermitUnit()) {
-            log.warn("Illegal concurrent limiter config: {}", limiterConfig);
-            return false;
-        }
-        // check rate limiter config
-        LimiterConfig.RateLimiterConfig rate = limiterConfig.getRate();
-        if (rate.getRateUnit() < 1 || rate.getMaxRate() < 1
-                || rate.getMaxRate() <= rate.getRateUnit()) {
-            log.warn("Illegal rate limiter config: {}", limiterConfig);
-            return false;
-        }
-        // check request limiter config
-        LimiterConfig.RequestLimiterConfig request = limiterConfig.getRequest();
-        if (request.getRequestUnit() < 1 || request.getMaxRequest() < 1
-                || request.getMaxRequest() <= request.getRequestUnit()) {
-            log.warn("Illegal request limiter config: {}", limiterConfig);
-            return false;
-        }
-
-        // Copy properties attributes after deep copy
-        BeanUtils.copyProperties(CloneUtils.clone(limiterConfig), this.config);
-        return true;
     }
 
     @Override
@@ -225,21 +204,51 @@ public abstract class AbstractCallLimiter implements ILimiter {
         return statistics.wrapperOriginalCall(limiterContext, originalCall);
     }
 
+    @Override
+    public Map<String, Long> statistics() {
+        try {
+            return statistics.getStatisticsData();
+        } catch (Exception e) {
+            this.collectEvent(EventType.STATISTICS_EXCEPTION);
+            log.error("The limiter[{}] statistics exception", config.identity(), e);
+            return Collections.emptyMap();
+        }
+    }
+
+    @Override
+    public Map<String, Long> collect() {
+        try {
+            return statistics.getAndReset();
+        } catch (Exception e) {
+            this.collectEvent(EventType.COLLECT_EXCEPTION);
+            log.error("The limiter[{}] collect exception", config.identity(), e);
+            return Collections.emptyMap();
+        }
+    }
+
     /**
      * The collect event
      *
      * @param eventType {@link EventType}
      * @param args      attachment parameters
      */
-    protected void collectEvent(EventType eventType, Object... args) {
-        for (Map.Entry<EventListener, Object> entry : listeners.entrySet()) {
+    private void collectEvent(EventType eventType, Object... args) {
+        for (EventListener eventListener : listeners) {
             try {
-                entry.getKey().onEvent(config, eventType, args);
+                eventListener.onEvent(config, eventType, args);
             } catch (Exception e) {
                 log.error("The collect event exception", e);
             }
         }
     }
+
+    /**
+     * The do refresh
+     *
+     * @param limiterConfig {@link LimiterConfig}
+     * @return true is success
+     */
+    protected abstract boolean tryRefresh(LimiterConfig limiterConfig);
 
     /**
      * The increment of concurrent limiter.

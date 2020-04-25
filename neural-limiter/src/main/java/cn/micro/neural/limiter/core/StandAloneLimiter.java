@@ -1,6 +1,5 @@
 package cn.micro.neural.limiter.core;
 
-import cn.micro.neural.limiter.EventType;
 import cn.micro.neural.limiter.LimiterConfig;
 import cn.micro.neural.limiter.extension.AdjustableRateLimiter;
 import cn.micro.neural.limiter.extension.AdjustableSemaphore;
@@ -35,28 +34,21 @@ public class StandAloneLimiter extends AbstractCallLimiter {
     private Cache<Long, LongAdder> cache;
 
     @Override
-    public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
-        try {
-            super.refresh(limiterConfig);
+    protected boolean tryRefresh(LimiterConfig limiterConfig) {
+        // rate limiter
+        this.rateLimiter = AdjustableRateLimiter.create(limiterConfig.getRate().getMaxRate());
+        // concurrent limiter
+        this.semaphore = new AdjustableSemaphore(limiterConfig.getConcurrent().getMaxPermit(), true);
+        // request limiter
+        CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
+        cacheBuilder.expireAfterWrite(limiterConfig.getRequest().getInterval().toMillis(), TimeUnit.MILLISECONDS);
+        this.cache = cacheBuilder.build();
 
-            // rate limiter
-            this.rateLimiter = AdjustableRateLimiter.create(limiterConfig.getRate().getMaxRate());
-            // concurrent limiter
-            this.semaphore = new AdjustableSemaphore(limiterConfig.getConcurrent().getMaxPermit(), true);
-            // request limiter
-            CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-            cacheBuilder.expireAfterWrite(limiterConfig.getRequest().getInterval().toMillis(), TimeUnit.MILLISECONDS);
-            this.cache = cacheBuilder.build();
-
-            // the refresh rateLimiter
-            rateLimiter.setRate(limiterConfig.getRate().getRateUnit());
-            // the refresh semaphore
-            semaphore.setMaxPermits(limiterConfig.getConcurrent().getMaxPermit());
-            return true;
-        } catch (Exception e) {
-            super.collectEvent(EventType.REFRESH_EXCEPTION);
-            throw e;
-        }
+        // the refresh rateLimiter
+        rateLimiter.setRate(limiterConfig.getRate().getRateUnit());
+        // the refresh semaphore
+        semaphore.setMaxPermits(limiterConfig.getConcurrent().getMaxPermit());
+        return true;
     }
 
     @Override
@@ -81,7 +73,9 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     @Override
     protected void decrementConcurrent() {
-        semaphore.release();
+        if (semaphore != null) {
+            semaphore.release();
+        }
     }
 
     @Override

@@ -23,9 +23,9 @@ public interface ILimiter {
     /**
      * The add event listener
      *
-     * @param eventListener {@link EventListener}
+     * @param eventListeners {@link EventListener}
      */
-    void addListener(EventListener eventListener);
+    void addListener(EventListener... eventListeners);
 
     /**
      * The refresh in-memory data.

@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 @Slf4j
 @Getter
 @Extension(LimiterFactory.IDENTITY)
-public class LimiterFactory {
+public class LimiterFactory implements EventListener {
 
     public static final String IDENTITY = "limiter";
 
@@ -48,16 +48,18 @@ public class LimiterFactory {
      * @param limiterConfig {@link LimiterConfig}
      */
     public void addLimiter(LimiterConfig limiterConfig) {
-        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(limiterConfig.getMode().getValue());
-        limiter.addListener(new EventListener() {
-            @Override
-            public void onEvent(LimiterConfig limiterConfig, EventType eventType, Object... args) {
+        LimiterConfig.Mode mode = limiterConfig.getMode();
+        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(mode.getValue());
+        limiter.addListener(this);
 
-            }
-        });
         limiters.put(limiterConfig.identity(), limiter);
-        rules.computeIfAbsent(limiterConfig.getGroup(), k -> new ConcurrentHashMap<>())
-                .put(limiterConfig.getTag(), limiterConfig);
+        rules.computeIfAbsent(limiterConfig.getGroup(),
+                k -> new ConcurrentHashMap<>()).put(limiterConfig.getTag(), limiterConfig);
+    }
+
+    @Override
+    public void onEvent(LimiterConfig limiterConfig, EventType eventType, Object... args) {
+        log.info("Receive event[{}]", eventType);
     }
 
     /**
@@ -123,19 +125,12 @@ public class LimiterFactory {
      */
     public Map<String, Map<String, Long>> collect() {
         final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
-        try {
-            limiters.forEach((identity, limiter) -> {
-                Map<String, Long> tempDataMap = limiter.collect();
-                if (null == tempDataMap || tempDataMap.isEmpty()) {
-                    return;
-                }
-
-                dataMap.put(identity, tempDataMap);
-            });
-        } catch (Exception e) {
-            //EventCollect.onEvent(LimiterGlobalConfig.EventType.COLLECT_EXCEPTION);
-            log.error(EventType.COLLECT_EXCEPTION.getMessage(), e);
-        }
+        limiters.forEach((identity, limiter) -> {
+            Map<String, Long> tempMap = limiter.collect();
+            if (!tempMap.isEmpty()) {
+                dataMap.put(identity, tempMap);
+            }
+        });
 
         return dataMap;
     }
@@ -147,19 +142,12 @@ public class LimiterFactory {
      */
     public Map<String, Map<String, Long>> statistics() {
         final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
-        try {
-            limiters.forEach((identity, limiter) -> {
-                Map<String, Long> tempDataMap = limiter.statistics();
-                if (null == tempDataMap || tempDataMap.isEmpty()) {
-                    return;
-                }
-
-                dataMap.put(identity, tempDataMap);
-            });
-        } catch (Exception e) {
-            //EventCollect.onEvent(LimiterGlobalConfig.EventType.COLLECT_EXCEPTION);
-            log.error(EventType.COLLECT_EXCEPTION.getMessage(), e);
-        }
+        limiters.forEach((identity, limiter) -> {
+            Map<String, Long> tempMap = limiter.statistics();
+            if (!tempMap.isEmpty()) {
+                dataMap.put(identity, tempMap);
+            }
+        });
 
         return dataMap;
     }

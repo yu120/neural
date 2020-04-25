@@ -1,5 +1,6 @@
 package cn.micro.neural.limiter.core;
 
+import cn.micro.neural.limiter.LimiterConfig;
 import cn.micro.neural.storage.FactoryStorage;
 import cn.neural.common.extension.Extension;
 import cn.neural.common.utils.StreamUtils;
@@ -29,6 +30,11 @@ public class ClusterLimiter extends AbstractCallLimiter {
     private static String CONCURRENT_SCRIPT = StreamUtils.loadScript("/script/limiter_concurrent.lua");
     private static String RATE_SCRIPT = StreamUtils.loadScript("/script/limiter_rate.lua");
     private static String REQUEST_SCRIPT = StreamUtils.loadScript("/script/limiter_request.lua");
+
+    @Override
+    protected boolean tryRefresh(LimiterConfig limiterConfig) {
+        return true;
+    }
 
     @Override
     protected Acquire incrementConcurrent() {
