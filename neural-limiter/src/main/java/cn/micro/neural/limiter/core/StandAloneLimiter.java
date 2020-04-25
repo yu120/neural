@@ -52,7 +52,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire incrementConcurrent() {
+    protected Acquire tryAcquireConcurrent() {
         LimiterConfig.ConcurrentLimiterConfig concurrent = config.getConcurrent();
 
         try {

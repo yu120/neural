@@ -37,7 +37,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire incrementConcurrent() {
+    protected Acquire tryAcquireConcurrent() {
         List<Object> keys = new ArrayList<>();
         keys.add(config.identity());
         keys.add(config.getConcurrent().getPermitUnit());
