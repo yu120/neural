@@ -4,14 +4,10 @@ import cn.micro.neural.limiter.LimiterConfig;
 import cn.micro.neural.storage.FactoryStorage;
 import cn.neural.common.extension.Extension;
 import cn.neural.common.utils.StreamUtils;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,91 +34,72 @@ public class ClusterLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire tryAcquireConcurrent() {
-        List<Object> keys = new ArrayList<>();
-        keys.add(config.identity());
-        keys.add(config.getConcurrent().getPermitUnit());
-        keys.add(config.getConcurrent().getMaxPermit());
+        LimiterConfig.ConcurrentLimiterConfig concurrentConfig = config.getConcurrent();
+        List<String> keys = Collections.singletonList(config.identity());
+        List<Object> values = Arrays.asList(concurrentConfig.getPermitUnit(), concurrentConfig.getMaxPermit());
 
         try {
-            EvalResult evalResult = eval(CONCURRENT_SCRIPT, config.getConcurrent().getTimeout(), keys);
-            System.out.println("The increment concurrent:" + evalResult);
-            return evalResult.getCode();
+            Number[] result = FactoryStorage.INSTANCE.getStorage().eval(CONCURRENT_SCRIPT, keys, values);
+            if (result == null || result.length != 2) {
+                return Acquire.EXCEPTION;
+            }
+
+            return Acquire.valueOf(result[0].intValue());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("Try acquire cluster concurrent exception", e);
             return Acquire.EXCEPTION;
         }
     }
 
     @Override
     protected void releaseConcurrent() {
-        List<Object> keys = new ArrayList<>();
-        keys.add(config.identity());
-        keys.add(-config.getConcurrent().getPermitUnit());
-        keys.add(config.getConcurrent().getMaxPermit());
+        LimiterConfig.ConcurrentLimiterConfig concurrentConfig = config.getConcurrent();
+        List<String> keys = Collections.singletonList(config.identity());
+        List<Object> values = Arrays.asList(-concurrentConfig.getPermitUnit(), concurrentConfig.getMaxPermit());
 
         try {
-            EvalResult evalResult = eval(CONCURRENT_SCRIPT, config.getConcurrent().getTimeout(), keys);
-            System.out.println("The decrement concurrent:" + evalResult);
+            FactoryStorage.INSTANCE.getStorage().eval(CONCURRENT_SCRIPT, keys, values);
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("Try release cluster concurrent exception", e);
         }
     }
 
     @Override
     protected Acquire tryAcquireRate() {
-        List<Object> keys = new ArrayList<>();
-        keys.add(config.identity());
-        keys.add(config.getRate().getRateUnit());
-        keys.add(System.currentTimeMillis());
-        keys.add("app");
+        LimiterConfig.RateLimiterConfig rateConfig = config.getRate();
+        List<String> keys = Collections.singletonList(config.identity());
+        List<Object> values = Arrays.asList(rateConfig.getRateUnit(), rateConfig.getMaxRate());
 
         try {
-            EvalResult evalResult = eval(RATE_SCRIPT, config.getRate().getTimeout(), keys);
-            return evalResult.getCode();
+            Number[] result = FactoryStorage.INSTANCE.getStorage().eval(RATE_SCRIPT, keys, values);
+            if (result == null || result.length != 2) {
+                return Acquire.EXCEPTION;
+            }
+
+            return Acquire.valueOf(result[0].intValue());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("Try acquire cluster rate exception", e);
             return Acquire.EXCEPTION;
         }
     }
 
     @Override
     protected Acquire tryAcquireCounter() {
-        List<Object> keys = new ArrayList<>();
-        keys.add(config.identity());
-        keys.add(config.getCounter().getCountUnit());
-        keys.add(config.getCounter().getMaxCount());
-        keys.add(config.getCounter().getTimeout());
+        LimiterConfig.CounterLimiterConfig counterConfig = config.getCounter();
+        List<String> keys = Collections.singletonList(config.identity());
+        List<Object> values = Arrays.asList(counterConfig.getCountUnit(), counterConfig.getMaxCount());
 
         try {
-            EvalResult evalResult = eval(REQUEST_SCRIPT, config.getCounter().getTimeout(), keys);
-            return evalResult.getCode();
+            Number[] result = FactoryStorage.INSTANCE.getStorage().eval(REQUEST_SCRIPT, keys, values);
+            if (result == null || result.length != 2) {
+                return Acquire.EXCEPTION;
+            }
+
+            return Acquire.valueOf(result[0].intValue());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("Try acquire cluster counter exception", e);
             return Acquire.EXCEPTION;
         }
-    }
-
-    private EvalResult eval(String script, Long timeout, List<Object> keys) {
-        Number[] result = FactoryStorage.INSTANCE.getStorage().eval(script, null, keys);
-        if (result == null || result.length != 2) {
-            return new EvalResult(Acquire.EXCEPTION, 0L);
-        }
-
-        Acquire acquire = Acquire.valueOf(result[0].intValue());
-        return new EvalResult(acquire, result[1].longValue());
-    }
-
-    @Data
-    @ToString
-    @NoArgsConstructor
-    @AllArgsConstructor
-    private static class EvalResult implements Serializable {
-
-        private static final long serialVersionUID = 965512125433109743L;
-
-        private Acquire code;
-        private Long num;
-
     }
 
 }

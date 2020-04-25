@@ -66,7 +66,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
             // try acquire
             return semaphore.tryAcquire(concurrentConfig.getPermitUnit()) ? Acquire.SUCCESS : Acquire.FAILURE;
         } catch (Exception e) {
-            log.error("The try acquire local concurrent exception", e);
+            log.error("Try acquire local concurrent exception", e);
             return Acquire.EXCEPTION;
         }
     }
