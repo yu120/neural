@@ -30,7 +30,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
     // ==== counter limiter
 
     private AtomicLong accumulator;
-    private volatile AtomicLong startTime = new AtomicLong(System.currentTimeMillis());
+    private volatile AtomicLong windowsStartTime = new AtomicLong(System.currentTimeMillis());
 
     @Override
     protected boolean tryRefresh(LimiterConfig limiterConfig) {
@@ -61,7 +61,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
             // try acquire
             return semaphore.tryAcquire(concurrent.getPermitUnit()) ? Acquire.SUCCESS : Acquire.FAILURE;
         } catch (Exception e) {
-            log.error("The try acquire local concurrent is exception", e);
+            log.error("The try acquire local concurrent exception", e);
             return Acquire.EXCEPTION;
         }
     }
@@ -83,7 +83,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
             // try acquire
             return rateLimiter.tryAcquire() ? Acquire.SUCCESS : Acquire.FAILURE;
         } catch (Exception e) {
-            log.error("The try acquire local rate limiter is exception", e);
+            log.error("Try acquire local rate limiter exception", e);
             return Acquire.EXCEPTION;
         }
     }
@@ -95,8 +95,8 @@ public class StandAloneLimiter extends AbstractCallLimiter {
         try {
             accumulator.addAndGet(counter.getCountUnit());
             // when the interval time is exceeded, the counting is restarted directly
-            if (System.currentTimeMillis() - startTime.get() > counter.getTimeout()) {
-                this.startTime = new AtomicLong(System.currentTimeMillis());
+            if (System.currentTimeMillis() - windowsStartTime.get() > counter.getTimeout()) {
+                this.windowsStartTime = new AtomicLong(System.currentTimeMillis());
                 accumulator.set(counter.getCountUnit());
                 return Acquire.SUCCESS;
             }
@@ -106,7 +106,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
             return Acquire.FAILURE;
         } catch (Exception e) {
-            log.error("The try acquire memory rate limiter is exception", e);
+            log.error("Try acquire local counter limiter exception", e);
             return Acquire.EXCEPTION;
         }
     }
