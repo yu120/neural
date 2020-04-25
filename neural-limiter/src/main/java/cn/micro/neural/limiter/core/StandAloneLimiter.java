@@ -32,7 +32,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     // ==== counter limiter
 
-    private LoadingCache<Long, AtomicLong> accumulator;
+    private LoadingCache<Long, AtomicLong> counter;
 
     @Override
     protected boolean tryRefresh(LimiterConfig limiterConfig) {
@@ -44,7 +44,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
         // request limiter
         CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
         cacheBuilder.expireAfterWrite(limiterConfig.getCounter().getTimeout(), TimeUnit.MILLISECONDS);
-        this.accumulator = cacheBuilder.build(CacheLoader.from(() -> new AtomicLong(0)));
+        this.counter = cacheBuilder.build(CacheLoader.from(() -> new AtomicLong(0)));
 
         // the refresh rateLimiter
         rateLimiter.setRate(limiterConfig.getRate().getRateUnit());
@@ -55,16 +55,16 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire tryAcquireConcurrent() {
-        LimiterConfig.ConcurrentLimiterConfig concurrent = config.getConcurrent();
+        LimiterConfig.ConcurrentLimiterConfig concurrentConfig = config.getConcurrent();
         try {
-            if (concurrent.getTimeout() > 0) {
+            if (concurrentConfig.getTimeout() > 0) {
                 // try acquire by timeout
-                return semaphore.tryAcquire(concurrent.getPermitUnit(),
-                        concurrent.getTimeout(), TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
+                return semaphore.tryAcquire(concurrentConfig.getPermitUnit(), concurrentConfig.getTimeout(),
+                        TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
             }
 
             // try acquire
-            return semaphore.tryAcquire(concurrent.getPermitUnit()) ? Acquire.SUCCESS : Acquire.FAILURE;
+            return semaphore.tryAcquire(concurrentConfig.getPermitUnit()) ? Acquire.SUCCESS : Acquire.FAILURE;
         } catch (Exception e) {
             log.error("The try acquire local concurrent exception", e);
             return Acquire.EXCEPTION;
@@ -95,12 +95,12 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire tryAcquireCounter() {
-        LimiterConfig.CounterLimiterConfig counter = config.getCounter();
+        LimiterConfig.CounterLimiterConfig counterConfig = config.getCounter();
 
         try {
             // get the current time window
-            long currentSeconds = System.currentTimeMillis() / counter.getCountUnit();
-            if (accumulator.get(currentSeconds).incrementAndGet() > counter.getMaxCount()) {
+            long currentSeconds = System.currentTimeMillis() / counterConfig.getCountUnit();
+            if (counter.get(currentSeconds).incrementAndGet() > counterConfig.getMaxCount()) {
                 return Acquire.FAILURE;
             }
 
