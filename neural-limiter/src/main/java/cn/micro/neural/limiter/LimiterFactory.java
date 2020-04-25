@@ -104,7 +104,9 @@ public class LimiterFactory {
                 return originalCall.call();
             }
 
-            return limiters.get(identity).wrapperCall(limiterContext, originalCall);
+            ILimiter limiter = limiters.get(identity);
+            limiterContext.setLimiterConfig(limiter.getConfig());
+            return limiter.wrapperCall(limiterContext, originalCall);
         } finally {
             LimiterContext.remove();
         }

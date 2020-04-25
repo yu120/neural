@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * LimiterContext
@@ -27,5 +29,8 @@ public class LimiterContext implements Serializable {
     public static void remove() {
         THREAD_LOCAL.remove();
     }
+
+    private LimiterConfig limiterConfig;
+    private Map<String, Object> attachments = new HashMap<>();
 
 }

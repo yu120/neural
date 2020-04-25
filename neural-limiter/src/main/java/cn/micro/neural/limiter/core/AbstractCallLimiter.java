@@ -29,19 +29,22 @@ public abstract class AbstractCallLimiter implements ILimiter {
 
         // check concurrent limiter config
         LimiterConfig.ConcurrentLimiterConfig concurrent = limiterConfig.getConcurrent();
-        if (concurrent.getPermitUnit() < 1 || concurrent.getMaxPermit() < concurrent.getPermitUnit()) {
+        if (concurrent.getPermitUnit() < 1 || concurrent.getMaxPermit() < 1
+                || concurrent.getMaxPermit() <= concurrent.getPermitUnit()) {
             log.warn("Illegal concurrent limiter config: {}", limiterConfig);
             return false;
         }
         // check rate limiter config
         LimiterConfig.RateLimiterConfig rate = limiterConfig.getRate();
-        if (rate.getRateUnit() < 1 || rate.getMaxRate() < rate.getRateUnit()) {
+        if (rate.getRateUnit() < 1 || rate.getMaxRate() < 1
+                || rate.getMaxRate() <= rate.getRateUnit()) {
             log.warn("Illegal rate limiter config: {}", limiterConfig);
             return false;
         }
         // check request limiter config
         LimiterConfig.RequestLimiterConfig request = limiterConfig.getRequest();
-        if (request.getRequestUnit() < 1 || request.getMaxRequest() < request.getRequestUnit()) {
+        if (request.getRequestUnit() < 1 || request.getMaxRequest() < 1
+                || request.getMaxRequest() <= request.getRequestUnit()) {
             log.warn("Illegal request limiter config: {}", limiterConfig);
             return false;
         }
@@ -82,6 +85,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
                     try {
                         return doRateOriginalCall(limiterContext, originalCall);
                     } finally {
+                        // only need to be released after success
                         decrementConcurrent();
                     }
                 case EXCEPTION:

@@ -37,47 +37,40 @@ public class StandAloneLimiter extends AbstractCallLimiter {
     public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
         super.refresh(limiterConfig);
 
-        // rate limiter
-        rateLimiter = AdjustableRateLimiter.create(limiterConfig.getRate().getMaxRate());
-
-        // request limiter
-        CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-        cacheBuilder.expireAfterWrite(limiterConfig.getRequest().getInterval().toMillis(), TimeUnit.MILLISECONDS);
-        cache = cacheBuilder.build();
-
-        // concurrent limiter
-        semaphore = new AdjustableSemaphore(limiterConfig.getConcurrent().getMaxPermit(), true);
-
         try {
-            if (0 < limiterConfig.getConcurrent().getMaxPermit()) {
-                // the refresh semaphore
-                semaphore.setMaxPermits(limiterConfig.getConcurrent().getMaxPermit());
-            }
-            if (0 < limiterConfig.getRate().getRateUnit()) {
-                // the refresh rateLimiter
-                rateLimiter.setRate(limiterConfig.getRate().getRateUnit());
-            }
+            // rate limiter
+            this.rateLimiter = AdjustableRateLimiter.create(limiterConfig.getRate().getMaxRate());
+            // concurrent limiter
+            this.semaphore = new AdjustableSemaphore(limiterConfig.getConcurrent().getMaxPermit(), true);
+            // request limiter
+            CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
+            cacheBuilder.expireAfterWrite(limiterConfig.getRequest().getInterval().toMillis(), TimeUnit.MILLISECONDS);
+            this.cache = cacheBuilder.build();
 
+            // the refresh rateLimiter
+            rateLimiter.setRate(limiterConfig.getRate().getRateUnit());
+            // the refresh semaphore
+            semaphore.setMaxPermits(limiterConfig.getConcurrent().getMaxPermit());
             return true;
         } catch (Exception e) {
             log.error("The refresh local limiter is exception", e);
+            return false;
         }
-
-        return false;
     }
 
     @Override
     protected Acquire incrementConcurrent() {
+        LimiterConfig.ConcurrentLimiterConfig concurrent = config.getConcurrent();
+
         try {
             // the get concurrent timeout
-            Long timeout = config.getConcurrent().getTimeout();
-            if (timeout > 0) {
+            if (concurrent.getTimeout() > 0) {
                 // the try acquire by timeout
-                return semaphore.tryAcquire(config.getConcurrent().getPermitUnit(),
-                        timeout, TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
+                return semaphore.tryAcquire(concurrent.getPermitUnit(),
+                        concurrent.getTimeout(), TimeUnit.MILLISECONDS) ? Acquire.SUCCESS : Acquire.FAILURE;
             } else {
                 // the try acquire
-                return semaphore.tryAcquire(config.getConcurrent().getPermitUnit()) ? Acquire.SUCCESS : Acquire.FAILURE;
+                return semaphore.tryAcquire(concurrent.getPermitUnit()) ? Acquire.SUCCESS : Acquire.FAILURE;
             }
         } catch (Exception e) {
             log.error("The try acquire local concurrent is exception", e);

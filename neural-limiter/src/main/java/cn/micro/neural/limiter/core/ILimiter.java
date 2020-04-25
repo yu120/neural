@@ -15,6 +15,13 @@ import cn.neural.common.extension.SPI;
 public interface ILimiter {
 
     /**
+     * The get limiter config
+     *
+     * @return {@link LimiterConfig}
+     */
+    LimiterConfig getConfig();
+
+    /**
      * The refresh in-memory data.
      *
      * @param limiterConfig The LimiterConfig
@@ -27,7 +34,7 @@ public interface ILimiter {
      * The process original call.
      *
      * @param limiterContext {@link LimiterContext}
-     * @param originalCall  {@link OriginalCall}
+     * @param originalCall   {@link OriginalCall}
      * @return The object of OriginalCall
      * @throws Throwable The Exception is execute doOriginalCall
      */

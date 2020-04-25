@@ -1,8 +1,7 @@
 package cn.micro.neural.limiter.spring;
 
-import cn.micro.neural.limiter.LimiterFactory;
 import cn.micro.neural.limiter.LimiterConfig;
-import cn.micro.neural.limiter.LimiterContext;
+import cn.micro.neural.limiter.LimiterFactory;
 import cn.neural.common.utils.ClassUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -110,8 +109,7 @@ public class LimiterInterceptor implements ApplicationContextAware {
             return pjp.proceed();
         }
 
-        final LimiterContext limiterContext = new LimiterContext();
-        return limiterFactory.originalCall(limiterContext, limiterConfig.identity(), pjp::proceed);
+        return limiterFactory.originalCall(limiterConfig.identity(), pjp::proceed);
     }
 
     /**
