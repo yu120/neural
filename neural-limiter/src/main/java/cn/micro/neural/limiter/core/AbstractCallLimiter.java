@@ -7,6 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * The Abstract Call Limiter.
  *
@@ -17,8 +21,40 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 public abstract class AbstractCallLimiter implements ILimiter {
 
+    private final Object LISTENER_OBJECT = new Object();
     protected volatile LimiterConfig config = new LimiterConfig();
     protected volatile LimiterStatistics statistics = new LimiterStatistics();
+    protected Map<EventListener, Object> listeners = new ConcurrentHashMap<>();
+
+    @Override
+    public void addListener(EventListener eventListener) {
+        if (listeners.containsKey(eventListener)) {
+            return;
+        }
+        listeners.put(eventListener, LISTENER_OBJECT);
+    }
+
+    @Override
+    public Map<String, Long> statistics() {
+        try {
+            return statistics.getStatisticsData();
+        } catch (Exception e) {
+            this.collectEvent(EventType.STATISTICS_EXCEPTION);
+            log.error("The limiter[{}] statistics exception", config.identity(), e);
+            return Collections.emptyMap();
+        }
+    }
+
+    @Override
+    public Map<String, Long> collect() {
+        try {
+            return statistics.getAndReset();
+        } catch (Exception e) {
+            this.collectEvent(EventType.COLLECT_EXCEPTION);
+            log.error("The limiter[{}] collect exception", config.identity(), e);
+            return Collections.emptyMap();
+        }
+    }
 
     @Override
     public boolean refresh(LimiterConfig limiterConfig) throws Exception {
@@ -89,6 +125,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
                         decrementConcurrent();
                     }
                 case EXCEPTION:
+                    this.collectEvent(EventType.CONCURRENT_EXCEPTION);
                     // the skip exception case
                 default:
                     // the skip other case
@@ -116,6 +153,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
                 case SUCCESS:
                     // the pass success case
                 case EXCEPTION:
+                    this.collectEvent(EventType.RATE_EXCEPTION);
                     // the skip exception case
                 default:
                     // the skip other case
@@ -143,6 +181,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
                 case SUCCESS:
                     // the pass success case
                 case EXCEPTION:
+                    this.collectEvent(EventType.REQUEST_EXCEPTION);
                     // the skip exception case
                 default:
                     // the skip other case
@@ -162,31 +201,44 @@ public abstract class AbstractCallLimiter implements ILimiter {
      * @throws Throwable throw original call exception
      */
     private Object doStrategyProcess(LimiterContext limiterContext, EventType eventType, OriginalCall originalCall) throws Throwable {
+        // print exceed log
+        log.warn("The limiter exceed[{}]", eventType);
+
         // the total exceed of statistical traffic
         statistics.exceedTraffic(eventType);
-
-        // print exceed log
-        log.warn("The {} exceed, [{}]-[{}]", eventType, config, statistics);
-
         // the broadcast event of traffic exceed
-        //EventCollect.onEvent(eventType, limiterConfig, statistics.getStatisticsData());
+        this.collectEvent(eventType, statistics.getStatisticsData());
 
         // the execute strategy with traffic exceed
-        if (null != config.getStrategy()) {
-            switch (config.getStrategy()) {
-                case FALLBACK:
-                    return originalCall.fallback();
-                case EXCEPTION:
-                    throw new LimiterExceedException(eventType.name());
-                case NON:
-                    // the skip non case
-                default:
-                    // the skip other case
-            }
+        switch (config.getStrategy()) {
+            case FALLBACK:
+                return originalCall.fallback();
+            case EXCEPTION:
+                throw new LimiterExceedException(eventType.name());
+            case NON:
+                // the skip non case
+            default:
+                // the skip other case
         }
 
         // the wrapper of original call
         return statistics.wrapperOriginalCall(limiterContext, originalCall);
+    }
+
+    /**
+     * The collect event
+     *
+     * @param eventType {@link EventType}
+     * @param args      attachment parameters
+     */
+    protected void collectEvent(EventType eventType, Object... args) {
+        for (Map.Entry<EventListener, Object> entry : listeners.entrySet()) {
+            try {
+                entry.getKey().onEvent(config, eventType, args);
+            } catch (Exception e) {
+                log.error("The collect event exception", e);
+            }
+        }
     }
 
     /**

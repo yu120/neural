@@ -1,10 +1,9 @@
 package cn.micro.neural.limiter.core;
 
-import cn.micro.neural.limiter.LimiterConfig;
-import cn.micro.neural.limiter.LimiterStatistics;
-import cn.micro.neural.limiter.LimiterContext;
-import cn.micro.neural.limiter.OriginalCall;
+import cn.micro.neural.limiter.*;
 import cn.neural.common.extension.SPI;
+
+import java.util.Map;
 
 /**
  * The Limiter Interface.
@@ -20,6 +19,13 @@ public interface ILimiter {
      * @return {@link LimiterConfig}
      */
     LimiterConfig getConfig();
+
+    /**
+     * The add event listener
+     *
+     * @param eventListener {@link EventListener}
+     */
+    void addListener(EventListener eventListener);
 
     /**
      * The refresh in-memory data.
@@ -41,10 +47,17 @@ public interface ILimiter {
     Object wrapperCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable;
 
     /**
-     * The get statistics of limiter.
+     * The collect metric(get and reset)
      *
-     * @return The Limiter Statistics
+     * @return key={@link LimiterConfig#identity()}, subKey=metric key
      */
-    LimiterStatistics getStatistics();
+    Map<String, Long> collect();
+
+    /**
+     * The statistics metric(get)
+     *
+     * @return key={@link LimiterConfig#identity()}, subKey=metric key
+     */
+    Map<String, Long> statistics();
 
 }

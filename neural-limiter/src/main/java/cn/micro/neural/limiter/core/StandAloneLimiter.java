@@ -1,5 +1,6 @@
 package cn.micro.neural.limiter.core;
 
+import cn.micro.neural.limiter.EventType;
 import cn.micro.neural.limiter.LimiterConfig;
 import cn.micro.neural.limiter.extension.AdjustableRateLimiter;
 import cn.micro.neural.limiter.extension.AdjustableSemaphore;
@@ -35,9 +36,9 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     @Override
     public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
-        super.refresh(limiterConfig);
-
         try {
+            super.refresh(limiterConfig);
+
             // rate limiter
             this.rateLimiter = AdjustableRateLimiter.create(limiterConfig.getRate().getMaxRate());
             // concurrent limiter
@@ -53,8 +54,8 @@ public class StandAloneLimiter extends AbstractCallLimiter {
             semaphore.setMaxPermits(limiterConfig.getConcurrent().getMaxPermit());
             return true;
         } catch (Exception e) {
-            log.error("The refresh local limiter is exception", e);
-            return false;
+            super.collectEvent(EventType.REFRESH_EXCEPTION);
+            throw e;
         }
     }
 

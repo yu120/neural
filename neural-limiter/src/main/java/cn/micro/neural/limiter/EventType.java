@@ -12,30 +12,55 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum EventType {
 
-    /**
-     * The rate exceed event
-     */
-    RATE_EXCEED(EventType.IDENTITY, "The rate exceed event"),
-    /**
-     * The concurrent exceed event
-     */
-    CONCURRENT_EXCEED(EventType.IDENTITY, "The concurrent exceed event"),
-    /**
-     * The request exceed event
-     */
-    REQUEST_EXCEED(EventType.IDENTITY, "The request exceed event"),
-    /**
-     * The notify config exception
-     */
-    NOTIFY_EXCEPTION(EventType.IDENTITY, "The notify config is exception"),
-    /**
-     * The collect statistics exception
-     */
-    COLLECT_EXCEPTION(EventType.IDENTITY, "The collect statistics is exception");
+    // === rate limiter
 
-    public static final String IDENTITY = "limiter";
+    /**
+     * The rate exceed
+     */
+    RATE_EXCEED(LimiterFactory.IDENTITY, "The rate exceed"),
+    /**
+     * The rate exception
+     */
+    RATE_EXCEPTION(LimiterFactory.IDENTITY, "The rate exception"),
 
-    private final String module;
+    // === concurrent limiter
+
+    /**
+     * The concurrent exceed
+     */
+    CONCURRENT_EXCEED(LimiterFactory.IDENTITY, "The concurrent exceed"),
+    /**
+     * The concurrent exception
+     */
+    CONCURRENT_EXCEPTION(LimiterFactory.IDENTITY, "The concurrent exception"),
+
+    // === request limiter
+
+    /**
+     * The request exceed
+     */
+    REQUEST_EXCEED(LimiterFactory.IDENTITY, "The request exceed"),
+    /**
+     * The request exception
+     */
+    REQUEST_EXCEPTION(LimiterFactory.IDENTITY, "The request exception"),
+
+    // === other
+
+    /**
+     * The refresh config exception
+     */
+    REFRESH_EXCEPTION(LimiterFactory.IDENTITY, "The refresh config exception"),
+    /**
+     * The collect metric exception
+     */
+    COLLECT_EXCEPTION(LimiterFactory.IDENTITY, "The collect metric exception"),
+    /**
+     * The statistics metric exception
+     */
+    STATISTICS_EXCEPTION(LimiterFactory.IDENTITY, "The statistics metric exception");
+
+    private final String category;
     private final String message;
 
 }

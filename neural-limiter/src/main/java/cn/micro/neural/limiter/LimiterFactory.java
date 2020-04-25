@@ -18,8 +18,10 @@ import java.util.concurrent.ConcurrentMap;
  **/
 @Slf4j
 @Getter
-@Extension(EventType.IDENTITY)
+@Extension(LimiterFactory.IDENTITY)
 public class LimiterFactory {
+
+    public static final String IDENTITY = "limiter";
 
     /**
      * Map<key=ILimiter#identity(), ILimiter>
@@ -47,6 +49,12 @@ public class LimiterFactory {
      */
     public void addLimiter(LimiterConfig limiterConfig) {
         ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(limiterConfig.getMode().getValue());
+        limiter.addListener(new EventListener() {
+            @Override
+            public void onEvent(LimiterConfig limiterConfig, EventType eventType, Object... args) {
+
+            }
+        });
         limiters.put(limiterConfig.identity(), limiter);
         rules.computeIfAbsent(limiterConfig.getGroup(), k -> new ConcurrentHashMap<>())
                 .put(limiterConfig.getTag(), limiterConfig);
@@ -56,22 +64,18 @@ public class LimiterFactory {
      * The notify of changed config
      *
      * @param limiterConfig {@link LimiterConfig}
+     * @throws Exception exception
      */
-    public void notify(LimiterConfig limiterConfig) {
-        try {
-            ILimiter limiter = limiters.get(limiterConfig.identity());
-            if (null == limiter) {
-                log.warn("Notfound limiter, identity={}", limiterConfig.identity());
-                return;
-            }
-            if (limiter.refresh(limiterConfig)) {
-                log.info("The limiter config refresh success: {}", limiterConfig);
-            } else {
-                log.warn("The limiter config refresh failure: {}", limiterConfig);
-            }
-        } catch (Exception e) {
-            //EventCollect.onEvent(LimiterGlobalConfig.EventType.NOTIFY_EXCEPTION);
-            log.error(EventType.NOTIFY_EXCEPTION.getMessage(), e);
+    public void notify(LimiterConfig limiterConfig) throws Exception {
+        ILimiter limiter = limiters.get(limiterConfig.identity());
+        if (null == limiter) {
+            log.warn("Notfound limiter, identity={}", limiterConfig.identity());
+            return;
+        }
+        if (limiter.refresh(limiterConfig)) {
+            log.info("The limiter config refresh success: {}", limiterConfig);
+        } else {
+            log.warn("The limiter config refresh failure: {}", limiterConfig);
         }
     }
 
@@ -121,7 +125,7 @@ public class LimiterFactory {
         final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
         try {
             limiters.forEach((identity, limiter) -> {
-                Map<String, Long> tempDataMap = limiter.getStatistics().getAndReset();
+                Map<String, Long> tempDataMap = limiter.collect();
                 if (null == tempDataMap || tempDataMap.isEmpty()) {
                     return;
                 }
@@ -145,7 +149,7 @@ public class LimiterFactory {
         final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
         try {
             limiters.forEach((identity, limiter) -> {
-                Map<String, Long> tempDataMap = limiter.getStatistics().getStatisticsData();
+                Map<String, Long> tempDataMap = limiter.statistics();
                 if (null == tempDataMap || tempDataMap.isEmpty()) {
                     return;
                 }

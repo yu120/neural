@@ -223,8 +223,8 @@ public class LimiterStatistics implements Serializable {
      *
      * @return statistics data map
      */
-    protected Map<String, Long> getAndReset() {
-        Map<String, Long> map = new LinkedHashMap<>();
+    public Map<String, Long> getAndReset() {
+        final Map<String, Long> map = new LinkedHashMap<>();
         // reset number
         long success = successCounter.sumThenReset();
         long request = requestCounter.sumThenReset();
@@ -270,7 +270,7 @@ public class LimiterStatistics implements Serializable {
      * @return statistics data map
      */
     public Map<String, Long> getStatisticsData() {
-        Map<String, Long> map = new LinkedHashMap<>();
+        final Map<String, Long> map = new LinkedHashMap<>();
         // statistics trade
         long success = successCounter.sum();
         map.put(SUCCESS_KEY, success);
