@@ -18,7 +18,7 @@ import java.util.List;
  * The Cluster Limiter by Redis.
  * <p>
  * 1.Limit instantaneous concurrent
- * 2.Limit the maximum number of requests for a time window
+ * 2.Limit the maximum number of counter for a time window
  * 3.Token Bucket
  *
  * @author lry
@@ -54,7 +54,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected void decrementConcurrent() {
+    protected void releaseConcurrent() {
         List<Object> keys = new ArrayList<>();
         keys.add(config.identity());
         keys.add(-config.getConcurrent().getPermitUnit());
@@ -86,15 +86,15 @@ public class ClusterLimiter extends AbstractCallLimiter {
     }
 
     @Override
-    protected Acquire tryAcquireRequest() {
+    protected Acquire tryAcquireCounter() {
         List<Object> keys = new ArrayList<>();
         keys.add(config.identity());
-        keys.add(config.getRequest().getRequestUnit());
-        keys.add(config.getRequest().getMaxRequest());
-        keys.add(config.getRequest().getInterval().toMillis());
+        keys.add(config.getCounter().getCountUnit());
+        keys.add(config.getCounter().getMaxCount());
+        keys.add(config.getCounter().getInterval().toMillis());
 
         try {
-            EvalResult evalResult = eval(REQUEST_SCRIPT, config.getRequest().getTimeout(), keys);
+            EvalResult evalResult = eval(REQUEST_SCRIPT, config.getCounter().getTimeout(), keys);
             return evalResult.getCode();
         } catch (Exception e) {
             log.error(e.getMessage(), e);

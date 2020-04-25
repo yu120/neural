@@ -79,9 +79,9 @@ public class LimiterConfig implements Serializable {
      */
     private RateLimiterConfig rate = new RateLimiterConfig();
     /**
-     * The request limiter
+     * The counter limiter
      */
-    private RequestLimiterConfig request = new RequestLimiterConfig();
+    private CounterLimiterConfig counter = new CounterLimiterConfig();
     /**
      * The concurrent limiter
      */
@@ -227,33 +227,33 @@ public class LimiterConfig implements Serializable {
     }
 
     /**
-     * RequestLimiterConfig
+     * CounterLimiterConfig
      *
      * @author lry
      */
     @Data
-    public static class RequestLimiterConfig implements Serializable {
+    public static class CounterLimiterConfig implements Serializable {
 
         private static final long serialVersionUID = -8642894858491116612L;
 
         /**
-         * Request limiter switch, default is Switch.ON
+         * Counter limiter switch, default is Switch.ON
          **/
         private Switch enable = Switch.ON;
         /**
-         * The request of rate limiter
+         * The count unit of counter limiter
          */
-        private Integer requestUnit = 1;
+        private Integer countUnit = 1;
         /**
-         * The request max permit of request limiter
+         * The max count of counter limiter
          */
-        private Long maxRequest = 1000L;
+        private Long maxCount = 1000L;
         /**
-         * The request timeout of request limiter
+         * The counter timeout of counter limiter
          */
         private Long timeout = 0L;
         /**
-         * The request interval(windows) of request limiter
+         * The counter interval(windows) of counter limiter
          */
         private Duration interval = Duration.ofSeconds(60);
 

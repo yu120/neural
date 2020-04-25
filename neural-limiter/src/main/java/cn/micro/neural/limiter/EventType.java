@@ -34,16 +34,16 @@ public enum EventType {
      */
     CONCURRENT_EXCEPTION(LimiterFactory.IDENTITY, "The concurrent exception"),
 
-    // === request limiter
+    // === counter limiter
 
     /**
-     * The request exceed
+     * The counter exceed
      */
-    REQUEST_EXCEED(LimiterFactory.IDENTITY, "The request exceed"),
+    COUNTER_EXCEED(LimiterFactory.IDENTITY, "The counter exceed"),
     /**
-     * The request exception
+     * The counter exception
      */
-    REQUEST_EXCEPTION(LimiterFactory.IDENTITY, "The request exception"),
+    COUNTER_EXCEPTION(LimiterFactory.IDENTITY, "The counter exception"),
 
     // === other
 

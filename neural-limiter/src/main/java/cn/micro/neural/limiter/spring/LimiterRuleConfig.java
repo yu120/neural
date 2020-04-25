@@ -76,7 +76,7 @@ public class LimiterRuleConfig implements Serializable {
         /**
          * The request limiter
          */
-        private RequestLimiterConfig request = new RequestLimiterConfig();
+        private CounterLimiterConfig request = new CounterLimiterConfig();
         /**
          * The concurrent limiter
          */

@@ -51,11 +51,11 @@ public abstract class AbstractCallLimiter implements ILimiter {
                 log.warn("Illegal rate limiter config: {}", limiterConfig);
                 return false;
             }
-            // check request limiter config
-            LimiterConfig.RequestLimiterConfig request = limiterConfig.getRequest();
-            if (request.getRequestUnit() < 1 || request.getMaxRequest() < 1
-                    || request.getMaxRequest() <= request.getRequestUnit()) {
-                log.warn("Illegal request limiter config: {}", limiterConfig);
+            // check counter limiter config
+            LimiterConfig.CounterLimiterConfig counter = limiterConfig.getCounter();
+            if (counter.getCountUnit() < 1 || counter.getMaxCount() < 1
+                    || counter.getMaxCount() <= counter.getCountUnit()) {
+                log.warn("Illegal counter limiter config: {}", limiterConfig);
                 return false;
             }
 
@@ -104,7 +104,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
                     return doRateOriginalCall(limiterContext, originalCall);
                 } finally {
                     // only need to be released after success
-                    decrementConcurrent();
+                    releaseConcurrent();
                 }
             case EXCEPTION:
                 // try acquire concurrent exceptions
@@ -126,7 +126,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
     private Object doRateOriginalCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
         // if the rate limiter switch is closed, then continue to execute
         if (LimiterConfig.Switch.OFF == config.getRate().getEnable()) {
-            return doRequestOriginalCall(limiterContext, originalCall);
+            return doCounterOriginalCall(limiterContext, originalCall);
         }
 
         // try acquire rate
@@ -136,11 +136,11 @@ public abstract class AbstractCallLimiter implements ILimiter {
                 return doStrategyProcess(limiterContext, EventType.RATE_EXCEED, originalCall);
             case SUCCESS:
                 // try acquire rate success
-                return doRequestOriginalCall(limiterContext, originalCall);
+                return doCounterOriginalCall(limiterContext, originalCall);
             case EXCEPTION:
                 // try acquire rate exception
                 this.collectEvent(EventType.RATE_EXCEPTION);
-                return doRequestOriginalCall(limiterContext, originalCall);
+                return doCounterOriginalCall(limiterContext, originalCall);
             default:
                 // illegal rate strategy type
                 throw new IllegalArgumentException("Illegal rate strategy type");
@@ -148,33 +148,33 @@ public abstract class AbstractCallLimiter implements ILimiter {
     }
 
     /**
-     * The request limiter and original call
+     * The counter limiter and original call
      *
      * @param originalCall The original call interface
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doRequestOriginalCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
-        // if the request limiter switch is closed, then continue to execute
-        if (LimiterConfig.Switch.OFF == config.getRequest().getEnable()) {
+    private Object doCounterOriginalCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
+        // if the counter limiter switch is closed, then continue to execute
+        if (LimiterConfig.Switch.OFF == config.getCounter().getEnable()) {
             return statistics.wrapperOriginalCall(limiterContext, originalCall);
         }
 
-        // try acquire request
-        switch (tryAcquireRequest()) {
+        // try acquire counter
+        switch (tryAcquireCounter()) {
             case FAILURE:
-                // try acquire request exceed
-                return doStrategyProcess(limiterContext, EventType.REQUEST_EXCEED, originalCall);
+                // try acquire counter exceed
+                return doStrategyProcess(limiterContext, EventType.COUNTER_EXCEED, originalCall);
             case SUCCESS:
-                // try acquire request success
+                // try acquire counter success
                 return statistics.wrapperOriginalCall(limiterContext, originalCall);
             case EXCEPTION:
-                // try acquire request exception
-                this.collectEvent(EventType.REQUEST_EXCEPTION);
+                // try acquire counter exception
+                this.collectEvent(EventType.COUNTER_EXCEPTION);
                 return statistics.wrapperOriginalCall(limiterContext, originalCall);
             default:
-                // illegal request strategy type
-                throw new IllegalArgumentException("Illegal request strategy type");
+                // illegal counter strategy type
+                throw new IllegalArgumentException("Illegal counter strategy type");
         }
     }
 
@@ -265,9 +265,9 @@ public abstract class AbstractCallLimiter implements ILimiter {
     protected abstract Acquire tryAcquireConcurrent();
 
     /**
-     * The decrement of concurrent limiter.
+     * The release(decrement) of concurrent limiter.
      */
-    protected abstract void decrementConcurrent();
+    protected abstract void releaseConcurrent();
 
     /**
      * The try acquire of rate limiter.
@@ -277,11 +277,11 @@ public abstract class AbstractCallLimiter implements ILimiter {
     protected abstract Acquire tryAcquireRate();
 
     /**
-     * The acquire windows time of request limiter.
+     * The acquire windows time of counter limiter.
      *
      * @return {@link Acquire}
      */
-    protected abstract Acquire tryAcquireRequest();
+    protected abstract Acquire tryAcquireCounter();
 
     /**
      * The Excess of Limiter.
