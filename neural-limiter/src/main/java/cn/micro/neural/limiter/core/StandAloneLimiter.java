@@ -93,21 +93,20 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     @Override
     protected Acquire tryAcquireCounter() {
-        if (cache == null) {
-            return Acquire.SUCCESS;
-        }
-
+        LimiterConfig.CounterLimiterConfig counter = config.getCounter();
         try {
-            LongAdder times = cache.get(System.currentTimeMillis() / 1000, LongAdder::new);
-            if (config.getCounter().getCountUnit() > times.longValue()) {
+            Long key = System.currentTimeMillis() / counter.getInterval().toMillis();
+            LongAdder counterLongAdder = cache.get(key, LongAdder::new);
+            counterLongAdder.add(counter.getCountUnit());
+            if (counter.getMaxCount() > counterLongAdder.longValue()) {
                 return Acquire.SUCCESS;
             }
+
+            return Acquire.FAILURE;
         } catch (Exception e) {
             log.error("The try acquire memory rate limiter is exception", e);
             return Acquire.EXCEPTION;
         }
-
-        return Acquire.FAILURE;
     }
 
 }
