@@ -9,19 +9,17 @@ Rate Limiter Script v1.0
 --- 获取令牌
 --- 返回码: 0没有令牌桶配置,-1表示取令牌失败，也就是桶里没有令牌,1表示取令牌成功
 --- @param key 令牌的唯一标识
---- @param permits_s 请求令牌数量
---- @param curr_mill_second_s 当前毫秒数
---- @param reserved_percent_s 桶中预留的令牌百分比，整数
---- @param max_wait_mill_second_s 最长等待多久。负值意味着给其它请求保留部分token
-local function acquire(key, permits_s, curr_mill_second_s, reserved_percent_s, max_wait_mill_second_s)
-    local permits = tonumber(permits_s)
-    local curr_mill_second = tonumber(curr_mill_second_s)
-    local reserved_percent = tonumber(reserved_percent_s);
+--- @param in_permits 请求令牌数量
+--- @param in_curr_mill_second 当前毫秒数
+--- @param in_reserved_percent 桶中预留的令牌百分比，整数
+--- @param in_max_wait_mill_second 最长等待多久。负值意味着给其它请求保留部分token
+local function acquire(key, in_permits, in_curr_mill_second, in_reserved_percent, in_max_wait_mill_second)
+    local permits = tonumber(in_permits)
+    local curr_mill_second = tonumber(in_curr_mill_second)
+    local reserved_percent = tonumber(in_reserved_percent);
     local max_wait_mill_second = 0
-
     if reserved_percent <= 0 then
-        -- 不预留令牌，时，等待时间才生效
-        max_wait_mill_second = tonumber(max_wait_mill_second_s)
+        max_wait_mill_second = tonumber(in_max_wait_mill_second)
     end
 
     local rate_limit_info = redis.pcall("HMGET", key, "last_mill_second", "curr_permits", "max_permits", "rate")
