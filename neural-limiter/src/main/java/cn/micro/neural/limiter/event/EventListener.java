@@ -1,4 +1,6 @@
-package cn.micro.neural.limiter;
+package cn.micro.neural.limiter.event;
+
+import cn.micro.neural.limiter.LimiterConfig;
 
 /**
  * EventListener

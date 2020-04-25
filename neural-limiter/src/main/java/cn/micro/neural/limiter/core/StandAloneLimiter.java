@@ -4,12 +4,10 @@ import cn.micro.neural.limiter.LimiterConfig;
 import cn.micro.neural.limiter.extension.AdjustableRateLimiter;
 import cn.micro.neural.limiter.extension.AdjustableSemaphore;
 import cn.neural.common.extension.Extension;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The Stand Alone Limiter.
@@ -31,7 +29,8 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     // ==== counter limiter
 
-    private Cache<Long, LongAdder> cache;
+    private AtomicLong accumulator;
+    private volatile AtomicLong startTime = new AtomicLong(System.currentTimeMillis());
 
     @Override
     protected boolean tryRefresh(LimiterConfig limiterConfig) {
@@ -40,9 +39,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
         // concurrent limiter
         this.semaphore = new AdjustableSemaphore(limiterConfig.getConcurrent().getMaxPermit(), true);
         // counter limiter
-        CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-        cacheBuilder.expireAfterWrite(limiterConfig.getCounter().getInterval().toMillis(), TimeUnit.MILLISECONDS);
-        this.cache = cacheBuilder.build();
+        this.accumulator = new AtomicLong(0);
 
         // the refresh rateLimiter
         rateLimiter.setRate(limiterConfig.getRate().getRateUnit());
@@ -94,11 +91,16 @@ public class StandAloneLimiter extends AbstractCallLimiter {
     @Override
     protected Acquire tryAcquireCounter() {
         LimiterConfig.CounterLimiterConfig counter = config.getCounter();
+
         try {
-            Long key = System.currentTimeMillis() / counter.getInterval().toMillis();
-            LongAdder counterLongAdder = cache.get(key, LongAdder::new);
-            counterLongAdder.add(counter.getCountUnit());
-            if (counter.getMaxCount() > counterLongAdder.longValue()) {
+            accumulator.addAndGet(counter.getCountUnit());
+            // when the interval time is exceeded, the counting is restarted directly
+            if (System.currentTimeMillis() - startTime.get() > counter.getTimeout()) {
+                this.startTime = new AtomicLong(System.currentTimeMillis());
+                accumulator.set(counter.getCountUnit());
+                return Acquire.SUCCESS;
+            }
+            if (counter.getMaxCount() >= accumulator.get()) {
                 return Acquire.SUCCESS;
             }
 

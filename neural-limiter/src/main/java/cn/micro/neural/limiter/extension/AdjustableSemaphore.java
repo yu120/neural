@@ -1,5 +1,7 @@
 package cn.micro.neural.limiter.extension;
 
+import cn.micro.neural.limiter.exception.LimiterException;
+
 import java.util.concurrent.Semaphore;
 
 /**
@@ -37,7 +39,7 @@ public class AdjustableSemaphore extends Semaphore {
      */
     public synchronized void setMaxPermits(int maxPermits) {
         if (maxPermits < 1) {
-            throw new IllegalArgumentException("Semaphore size(" + maxPermits + ") must be at least 1");
+            throw new LimiterException("Semaphore size(" + maxPermits + ") must be at least 1");
         }
 
         int delta = maxPermits - this.maxPermits;

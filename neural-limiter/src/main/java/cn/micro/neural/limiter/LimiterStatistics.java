@@ -1,5 +1,6 @@
 package cn.micro.neural.limiter;
 
+import cn.micro.neural.limiter.event.EventType;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 

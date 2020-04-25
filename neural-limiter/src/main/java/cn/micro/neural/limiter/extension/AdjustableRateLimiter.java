@@ -1,5 +1,6 @@
 package cn.micro.neural.limiter.extension;
 
+import cn.micro.neural.limiter.exception.LimiterException;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.Uninterruptibles;
 
@@ -55,10 +56,9 @@ public class AdjustableRateLimiter {
         return create(permitsPerSecond, warmupPeriod, unit, TIME_GRIT);
     }
 
-    public static AdjustableRateLimiter create(
-            double permitsPerSecond, long warmUpPeriod, TimeUnit unit, long timeGritSecond) {
+    public static AdjustableRateLimiter create(double permitsPerSecond, long warmUpPeriod, TimeUnit unit, long timeGritSecond) {
         if (warmUpPeriod < 0) {
-            throw new IllegalArgumentException(String.format("warmupPeriod must not be negative: %s", warmUpPeriod));
+            throw new LimiterException(String.format("warmupPeriod must not be negative: %s", warmUpPeriod));
         }
         return create(SleepingStopwatch.createFromSystemTimer(),
                 permitsPerSecond, warmUpPeriod, unit, 3.0, timeGritSecond);
@@ -101,14 +101,14 @@ public class AdjustableRateLimiter {
 
     AdjustableRateLimiter(SleepingStopwatch stopwatch) {
         if (stopwatch == null) {
-            throw new NullPointerException();
+            throw new LimiterException("stopwatch is null");
         }
         this.stopwatch = stopwatch;
     }
 
     public final void setRate(double permitsPerSecond) {
         if (permitsPerSecond <= 0.0 || Double.isNaN(permitsPerSecond)) {
-            throw new IllegalArgumentException("rate must be positive");
+            throw new LimiterException("rate must be positive");
         }
         synchronized (mutex()) {
             doSetRate(permitsPerSecond, stopwatch.readMicros());
@@ -250,7 +250,7 @@ public class AdjustableRateLimiter {
 
     private static void checkPermits(int permits) {
         if (permits <= 0) {
-            throw new IllegalArgumentException(String.format("Requested permits (%s) must be positive", permits));
+            throw new LimiterException(String.format("Requested permits (%s) must be positive", permits));
         }
     }
 

@@ -1,4 +1,4 @@
-package cn.micro.neural.limiter;
+package cn.micro.neural.limiter.exception;
 
 /**
  * LimiterExceedException

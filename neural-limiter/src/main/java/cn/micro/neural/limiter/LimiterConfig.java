@@ -1,5 +1,6 @@
 package cn.micro.neural.limiter;
 
+import cn.micro.neural.limiter.exception.LimiterException;
 import lombok.*;
 
 import java.io.Serializable;
@@ -97,7 +98,7 @@ public class LimiterConfig implements Serializable {
      */
     public String identity() {
         if (Stream.of(node, application, group, tag).anyMatch(s -> s.contains(DELIMITER))) {
-            throw new IllegalArgumentException("The identity key can't include ':'");
+            throw new LimiterException("The identity key can't include ':'");
         }
 
         return String.join(DELIMITER, node, application, group, tag);

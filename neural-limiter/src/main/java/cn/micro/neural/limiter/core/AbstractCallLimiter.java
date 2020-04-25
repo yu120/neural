@@ -1,7 +1,10 @@
 package cn.micro.neural.limiter.core;
 
 import cn.micro.neural.limiter.*;
-import cn.micro.neural.limiter.EventListener;
+import cn.micro.neural.limiter.event.EventListener;
+import cn.micro.neural.limiter.event.EventType;
+import cn.micro.neural.limiter.exception.LimiterExceedException;
+import cn.micro.neural.limiter.exception.LimiterException;
 import cn.neural.common.utils.BeanUtils;
 import cn.neural.common.utils.CloneUtils;
 import lombok.AllArgsConstructor;
@@ -112,7 +115,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
                 return doRateOriginalCall(limiterContext, originalCall);
             default:
                 // illegal concurrent strategy type
-                throw new IllegalArgumentException("Illegal concurrent strategy type");
+                throw new LimiterException("Illegal concurrent strategy type");
         }
     }
 
@@ -143,7 +146,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
                 return doCounterOriginalCall(limiterContext, originalCall);
             default:
                 // illegal rate strategy type
-                throw new IllegalArgumentException("Illegal rate strategy type");
+                throw new LimiterException("Illegal rate strategy type");
         }
     }
 
@@ -174,7 +177,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
                 return statistics.wrapperOriginalCall(limiterContext, originalCall);
             default:
                 // illegal counter strategy type
-                throw new IllegalArgumentException("Illegal counter strategy type");
+                throw new LimiterException("Illegal counter strategy type");
         }
     }
 
@@ -207,7 +210,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
                 // ignore
                 return statistics.wrapperOriginalCall(limiterContext, originalCall);
             default:
-                throw new IllegalArgumentException("Illegal strategy type");
+                throw new LimiterException("Illegal strategy type");
         }
     }
 
