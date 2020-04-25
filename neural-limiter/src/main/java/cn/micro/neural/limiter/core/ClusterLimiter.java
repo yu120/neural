@@ -91,7 +91,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
         keys.add(config.identity());
         keys.add(config.getCounter().getCountUnit());
         keys.add(config.getCounter().getMaxCount());
-        keys.add(config.getCounter().getInterval().toMillis());
+        keys.add(config.getCounter().getTimeout());
 
         try {
             EvalResult evalResult = eval(REQUEST_SCRIPT, config.getCounter().getTimeout(), keys);

@@ -4,7 +4,6 @@ import cn.micro.neural.limiter.exception.LimiterException;
 import lombok.*;
 
 import java.io.Serializable;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -253,10 +252,6 @@ public class LimiterConfig implements Serializable {
          * The counter timeout of counter limiter
          */
         private Long timeout = 0L;
-        /**
-         * The counter interval(windows) of counter limiter
-         */
-        private Duration interval = Duration.ofSeconds(60);
 
     }
 

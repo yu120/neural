@@ -4,6 +4,9 @@ import cn.micro.neural.limiter.LimiterConfig;
 import cn.micro.neural.limiter.extension.AdjustableRateLimiter;
 import cn.micro.neural.limiter.extension.AdjustableSemaphore;
 import cn.neural.common.extension.Extension;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -29,8 +32,7 @@ public class StandAloneLimiter extends AbstractCallLimiter {
 
     // ==== counter limiter
 
-    private AtomicLong accumulator;
-    private volatile AtomicLong windowsStartTime = new AtomicLong(System.currentTimeMillis());
+    private LoadingCache<Long, AtomicLong> accumulator;
 
     @Override
     protected boolean tryRefresh(LimiterConfig limiterConfig) {
@@ -39,7 +41,10 @@ public class StandAloneLimiter extends AbstractCallLimiter {
         // concurrent limiter
         this.semaphore = new AdjustableSemaphore(limiterConfig.getConcurrent().getMaxPermit(), true);
         // counter limiter
-        this.accumulator = new AtomicLong(0);
+        // request limiter
+        CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
+        cacheBuilder.expireAfterWrite(limiterConfig.getCounter().getTimeout(), TimeUnit.MILLISECONDS);
+        this.accumulator = cacheBuilder.build(CacheLoader.from(() -> new AtomicLong(0)));
 
         // the refresh rateLimiter
         rateLimiter.setRate(limiterConfig.getRate().getRateUnit());
@@ -93,18 +98,13 @@ public class StandAloneLimiter extends AbstractCallLimiter {
         LimiterConfig.CounterLimiterConfig counter = config.getCounter();
 
         try {
-            accumulator.addAndGet(counter.getCountUnit());
-            // when the interval time is exceeded, the counting is restarted directly
-            if (System.currentTimeMillis() - windowsStartTime.get() > counter.getTimeout()) {
-                this.windowsStartTime = new AtomicLong(System.currentTimeMillis());
-                accumulator.set(counter.getCountUnit());
-                return Acquire.SUCCESS;
-            }
-            if (counter.getMaxCount() >= accumulator.get()) {
-                return Acquire.SUCCESS;
+            // get the current time window
+            long currentSeconds = System.currentTimeMillis() / counter.getCountUnit();
+            if (accumulator.get(currentSeconds).incrementAndGet() > counter.getMaxCount()) {
+                return Acquire.FAILURE;
             }
 
-            return Acquire.FAILURE;
+            return Acquire.SUCCESS;
         } catch (Exception e) {
             log.error("Try acquire local counter limiter exception", e);
             return Acquire.EXCEPTION;
