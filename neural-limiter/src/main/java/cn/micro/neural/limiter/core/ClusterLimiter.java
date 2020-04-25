@@ -87,7 +87,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
     protected Acquire tryAcquireCounter() {
         LimiterConfig.CounterLimiterConfig counterConfig = config.getCounter();
         List<String> keys = Collections.singletonList(config.identity());
-        List<Object> values = Arrays.asList(counterConfig.getCountUnit(), counterConfig.getMaxCount());
+        List<Object> values = Arrays.asList(counterConfig.getCountUnit(), counterConfig.getMaxCount(), counterConfig.getTimeout());
 
         try {
             Number[] result = FactoryStorage.INSTANCE.getStorage().eval(REQUEST_SCRIPT, keys, values);
