@@ -73,7 +73,7 @@ public class LimiterConfig implements Serializable {
     /**
      * The strategy of limiter, default is Strategy.NON
      */
-    private Strategy strategy = Strategy.NON;
+    private Strategy strategy = Strategy.IGNORE;
     /**
      * The rate limiter
      */
@@ -153,9 +153,9 @@ public class LimiterConfig implements Serializable {
     @AllArgsConstructor
     public enum Strategy {
         /**
-         * The skip of limiter, when over flow
+         * The ignore of limiter, when over flow
          */
-        NON("The skip of limiter, when over flow"),
+        IGNORE("The ignore of limiter, when over flow"),
         /**
          * The fallback of limiter, when over flow
          */

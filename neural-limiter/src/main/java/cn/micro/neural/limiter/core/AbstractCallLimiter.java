@@ -73,7 +73,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
     public Object wrapperCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
         // the don't need limiting
         if (null == config || LimiterConfig.Switch.OFF == config.getEnable()) {
-            return originalCall.call();
+            return originalCall.call(limiterContext);
         }
 
         // the concurrent limiter and original call
@@ -191,17 +191,17 @@ public abstract class AbstractCallLimiter implements ILimiter {
         // the execute strategy with traffic exceed
         switch (config.getStrategy()) {
             case FALLBACK:
-                return originalCall.fallback();
+                // fallback
+                return originalCall.fallback(limiterContext);
             case EXCEPTION:
+                // throw exception
                 throw new LimiterExceedException(eventType.name());
-            case NON:
-                // the skip non case
+            case IGNORE:
+                // ignore
+                return statistics.wrapperOriginalCall(limiterContext, originalCall);
             default:
-                // the skip other case
+                throw new IllegalArgumentException("");
         }
-
-        // the wrapper of original call
-        return statistics.wrapperOriginalCall(limiterContext, originalCall);
     }
 
     @Override

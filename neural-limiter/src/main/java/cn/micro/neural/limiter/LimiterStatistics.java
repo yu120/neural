@@ -136,7 +136,7 @@ public class LimiterStatistics implements Serializable {
             // Step 1: increment traffic
             incrementTraffic();
             // original call
-            Object result = originalCall.call();
+            Object result = originalCall.call(limiterContext);
             // Step 2: success traffic
             successTraffic();
             return result;

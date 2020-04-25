@@ -76,9 +76,10 @@ public class LimiterFactory implements EventListener {
         }
         if (limiter.refresh(limiterConfig)) {
             log.info("The limiter config refresh success: {}", limiterConfig);
-        } else {
-            log.warn("The limiter config refresh failure: {}", limiterConfig);
+            return;
         }
+
+        log.warn("The limiter config refresh failure: {}", limiterConfig);
     }
 
     /**
@@ -107,7 +108,7 @@ public class LimiterFactory implements EventListener {
             LimiterContext.set(limiterContext);
             // The check limiter object
             if (null == identity || !limiters.containsKey(identity)) {
-                return originalCall.call();
+                return originalCall.call(limiterContext);
             }
 
             ILimiter limiter = limiters.get(identity);

@@ -31,6 +31,6 @@ public class LimiterContext implements Serializable {
     }
 
     private LimiterConfig limiterConfig;
-    private Map<String, Object> attachments = new HashMap<>();
+    private final Map<String, Object> attachments = new HashMap<>();
 
 }

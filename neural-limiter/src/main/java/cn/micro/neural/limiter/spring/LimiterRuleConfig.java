@@ -68,7 +68,7 @@ public class LimiterRuleConfig implements Serializable {
         /**
          * The strategy of limiter, default is Strategy.NON
          */
-        private Strategy strategy = Strategy.NON;
+        private Strategy strategy = Strategy.IGNORE;
         /**
          * The rate limiter
          */
