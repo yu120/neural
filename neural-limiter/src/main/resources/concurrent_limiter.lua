@@ -9,17 +9,17 @@ local timeout = tonumber(ARGV[3])
 
 -- 获取当前流量大小
 local currentConcurrent = tonumber(redis.call('GET', identity) or '0')
-local nextCount = currentCount + countUnit
+local nextConcurrent = currentConcurrent + permitUnit
 
 -- 是否超出限流
-if nextCount > maxCount then
+if nextConcurrent > maxPermit then
     -- 返回(拒绝)
-    return 0, nextCount
+    return 0, nextConcurrent
 else
     -- 没有超出value + 1
-    redis.call('INCRBY', identity, countUnit)
+    redis.call('INCRBY', identity, permitUnit)
     -- 设置过期时间
     redis.call('PEXPIRE', identity, timeout)
     -- 返回(放行)
-    return 1, nextCount
+    return 1, nextConcurrent
 end

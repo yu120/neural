@@ -13,6 +13,7 @@ local nextCount = currentCount + countUnit
 
 -- 是否超出限流
 if nextCount > maxCount then
+    -- TODO: 是否需要统计超出流量?
     -- 返回(拒绝)
     return 0, nextCount
 else

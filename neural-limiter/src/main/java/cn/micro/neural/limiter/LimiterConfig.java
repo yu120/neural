@@ -191,9 +191,11 @@ public class LimiterConfig implements Serializable {
          */
         private Integer maxPermit = 200;
         /**
-         * The concurrent timeout of concurrent limiter
+         * The concurrent timeout of concurrent limiter.
+         * <p>
+         * The timeout time is 1ms, indicating the instantaneous concurrent statistics.
          */
-        private Long timeout = 1000L;
+        private Long timeout = 1L;
 
     }
 
@@ -221,8 +223,10 @@ public class LimiterConfig implements Serializable {
         private Integer maxRate = 1000;
         /**
          * The rate timeout of rate limiter
+         * <p>
+         * Count the number of requests within 1s by default.
          */
-        private Long timeout = 0L;
+        private Long timeout = 1000L;
 
     }
 
@@ -250,8 +254,10 @@ public class LimiterConfig implements Serializable {
         private Long maxCount = 1000L;
         /**
          * The counter timeout of counter limiter
+         * <p>
+         * The default count of requests within 60s.
          */
-        private Long timeout = 0L;
+        private Long timeout = 60 * 1000L;
 
     }
 
