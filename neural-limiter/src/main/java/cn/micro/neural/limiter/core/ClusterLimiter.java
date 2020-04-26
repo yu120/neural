@@ -23,9 +23,9 @@ import java.util.List;
 @Extension("cluster")
 public class ClusterLimiter extends AbstractCallLimiter {
 
-    private static String CONCURRENT_SCRIPT = StreamUtils.loadScript("/script/limiter_concurrent.lua");
-    private static String RATE_SCRIPT = StreamUtils.loadScript("/script/limiter_rate.lua");
-    private static String REQUEST_SCRIPT = StreamUtils.loadScript("/script/limiter_request.lua");
+    private static String CONCURRENT_SCRIPT = StreamUtils.loadScript("concurrent_limiter.lua");
+    private static String COUNTER_SCRIPT = StreamUtils.loadScript("counter_limiter.lua");
+    private static String RATE_SCRIPT = StreamUtils.loadScript("rate_limiter.lua");
 
     @Override
     protected boolean tryRefresh(LimiterConfig limiterConfig) {
@@ -90,7 +90,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
         List<Object> values = Arrays.asList(counterConfig.getCountUnit(), counterConfig.getMaxCount(), counterConfig.getTimeout());
 
         try {
-            Number[] result = FactoryStorage.INSTANCE.getStorage().eval(REQUEST_SCRIPT, keys, values);
+            Number[] result = FactoryStorage.INSTANCE.getStorage().eval(COUNTER_SCRIPT, keys, values);
             if (result == null || result.length != 2) {
                 return Acquire.EXCEPTION;
             }
