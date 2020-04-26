@@ -14,6 +14,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The Stand Alone Limiter.
+ * <p>
+ * 1.The rate limiter：{@link AdjustableRateLimiter}
+ * 2.The concurrent limiter：{@link AdjustableSemaphore}
+ * 3.The counter limiter：{@link LoadingCache}
  *
  * @author lry
  * @apiNote The local limiter

@@ -59,6 +59,17 @@ public class LimiterFactory implements EventListener {
                 k -> new ConcurrentHashMap<>()).put(limiterConfig.getTag(), limiterConfig);
     }
 
+    /**
+     * The check and add limiter
+     *
+     * @param limiterConfig {@link LimiterConfig}
+     */
+    public void checkAndAddLimiter(LimiterConfig limiterConfig) {
+        if (!limiters.containsKey(limiterConfig.identity())) {
+            addLimiter(limiterConfig);
+        }
+    }
+
     @Override
     public void onEvent(LimiterConfig limiterConfig, EventType eventType, Object... args) {
         log.info("Receive event[{}]", eventType);
