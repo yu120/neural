@@ -193,7 +193,7 @@ public class LimiterConfig implements Serializable {
         /**
          * The concurrent timeout of concurrent limiter
          */
-        private Long timeout = 0L;
+        private Long timeout = 1000L;
 
     }
 

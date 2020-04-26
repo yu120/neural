@@ -36,7 +36,8 @@ public class ClusterLimiter extends AbstractCallLimiter {
     protected Acquire tryAcquireConcurrent() {
         LimiterConfig.ConcurrentLimiterConfig concurrentConfig = config.getConcurrent();
         List<String> keys = Collections.singletonList(config.identity());
-        List<Object> values = Arrays.asList(concurrentConfig.getPermitUnit(), concurrentConfig.getMaxPermit());
+        List<Object> values = Arrays.asList(concurrentConfig.getPermitUnit(),
+                concurrentConfig.getMaxPermit(), concurrentConfig.getTimeout());
 
         try {
             Number[] result = FactoryStorage.INSTANCE.getStorage().eval(CONCURRENT_SCRIPT, keys, values);
@@ -55,7 +56,8 @@ public class ClusterLimiter extends AbstractCallLimiter {
     protected void releaseConcurrent() {
         LimiterConfig.ConcurrentLimiterConfig concurrentConfig = config.getConcurrent();
         List<String> keys = Collections.singletonList(config.identity());
-        List<Object> values = Arrays.asList(-concurrentConfig.getPermitUnit(), concurrentConfig.getMaxPermit());
+        List<Object> values = Arrays.asList(-concurrentConfig.getPermitUnit(),
+                concurrentConfig.getMaxPermit(), concurrentConfig.getTimeout());
 
         try {
             FactoryStorage.INSTANCE.getStorage().eval(CONCURRENT_SCRIPT, keys, values);
