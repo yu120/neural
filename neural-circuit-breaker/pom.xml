@@ -11,5 +11,11 @@
 
     <artifactId>neural-circuit-breaker</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>cn.micro.neural</groupId>
+            <artifactId>neural-common</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

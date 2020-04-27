@@ -1,7 +1,7 @@
 package cn.micro.neural.circuitbreaker;
 
 /**
- * CircuitBreakerState
+ * The Circuit Breaker State
  *
  * @author lry
  */
