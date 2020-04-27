@@ -1,4 +1,0 @@
-org.micro.neural.limiter.Limiter
-org.micro.neural.degrade.Degrade
-org.micro.neural.idempotent.Idempotent
-org.micro.neural.bloomfilter.BloomFilter

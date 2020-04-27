@@ -1,3 +1,0 @@
-org.micro.neural.common.thread.ThreadPoolExecutorFactory$CachedThreadPool
-org.micro.neural.common.thread.ThreadPoolExecutorFactory$FixedThreadPool
-org.micro.neural.common.thread.ThreadPoolExecutorFactory$LimitedThreadPool
