@@ -16,6 +16,7 @@
         <lombok.version>1.18.10</lombok.version>
         <validation-api.version>2.0.1.Final</validation-api.version>
         <springboot.version>2.1.0.RELEASE</springboot.version>
+        <junit.version>4.12</junit.version>
     </properties>
 
     <modules>
@@ -71,6 +72,13 @@
                 <groupId>cn.micro.neural</groupId>
                 <artifactId>neural-core</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <!-- Test -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

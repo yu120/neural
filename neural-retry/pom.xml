@@ -11,5 +11,18 @@
 
     <artifactId>neural-retry</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>cn.micro.neural</groupId>
+            <artifactId>neural-common</artifactId>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>
