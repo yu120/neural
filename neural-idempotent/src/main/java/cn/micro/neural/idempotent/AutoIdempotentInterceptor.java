@@ -35,7 +35,7 @@ public class AutoIdempotentInterceptor implements HandlerInterceptor {
 
         HandlerMethod handlerMethod = (HandlerMethod) handler;
         Method method = handlerMethod.getMethod();
-        AutoIdempotent methodAnnotation = method.getAnnotation(AutoIdempotent.class);
+        NeuralIdempotent methodAnnotation = method.getAnnotation(NeuralIdempotent.class);
         if (methodAnnotation != null) {
             try {
                 // 幂等性校验, 校验通过则放行, 校验失败则抛出异常, 并通过统一异常处理返回友好提示
