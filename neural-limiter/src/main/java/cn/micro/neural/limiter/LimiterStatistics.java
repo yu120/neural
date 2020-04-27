@@ -1,6 +1,8 @@
 package cn.micro.neural.limiter;
 
 import cn.micro.neural.limiter.event.EventType;
+import cn.micro.neural.limiter.exception.LimiterExceedException;
+import cn.micro.neural.limiter.exception.LimiterException;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,6 +48,10 @@ public class LimiterStatistics implements Serializable {
      * The total exception counter in the current time window
      */
     private final LongAdder rejectedCounter = new LongAdder();
+    /**
+     * The total fallback counter in the current time window
+     */
+    private final LongAdder fallbackCounter = new LongAdder();
 
     // === elapsed/maxElapsed/concurrent/maxConcurrent/concurrentExceed/rateExceed
 
@@ -126,25 +132,43 @@ public class LimiterStatistics implements Serializable {
     }
 
     /**
-     * The total exceed of statistical traffic
+     * The execute strategy process of limiting exceed
+     *
+     * @param eventType    The event type
+     * @param originalCall The original call interface
+     * @return The original call result
+     * @throws Throwable throw original call exception
      */
-    public void exceedTraffic(final EventType eventType) {
-        try {
-            switch (eventType) {
-                case RATE_EXCEED:
-                    rateExceedCounter.increment();
-                    return;
-                case COUNTER_EXCEED:
-                    counterExceedCounter.increment();
-                    return;
-                case CONCURRENT_EXCEED:
-                    concurrentExceedCounter.increment();
-                    return;
-                default:
-                    log.warn("Illegal event type: {}", eventType);
-            }
-        } catch (Exception e) {
-            log.error("Total exceed traffic exception", e);
+    public Object doStrategyProcess(LimiterContext limiterContext, EventType eventType,
+                                    LimiterConfig.Strategy strategy, OriginalCall originalCall) throws Throwable {
+        log.warn("The limiter exceed[{}]", eventType);
+
+        // the total exceed of statistical traffic
+        switch (eventType) {
+            case RATE_EXCEED:
+                rateExceedCounter.increment();
+                break;
+            case COUNTER_EXCEED:
+                counterExceedCounter.increment();
+                break;
+            case CONCURRENT_EXCEED:
+                concurrentExceedCounter.increment();
+                break;
+            default:
+                log.warn("Illegal event type: {}", eventType);
+        }
+
+        // the execute strategy with traffic exceed
+        switch (strategy) {
+            case FALLBACK:
+                fallbackCounter.increment();
+                return originalCall.fallback(limiterContext);
+            case EXCEPTION:
+                throw new LimiterExceedException(eventType.name());
+            case IGNORE:
+                return wrapperOriginalCall(limiterContext, originalCall);
+            default:
+                throw new LimiterException("Illegal strategy type");
         }
     }
 
@@ -153,6 +177,7 @@ public class LimiterStatistics implements Serializable {
     public static final String FAILURE_KEY = "failure";
     public static final String TIMEOUT_KEY = "timeout";
     public static final String REJECTED_KEY = "rejected";
+    public static final String FALLBACK_KEY = "fallback";
 
     public static final String AVG_ELAPSED_KEY = "avg_elapsed";
     public static final String MAX_ELAPSED_KEY = "max_elapsed";
@@ -175,6 +200,7 @@ public class LimiterStatistics implements Serializable {
         long failure = failureCounter.sumThenReset();
         long timeout = timeoutCounter.sumThenReset();
         long rejected = rejectedCounter.sumThenReset();
+        long fallback = fallbackCounter.sumThenReset();
 
         long avgElapsed = success < 1 ? 0 : (totalElapsedAccumulator.getThenReset() / success);
         long maxElapsed = maxElapsedAccumulator.getThenReset();
@@ -193,6 +219,7 @@ public class LimiterStatistics implements Serializable {
         map.put(FAILURE_KEY, failure);
         map.put(TIMEOUT_KEY, timeout);
         map.put(REJECTED_KEY, rejected);
+        map.put(FALLBACK_KEY, fallback);
 
         map.put(AVG_ELAPSED_KEY, avgElapsed);
         map.put(MAX_ELAPSED_KEY, maxElapsed);
@@ -217,6 +244,7 @@ public class LimiterStatistics implements Serializable {
         map.put(FAILURE_KEY, failureCounter.sum());
         map.put(TIMEOUT_KEY, timeoutCounter.sum());
         map.put(REJECTED_KEY, rejectedCounter.sum());
+        map.put(FALLBACK_KEY, fallbackCounter.sum());
 
         map.put(AVG_ELAPSED_KEY, success < 1 ? 0 : (totalElapsedAccumulator.get() / success));
         map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.get());

@@ -1,9 +1,11 @@
 package cn.micro.neural.limiter.core;
 
-import cn.micro.neural.limiter.*;
+import cn.micro.neural.limiter.LimiterConfig;
+import cn.micro.neural.limiter.LimiterContext;
+import cn.micro.neural.limiter.LimiterStatistics;
+import cn.micro.neural.limiter.OriginalCall;
 import cn.micro.neural.limiter.event.EventListener;
 import cn.micro.neural.limiter.event.EventType;
-import cn.micro.neural.limiter.exception.LimiterExceedException;
 import cn.micro.neural.limiter.exception.LimiterException;
 import cn.neural.common.utils.BeanUtils;
 import cn.neural.common.utils.CloneUtils;
@@ -11,7 +13,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The Abstract Call Limiter.
@@ -100,7 +105,8 @@ public abstract class AbstractCallLimiter implements ILimiter {
         switch (tryAcquireConcurrent()) {
             case FAILURE:
                 // try acquire concurrent exceed
-                return doStrategyProcess(limiterContext, EventType.CONCURRENT_EXCEED,
+                this.collectEvent(EventType.CONCURRENT_EXCEED, statistics.getStatisticsData());
+                return statistics.doStrategyProcess(limiterContext, EventType.CONCURRENT_EXCEED,
                         config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
                 // try acquire concurrent success
@@ -137,7 +143,8 @@ public abstract class AbstractCallLimiter implements ILimiter {
         switch (tryAcquireRate()) {
             case FAILURE:
                 // try acquire rate exceed
-                return doStrategyProcess(limiterContext, EventType.RATE_EXCEED,
+                this.collectEvent(EventType.RATE_EXCEED, statistics.getStatisticsData());
+                return statistics.doStrategyProcess(limiterContext, EventType.RATE_EXCEED,
                         config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
                 // try acquire rate success
@@ -169,7 +176,8 @@ public abstract class AbstractCallLimiter implements ILimiter {
         switch (tryAcquireCounter()) {
             case FAILURE:
                 // try acquire counter exceed
-                return doStrategyProcess(limiterContext, EventType.COUNTER_EXCEED,
+                this.collectEvent(EventType.COUNTER_EXCEED, statistics.getStatisticsData());
+                return statistics.doStrategyProcess(limiterContext, EventType.COUNTER_EXCEED,
                         config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
                 // try acquire counter success
@@ -181,40 +189,6 @@ public abstract class AbstractCallLimiter implements ILimiter {
             default:
                 // illegal counter strategy type
                 throw new LimiterException("Illegal counter strategy type");
-        }
-    }
-
-    /**
-     * The execute strategy process of limiting exceed
-     *
-     * @param eventType    The event type
-     * @param originalCall The original call interface
-     * @return The original call result
-     * @throws Throwable throw original call exception
-     */
-    private Object doStrategyProcess(LimiterContext limiterContext, EventType eventType,
-                                     LimiterConfig.Strategy strategy, OriginalCall originalCall) throws Throwable {
-        // print exceed log
-        log.warn("The limiter exceed[{}]", eventType);
-
-        // the total exceed of statistical traffic
-        statistics.exceedTraffic(eventType);
-        // the broadcast event of traffic exceed
-        this.collectEvent(eventType, statistics.getStatisticsData());
-
-        // the execute strategy with traffic exceed
-        switch (strategy) {
-            case FALLBACK:
-                // fallback
-                return originalCall.fallback(limiterContext);
-            case EXCEPTION:
-                // throw exception
-                throw new LimiterExceedException(eventType.name());
-            case IGNORE:
-                // ignore
-                return statistics.wrapperOriginalCall(limiterContext, originalCall);
-            default:
-                throw new LimiterException("Illegal strategy type");
         }
     }
 
