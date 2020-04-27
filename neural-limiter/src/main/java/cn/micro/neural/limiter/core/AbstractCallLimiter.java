@@ -228,7 +228,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
     @Override
     public Map<String, Long> collect() {
         try {
-            return statistics.getAndReset();
+            return statistics.collectThenReset();
         } catch (Exception e) {
             this.collectEvent(EventType.COLLECT_EXCEPTION);
             log.error("The limiter[{}] collect exception", config.identity(), e);
