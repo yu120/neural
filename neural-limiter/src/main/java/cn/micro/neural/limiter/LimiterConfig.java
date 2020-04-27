@@ -71,11 +71,6 @@ public class LimiterConfig implements Serializable {
      */
     private Mode mode = Mode.STAND_ALONE;
     /**
-     * The strategy of limiter, default is Strategy.NON
-     */
-    @Deprecated
-    private Strategy strategy = Strategy.IGNORE;
-    /**
      * The rate limiter
      */
     private RateLimiterConfig rate = new RateLimiterConfig();

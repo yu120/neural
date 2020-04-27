@@ -87,7 +87,6 @@ public class LimiterInterceptor implements ApplicationContextAware {
                 }
                 limiterConfig.setEnable(ruleConfig.getEnable());
                 limiterConfig.setMode(ruleConfig.getMode());
-                limiterConfig.setStrategy(ruleConfig.getStrategy());
                 limiterConfig.setRate(ruleConfig.getRate());
                 limiterConfig.setCounter(ruleConfig.getRequest());
                 limiterConfig.setConcurrent(ruleConfig.getConcurrent());
