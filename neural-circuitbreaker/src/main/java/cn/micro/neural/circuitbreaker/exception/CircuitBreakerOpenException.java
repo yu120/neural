@@ -1,7 +1,7 @@
 package cn.micro.neural.circuitbreaker.exception;
 
 /**
- * The Circuit Breaker Open Exception
+ * CircuitBreakerOpenException
  *
  * @author lry
  */

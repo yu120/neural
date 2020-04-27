@@ -2,17 +2,17 @@ package cn.micro.neural.circuitbreaker.handler;
 
 import cn.micro.neural.circuitbreaker.CircuitBreaker;
 import cn.micro.neural.circuitbreaker.CircuitBreakerConfig;
-import cn.micro.neural.circuitbreaker.CircuitBreakerRegister;
-import cn.micro.neural.circuitbreaker.annotation.GuardByCircuitBreaker;
+import cn.micro.neural.circuitbreaker.annotation.NeuralCircuitBreaker;
 import cn.micro.neural.circuitbreaker.exception.CircuitBreakerOpenException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The Circuit Breaker 的jdk代理实现
+ * 基于jdk代理实现CircuitBreakerInvocationHandler
  *
  * @author lry
  */
@@ -21,6 +21,7 @@ public class CircuitBreakerInvocationHandler implements InvocationHandler {
 
     private Object target;
     private Class<?> targetClass;
+    private static final ConcurrentHashMap<String, CircuitBreaker> BREAKERS = new ConcurrentHashMap<>();
 
     public CircuitBreakerInvocationHandler(Object target) {
         this.target = target;
@@ -38,17 +39,17 @@ public class CircuitBreakerInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        GuardByCircuitBreaker guardByCircuitBreaker = method.getAnnotation(GuardByCircuitBreaker.class);
-        if (guardByCircuitBreaker == null) {
+        NeuralCircuitBreaker neuralCircuitBreaker = method.getAnnotation(NeuralCircuitBreaker.class);
+        if (neuralCircuitBreaker == null) {
             return method.invoke(target, args);
         }
 
-        Class<? extends Throwable>[] noTripExs = guardByCircuitBreaker.noTripExceptions();
-        int timeout = guardByCircuitBreaker.timeoutInMs();
-        int interval = guardByCircuitBreaker.failCountWindowInMs();
-        int failThreshold = guardByCircuitBreaker.failThreshold();
+        Class<? extends Throwable>[] noTripExs = neuralCircuitBreaker.noTripExceptions();
+        int timeout = neuralCircuitBreaker.timeoutInMs();
+        int interval = neuralCircuitBreaker.failCountWindowInMs();
+        int failThreshold = neuralCircuitBreaker.failThreshold();
 
-        CircuitBreakerConfig cfg = CircuitBreakerConfig.newDefault();
+        CircuitBreakerConfig cfg = new CircuitBreakerConfig();
         if (interval != -1) {
             cfg.setFailCountWindowInMs(interval);
         }
@@ -57,10 +58,10 @@ public class CircuitBreakerInvocationHandler implements InvocationHandler {
         }
 
         String key = targetClass.getSimpleName() + method.getName();
-        CircuitBreaker breaker = CircuitBreakerRegister.get(key);
+        CircuitBreaker breaker = BREAKERS.get(key);
         if (breaker == null) {
             breaker = new CircuitBreaker(key, cfg);
-            CircuitBreakerRegister.putIfAbsent(key, breaker);
+            BREAKERS.putIfAbsent(key, breaker);
         }
 
         Object returnValue = null;
@@ -110,7 +111,7 @@ public class CircuitBreakerInvocationHandler implements InvocationHandler {
                                    Class<? extends Throwable>[] noTripExs) throws Throwable {
         try {
             Object returnValue = method.invoke(target, args);
-            breaker.getConsecutiveSuccCount().incrementAndGet();
+            breaker.getConsecutiveSuccessCount().incrementAndGet();
             if (breaker.isConsecutiveSuccessThresholdReached()) {
                 //调用成功则进入close状态
                 breaker.close();
@@ -119,7 +120,7 @@ public class CircuitBreakerInvocationHandler implements InvocationHandler {
             return returnValue;
         } catch (Throwable t) {
             if (isNoTripException(t, noTripExs)) {
-                breaker.getConsecutiveSuccCount().incrementAndGet();
+                breaker.getConsecutiveSuccessCount().incrementAndGet();
                 if (breaker.isConsecutiveSuccessThresholdReached()) {
                     breaker.close();
                 }

@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface GuardByCircuitBreaker {
+public @interface NeuralCircuitBreaker {
 
     int timeoutInMs() default -1;
 

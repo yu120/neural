@@ -22,7 +22,6 @@ public class LimitCounter {
         currentCount = new AtomicInteger(0);
     }
 
-
     public int incrAndGet() {
         long currentTime = System.currentTimeMillis();
         if ((startTime + timeIntervalInMs) < currentTime) {
