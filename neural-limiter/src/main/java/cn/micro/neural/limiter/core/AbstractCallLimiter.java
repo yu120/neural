@@ -100,7 +100,8 @@ public abstract class AbstractCallLimiter implements ILimiter {
         switch (tryAcquireConcurrent()) {
             case FAILURE:
                 // try acquire concurrent exceed
-                return doStrategyProcess(limiterContext, EventType.CONCURRENT_EXCEED, originalCall);
+                return doStrategyProcess(limiterContext, EventType.CONCURRENT_EXCEED,
+                        config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
                 // try acquire concurrent success
                 try {
@@ -136,7 +137,8 @@ public abstract class AbstractCallLimiter implements ILimiter {
         switch (tryAcquireRate()) {
             case FAILURE:
                 // try acquire rate exceed
-                return doStrategyProcess(limiterContext, EventType.RATE_EXCEED, originalCall);
+                return doStrategyProcess(limiterContext, EventType.RATE_EXCEED,
+                        config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
                 // try acquire rate success
                 return doCounterOriginalCall(limiterContext, originalCall);
@@ -167,7 +169,8 @@ public abstract class AbstractCallLimiter implements ILimiter {
         switch (tryAcquireCounter()) {
             case FAILURE:
                 // try acquire counter exceed
-                return doStrategyProcess(limiterContext, EventType.COUNTER_EXCEED, originalCall);
+                return doStrategyProcess(limiterContext, EventType.COUNTER_EXCEED,
+                        config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
                 // try acquire counter success
                 return statistics.wrapperOriginalCall(limiterContext, originalCall);
@@ -189,7 +192,8 @@ public abstract class AbstractCallLimiter implements ILimiter {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doStrategyProcess(LimiterContext limiterContext, EventType eventType, OriginalCall originalCall) throws Throwable {
+    private Object doStrategyProcess(LimiterContext limiterContext, EventType eventType,
+                                     LimiterConfig.Strategy strategy, OriginalCall originalCall) throws Throwable {
         // print exceed log
         log.warn("The limiter exceed[{}]", eventType);
 
@@ -199,7 +203,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
         this.collectEvent(eventType, statistics.getStatisticsData());
 
         // the execute strategy with traffic exceed
-        switch (config.getStrategy()) {
+        switch (strategy) {
             case FALLBACK:
                 // fallback
                 return originalCall.fallback(limiterContext);

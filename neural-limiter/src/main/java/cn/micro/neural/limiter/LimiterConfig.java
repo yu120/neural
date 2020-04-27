@@ -73,6 +73,7 @@ public class LimiterConfig implements Serializable {
     /**
      * The strategy of limiter, default is Strategy.NON
      */
+    @Deprecated
     private Strategy strategy = Strategy.IGNORE;
     /**
      * The rate limiter
@@ -196,6 +197,10 @@ public class LimiterConfig implements Serializable {
          * The timeout time is 1ms, indicating the instantaneous concurrent statistics.
          */
         private Long timeout = 1L;
+        /**
+         * The strategy of limiter, default is Strategy.NON
+         */
+        private Strategy strategy = Strategy.IGNORE;
 
     }
 
@@ -227,6 +232,10 @@ public class LimiterConfig implements Serializable {
          * Count the number of requests within 1s by default.
          */
         private Long timeout = 1000L;
+        /**
+         * The strategy of limiter, default is Strategy.NON
+         */
+        private Strategy strategy = Strategy.IGNORE;
 
     }
 
@@ -258,6 +267,10 @@ public class LimiterConfig implements Serializable {
          * The default count of requests within 60s.
          */
         private Long timeout = 60 * 1000L;
+        /**
+         * The strategy of limiter, default is Strategy.NON
+         */
+        private Strategy strategy = Strategy.IGNORE;
 
     }
 

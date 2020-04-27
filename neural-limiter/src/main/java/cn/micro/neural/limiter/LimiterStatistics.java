@@ -85,8 +85,8 @@ public class LimiterStatistics implements Serializable {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    public Object wrapperOriginalCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
-        long startTime = System.currentTimeMillis();
+    public Object wrapperOriginalCall(final LimiterContext limiterContext, final OriginalCall originalCall) throws Throwable {
+        final long startTime = System.currentTimeMillis();
 
         try {
             // Step 1: increment traffic
@@ -128,7 +128,7 @@ public class LimiterStatistics implements Serializable {
     /**
      * The total exceed of statistical traffic
      */
-    public void exceedTraffic(EventType eventType) {
+    public void exceedTraffic(final EventType eventType) {
         try {
             switch (eventType) {
                 case RATE_EXCEED:
