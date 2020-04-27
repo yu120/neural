@@ -97,7 +97,7 @@ public class CircuitBreaker {
      * half-open状态下是否达到close的阈值
      */
     public boolean isConsecutiveSuccessThresholdReached() {
-        return consecutiveSuccessCount.get() >= config.getConsecutiveSuccThreshold();
+        return consecutiveSuccessCount.get() >= config.getConsecutiveSuccessThreshold();
     }
 
     public void incrFailCount() {
