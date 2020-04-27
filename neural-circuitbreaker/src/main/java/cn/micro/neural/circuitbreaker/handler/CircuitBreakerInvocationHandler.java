@@ -30,8 +30,6 @@ public class CircuitBreakerInvocationHandler implements InvocationHandler {
 
     /**
      * 动态生成代理对象
-     *
-     * @return
      */
     public Object proxy() {
         return Proxy.newProxyInstance(targetClass.getClassLoader(), targetClass.getInterfaces(), this);
@@ -45,23 +43,18 @@ public class CircuitBreakerInvocationHandler implements InvocationHandler {
         }
 
         Class<? extends Throwable>[] noTripExs = neuralCircuitBreaker.noTripExceptions();
-        int timeout = neuralCircuitBreaker.timeoutInMs();
-        int interval = neuralCircuitBreaker.failCountWindowInMs();
-        int failThreshold = neuralCircuitBreaker.failThreshold();
-
         CircuitBreakerConfig cfg = new CircuitBreakerConfig();
-        if (interval != -1) {
-            cfg.setFailCountWindowInMs(interval);
+        if (neuralCircuitBreaker.failCountWindowInMs() != -1) {
+            cfg.setFailCountWindowInMs(neuralCircuitBreaker.failCountWindowInMs());
         }
-        if (failThreshold != -1) {
-            cfg.setFailThreshold(failThreshold);
+        if (neuralCircuitBreaker.failThreshold() != -1) {
+            cfg.setFailThreshold(neuralCircuitBreaker.failThreshold());
         }
 
         String key = targetClass.getSimpleName() + method.getName();
         CircuitBreaker breaker = BREAKERS.get(key);
         if (breaker == null) {
-            breaker = new CircuitBreaker(key, cfg);
-            BREAKERS.putIfAbsent(key, breaker);
+            BREAKERS.putIfAbsent(key, breaker = new CircuitBreaker(key, cfg));
         }
 
         Object returnValue = null;
