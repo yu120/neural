@@ -1,5 +1,9 @@
-package cn.micro.neural.circuitbreaker;
+package cn.micro.neural.circuitbreaker.core;
 
+import cn.micro.neural.circuitbreaker.CircuitBreakerConfig;
+import cn.micro.neural.circuitbreaker.CircuitBreakerContext;
+import cn.micro.neural.circuitbreaker.CircuitBreakerState;
+import cn.micro.neural.circuitbreaker.OriginalCall;
 import cn.micro.neural.circuitbreaker.exception.CircuitBreakerOpenException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,8 @@
-package cn.micro.neural.circuitbreaker;
+package cn.micro.neural.circuitbreaker.core;
+
+import cn.micro.neural.circuitbreaker.CircuitBreakerContext;
+import cn.micro.neural.circuitbreaker.CircuitBreakerState;
+import cn.micro.neural.circuitbreaker.OriginalCall;
 
 /**
  * ICircuitBreaker

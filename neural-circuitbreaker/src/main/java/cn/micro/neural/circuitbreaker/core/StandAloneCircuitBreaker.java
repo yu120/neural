@@ -1,5 +1,7 @@
-package cn.micro.neural.circuitbreaker;
+package cn.micro.neural.circuitbreaker.core;
 
+import cn.micro.neural.circuitbreaker.CircuitBreakerConfig;
+import cn.micro.neural.circuitbreaker.CircuitBreakerState;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -7,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * The Circuit Breaker
+ * StandAloneCircuitBreaker
  *
  * @author lry
  */
