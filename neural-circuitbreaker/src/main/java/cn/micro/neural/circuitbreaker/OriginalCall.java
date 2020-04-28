@@ -18,11 +18,11 @@ public interface OriginalCall {
     /**
      * The process original call
      *
-     * @param limiterContext {@link LimiterContext}
+     * @param circuitBreakerContext {@link CircuitBreakerContext}
      * @return object for original call result
      * @throws Throwable throw original call exception
      */
-    default Object call(LimiterContext limiterContext) throws Throwable {
+    default Object call(CircuitBreakerContext circuitBreakerContext) throws Throwable {
         return call();
     }
 
@@ -39,11 +39,11 @@ public interface OriginalCall {
     /**
      * The process fall back
      *
-     * @param limiterContext {@link LimiterContext}
+     * @param circuitBreakerContext {@link CircuitBreakerContext}
      * @return object for fallback result
      * @throws Throwable throw fallback exception
      */
-    default Object fallback(LimiterContext limiterContext) throws Throwable {
+    default Object fallback(CircuitBreakerContext circuitBreakerContext) throws Throwable {
         return fallback();
     }
 

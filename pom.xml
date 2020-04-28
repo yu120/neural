@@ -25,7 +25,7 @@
         <module>neural-retry</module>
         <module>neural-limiter</module>
         <module>neural-downgrade</module>
-        <module>neural-circuit-breaker</module>
+        <module>neural-circuitbreaker</module>
         <module>neural-core</module>
         <module>neural-idempotent</module>
     </modules>
@@ -59,7 +59,7 @@
             </dependency>
             <dependency>
                 <groupId>cn.micro.neural</groupId>
-                <artifactId>neural-circuit-breaker</artifactId>
+                <artifactId>neural-circuitbreaker</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

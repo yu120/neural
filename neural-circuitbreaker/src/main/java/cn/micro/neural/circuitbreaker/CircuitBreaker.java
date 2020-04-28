@@ -1,8 +1,7 @@
 package cn.micro.neural.circuitbreaker;
 
+import cn.micro.neural.circuitbreaker.exception.CircuitBreakerOpenException;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The Circuit Breaker
@@ -10,107 +9,154 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author lry
  */
 @Slf4j
-public class CircuitBreaker {
+public class CircuitBreaker extends AbstractCircuitBreaker {
 
-    private String name;
-    private CircuitBreakerConfig config;
-    private volatile CircuitBreakerState state = CircuitBreakerState.CLOSED;
-    /**
-     * 最近进入open状态的时间
-     */
-    private volatile long lastOpenedTime;
-    /**
-     * closed状态下失败次数
-     */
-    private LimitCounter failCount;
-    /**
-     * half-open状态的连续成功次数,失败立即清零
-     */
-    private AtomicInteger consecutiveSuccessCount = new AtomicInteger(0);
-
+    private Class<? extends Throwable>[] ignoreExceptions;
 
     public CircuitBreaker(String name, CircuitBreakerConfig config) {
-        this.config = config;
-        this.name = name;
-        failCount = new LimitCounter(config.getFailCountWindowInMs(), config.getFailThreshold());
-    }
-
-    public boolean isOpen() {
-        return CircuitBreakerState.OPEN == state;
-    }
-
-    public boolean isHalfOpen() {
-        return CircuitBreakerState.HALF_OPEN == state;
-    }
-
-    public boolean isClosed() {
-        return CircuitBreakerState.CLOSED == state;
-    }
-
-    // === 状态操作
-
-    /**
-     * closed->open或half open->open
-     */
-    public void open() {
-        lastOpenedTime = System.currentTimeMillis();
-        state = CircuitBreakerState.OPEN;
-        log.debug("circuit open,key:{}", name);
+        super(name, config);
     }
 
     /**
-     * open->half open
+     * The process of original call
+     *
+     * @param circuitBreakerContext {@link CircuitBreakerContext}
+     * @param originalCall          {@link OriginalCall}
+     * @return original call return result
+     * @throws Throwable throw exception
      */
-    public void openHalf() {
-        consecutiveSuccessCount.set(0);
-        state = CircuitBreakerState.HALF_OPEN;
-        log.debug("circuit open-half,key:{}", name);
+    public Object originalCall(final CircuitBreakerContext circuitBreakerContext, final OriginalCall originalCall) throws Throwable {
+        CircuitBreakerContext.set(circuitBreakerContext);
+
+        try {
+            if (super.isClosed()) {
+                return processClose(circuitBreakerContext, originalCall);
+            } else if (super.isOpen()) {
+                return processOpen(circuitBreakerContext, originalCall);
+            } else if (super.isHalfOpen()) {
+                return processHalfOpen(circuitBreakerContext, originalCall);
+            } else {
+                throw new IllegalArgumentException("");
+            }
+        } finally {
+            CircuitBreakerContext.remove();
+        }
     }
 
     /**
-     * half open->close
+     * Close state processing
+     *
+     * @param circuitBreakerContext {@link CircuitBreakerContext}
+     * @param originalCall          {@link OriginalCall}
+     * @return original call return result
+     * @throws Throwable throw exception
      */
-    public void close() {
-        failCount.reset();
-        state = CircuitBreakerState.CLOSED;
-        log.debug("circuit close,key:{}", name);
-    }
+    private Object processClose(CircuitBreakerContext circuitBreakerContext, OriginalCall originalCall) throws Throwable {
+        try {
+            Object result = originalCall.call(circuitBreakerContext);
+            // Reset the state and data to prevent accidents
+            super.close();
+            return result;
+        } catch (Throwable t) {
+            if (isIgnoreException(t)) {
+                // Skip ignored exceptions, do not count
+                throw t;
+            }
 
-    // === 阈值判断
+            // 增量统计失败次数
+            super.getFailCounter().incrementAndGet();
+
+            // Check if you should go from ‘close’ to ‘open’
+            if (super.isCloseFailThresholdReached()) {
+                // Trigger threshold, open fuse
+                log.debug("[{}] reached fail threshold, circuit breaker open.", getIdentity());
+                super.open();
+                throw new CircuitBreakerOpenException(getIdentity());
+            }
+
+            throw t;
+        }
+    }
 
     /**
-     * 是否应该转到half open
-     * 前提是 open state
+     * Open state processing
+     *
+     * @param circuitBreakerContext {@link CircuitBreakerContext}
+     * @param originalCall          {@link OriginalCall}
+     * @return original call return result
+     * @throws Throwable throw exception
      */
-    public boolean isOpen2HalfOpenTimeout() {
-        return System.currentTimeMillis() - config.getOpen2HalfOpenTimeoutInMs() > lastOpenedTime;
+    private Object processOpen(CircuitBreakerContext circuitBreakerContext, OriginalCall originalCall) throws Throwable {
+        // Check if you should enter the half open state
+        if (super.isOpen2HalfOpenTimeout()) {
+            log.debug("[{}] into half open", getIdentity());
+
+            // Enter half open state
+            super.openHalf();
+
+            // process half open
+            return processHalfOpen(circuitBreakerContext, originalCall);
+        }
+
+        throw new CircuitBreakerOpenException(getIdentity());
     }
 
     /**
-     * 是否应该从close转到open
+     * Half-open state processing
+     *
+     * @param circuitBreakerContext {@link CircuitBreakerContext}
+     * @param originalCall          {@link OriginalCall}
+     * @return original call return result
+     * @throws Throwable throw exception
      */
-    public boolean isCloseFailThresholdReached() {
-        return failCount.thresholdReached();
+    private Object processHalfOpen(CircuitBreakerContext circuitBreakerContext, OriginalCall originalCall) throws Throwable {
+        try {
+            // try to release the request
+            Object result = originalCall.call(circuitBreakerContext);
+
+            // Record the number of consecutive successes in the half-open state, and failures are immediately cleared
+            super.getConsecutiveSuccessCount().incrementAndGet();
+
+            // Whether the close threshold is reached in half-open state
+            if (super.isConsecutiveSuccessThresholdReached()) {
+                // If the call is successful, it will enter the close state
+                super.close();
+            }
+
+            return result;
+        } catch (Throwable t) {
+            if (isIgnoreException(t)) {
+                super.getConsecutiveSuccessCount().incrementAndGet();
+                if (super.isConsecutiveSuccessThresholdReached()) {
+                    super.close();
+                }
+
+                throw t;
+            } else {
+                super.open();
+                throw new CircuitBreakerOpenException(getIdentity(), t);
+            }
+        }
     }
 
     /**
-     * half-open状态下是否达到close的阈值
+     * 是否是需要忽略的异常
+     *
+     * @param t {@link Throwable}
+     * @return true表示需要忽略
      */
-    public boolean isConsecutiveSuccessThresholdReached() {
-        return consecutiveSuccessCount.get() >= config.getConsecutiveSuccessThreshold();
-    }
+    private boolean isIgnoreException(Throwable t) {
+        if (ignoreExceptions == null || ignoreExceptions.length == 0) {
+            return false;
+        }
 
-    public void incrFailCount() {
-        int count = failCount.incrAndGet();
-        log.debug("incr fail count:{},key:{}", count, name);
-    }
+        for (Class<? extends Throwable> ex : ignoreExceptions) {
+            if (ex.isAssignableFrom(t.getClass()) || ex.isAssignableFrom(t.getCause().getClass())) {
+                return true;
+            }
+        }
 
-    public AtomicInteger getConsecutiveSuccessCount() {
-        return consecutiveSuccessCount;
-    }
-
-    public CircuitBreakerState getState() {
-        return state;
+        return false;
     }
 
 }

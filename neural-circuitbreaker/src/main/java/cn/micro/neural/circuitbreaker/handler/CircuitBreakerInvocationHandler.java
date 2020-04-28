@@ -82,7 +82,7 @@ public class CircuitBreakerInvocationHandler implements InvocationHandler {
                 }
 
                 //增加计数
-                breaker.incrFailCount();
+                breaker.getFailCounter().incrementAndGet();
                 if (breaker.isCloseFailThresholdReached()) {
                     //触发阈值，打开
                     log.debug("method:{} reached fail threshold, circuit breaker open",

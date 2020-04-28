@@ -14,15 +14,15 @@ import java.util.Map;
  */
 @Data
 @ToString
-public class LimiterContext implements Serializable {
+public class CircuitBreakerContext implements Serializable {
 
-    private static final InheritableThreadLocal<LimiterContext> THREAD_LOCAL = new InheritableThreadLocal<>();
+    private static final InheritableThreadLocal<CircuitBreakerContext> THREAD_LOCAL = new InheritableThreadLocal<>();
 
-    public static void set(LimiterContext limiterContext) {
-        THREAD_LOCAL.set(limiterContext);
+    public static void set(CircuitBreakerContext circuitBreakerContext) {
+        THREAD_LOCAL.set(circuitBreakerContext);
     }
 
-    public static LimiterContext get() {
+    public static CircuitBreakerContext get() {
         return THREAD_LOCAL.get();
     }
 
