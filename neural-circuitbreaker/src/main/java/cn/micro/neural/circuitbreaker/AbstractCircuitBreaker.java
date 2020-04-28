@@ -39,7 +39,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
             } else if (CircuitBreakerState.HALF_OPEN == getState()) {
                 return processHalfOpen(circuitBreakerContext, originalCall);
             } else {
-                throw new IllegalArgumentException("");
+                throw new IllegalArgumentException("Illegal circuit-breaker state");
             }
         } finally {
             CircuitBreakerContext.remove();
@@ -72,7 +72,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
             // Check if you should go from ‘close’ to ‘open’
             if (isCloseFailThresholdReached()) {
                 // Trigger threshold, open fuse
-                log.debug("[{}] reached fail threshold, circuit breaker open.", circuitBreakerConfig.getIdentity());
+                log.debug("[{}] reached fail threshold, circuit-breaker open.", circuitBreakerConfig.getIdentity());
                 open();
                 throw new CircuitBreakerOpenException(circuitBreakerConfig.getIdentity());
             }
