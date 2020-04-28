@@ -22,7 +22,7 @@ public class StandAloneCircuitBreaker extends AbstractCircuitBreaker {
     /**
      * 最近进入open状态的时间
      */
-    private volatile long lastOpenedTime;
+    private AtomicLong lastOpenedTime;
     /**
      * Circuit-Breaker state
      */
@@ -32,48 +32,39 @@ public class StandAloneCircuitBreaker extends AbstractCircuitBreaker {
      */
     private AtomicInteger consecutiveSuccessCounter = new AtomicInteger(0);
 
-    // === 基于固定时间窗口失败次数计数器,用于熔断器阈值判断。closed状态下失败次数
+    // === 基于固定时间窗口的失败次数计数器
 
     /**
      * 开始时间
      */
-    private long failStartTime;
+    private AtomicLong failStartTime;
     /**
      * 当前失败计数器
      */
-    private AtomicLong currentFailCounter;
+    private AtomicLong failCounter;
 
 
     public StandAloneCircuitBreaker(CircuitBreakerConfig circuitBreakerConfig) {
         super(circuitBreakerConfig);
-        this.failStartTime = System.currentTimeMillis();
-        this.currentFailCounter = new AtomicLong(0);
-    }
-
-    /**
-     * 增加计数器并返回最新值
-     *
-     * @return 最新计数值
-     */
-    public long incrementAndGet() {
-        long currentTime = System.currentTimeMillis();
-
-        // 校验是否该重置时间窗的开始时间和计数器: 时间窗超时则自动重置开始时间和统计次数
-        if ((failStartTime + circuitBreakerConfig.getFailCountWindowInMs()) < currentTime) {
-            synchronized (this) {
-                if ((failStartTime + circuitBreakerConfig.getFailCountWindowInMs()) < currentTime) {
-                    failStartTime = currentTime;
-                    currentFailCounter.set(0);
-                }
-            }
-        }
-
-        return currentFailCounter.incrementAndGet();
+        this.failStartTime = new AtomicLong(System.currentTimeMillis());
+        this.failCounter = new AtomicLong(0);
     }
 
     @Override
     protected void incrFailCounter() {
-        currentFailCounter.incrementAndGet();
+        long currentTime = System.currentTimeMillis();
+
+        // 校验是否该重置时间窗的开始时间和计数器: 时间窗超时则自动重置开始时间和统计次数
+        if ((failStartTime.get() + circuitBreakerConfig.getFailCountWindowInMs()) < currentTime) {
+            synchronized (this) {
+                if ((failStartTime.get() + circuitBreakerConfig.getFailCountWindowInMs()) < currentTime) {
+                    failStartTime.set(currentTime);
+                    failCounter.set(0);
+                }
+            }
+        }
+
+        failCounter.incrementAndGet();
     }
 
     @Override
@@ -85,7 +76,7 @@ public class StandAloneCircuitBreaker extends AbstractCircuitBreaker {
 
     @Override
     public void open() {
-        lastOpenedTime = System.currentTimeMillis();
+        lastOpenedTime = new AtomicLong(System.currentTimeMillis());
         state = CircuitBreakerState.OPEN;
         log.debug("Circuit-breaker[{}] open", circuitBreakerConfig.getIdentity());
     }
@@ -100,7 +91,7 @@ public class StandAloneCircuitBreaker extends AbstractCircuitBreaker {
     @Override
     public void close() {
         // 重置失败次数统计器
-        currentFailCounter.set(0);
+        failCounter.set(0);
         state = CircuitBreakerState.CLOSED;
         log.debug("Circuit-breaker[{}] close", circuitBreakerConfig.getIdentity());
     }
@@ -109,13 +100,13 @@ public class StandAloneCircuitBreaker extends AbstractCircuitBreaker {
 
     @Override
     public boolean isOpen2HalfOpenTimeout() {
-        return System.currentTimeMillis() - lastOpenedTime > circuitBreakerConfig.getOpen2HalfOpenTimeoutInMs();
+        return System.currentTimeMillis() - circuitBreakerConfig.getOpen2HalfOpenTimeoutInMs() > lastOpenedTime.get();
     }
 
     @Override
     public boolean isCloseFailThresholdReached() {
         // 判断是否超过允许的最大失败次数,true表示超过最大失败次数
-        return currentFailCounter.get() > circuitBreakerConfig.getFailThreshold();
+        return failCounter.get() > circuitBreakerConfig.getFailThreshold();
     }
 
     @Override
