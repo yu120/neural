@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author lry
  */
-@SPI("local")
+@SPI("stand-alone")
 public interface ILimiter {
 
     /**

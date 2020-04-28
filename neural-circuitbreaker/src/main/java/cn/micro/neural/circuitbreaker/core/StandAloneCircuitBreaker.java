@@ -2,6 +2,7 @@ package cn.micro.neural.circuitbreaker.core;
 
 import cn.micro.neural.circuitbreaker.CircuitBreakerConfig;
 import cn.micro.neural.circuitbreaker.CircuitBreakerState;
+import cn.neural.common.extension.Extension;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Slf4j
 @Getter
+@Extension("stand-alone")
 public class StandAloneCircuitBreaker extends AbstractCircuitBreaker {
 
     /**

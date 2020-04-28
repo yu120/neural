@@ -3,12 +3,14 @@ package cn.micro.neural.circuitbreaker.core;
 import cn.micro.neural.circuitbreaker.CircuitBreakerContext;
 import cn.micro.neural.circuitbreaker.CircuitBreakerState;
 import cn.micro.neural.circuitbreaker.OriginalCall;
+import cn.neural.common.extension.SPI;
 
 /**
  * ICircuitBreaker
  *
  * @author lry
  */
+@SPI("stand-alone")
 public interface ICircuitBreaker {
 
     /**
