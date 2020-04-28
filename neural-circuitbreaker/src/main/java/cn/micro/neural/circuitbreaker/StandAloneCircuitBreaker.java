@@ -9,11 +9,11 @@ import lombok.extern.slf4j.Slf4j;
  * @author lry
  */
 @Slf4j
-public class CircuitBreaker extends AbstractCircuitBreaker {
+public class StandAloneCircuitBreaker extends AbstractCircuitBreaker {
 
     private Class<? extends Throwable>[] ignoreExceptions;
 
-    public CircuitBreaker(String name, CircuitBreakerConfig config) {
+    public StandAloneCircuitBreaker(String name, CircuitBreakerConfig config) {
         super(name, config);
     }
 
