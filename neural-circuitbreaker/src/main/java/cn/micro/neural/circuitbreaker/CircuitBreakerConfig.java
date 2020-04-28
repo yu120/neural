@@ -3,6 +3,7 @@ package cn.micro.neural.circuitbreaker;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * CircuitBreakerConfig
@@ -16,6 +17,11 @@ import java.io.Serializable;
  */
 @Data
 public class CircuitBreakerConfig implements Serializable {
+
+    /**
+     * 熔断器唯一标识
+     */
+    private String identity;
 
     /**
      * closed状态的失败次数阈值
@@ -34,5 +40,10 @@ public class CircuitBreakerConfig implements Serializable {
      * half-open状态下成功次数阈值
      */
     private int consecutiveSuccessThreshold = 5;
+
+    /**
+     * 忽略的异常的ClassName全称
+     */
+    private List<String> ignoreExceptions;
 
 }
