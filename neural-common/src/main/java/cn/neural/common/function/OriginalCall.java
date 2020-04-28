@@ -1,4 +1,4 @@
-package cn.micro.neural.circuitbreaker;
+package cn.neural.common.function;
 
 /**
  * The Original Call.
@@ -18,11 +18,11 @@ public interface OriginalCall {
     /**
      * The process original call
      *
-     * @param circuitBreakerContext {@link CircuitBreakerContext}
+     * @param originalContext {@link OriginalContext}
      * @return object for original call result
      * @throws Throwable throw original call exception
      */
-    default Object call(CircuitBreakerContext circuitBreakerContext) throws Throwable {
+    default Object call(OriginalContext originalContext) throws Throwable {
         return call();
     }
 
@@ -39,11 +39,11 @@ public interface OriginalCall {
     /**
      * The process fall back
      *
-     * @param circuitBreakerContext {@link CircuitBreakerContext}
+     * @param originalContext {@link OriginalContext}
      * @return object for fallback result
      * @throws Throwable throw fallback exception
      */
-    default Object fallback(CircuitBreakerContext circuitBreakerContext) throws Throwable {
+    default Object fallback(OriginalContext originalContext) throws Throwable {
         return fallback();
     }
 

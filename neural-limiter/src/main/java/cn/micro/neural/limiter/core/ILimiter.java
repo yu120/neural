@@ -1,10 +1,10 @@
 package cn.micro.neural.limiter.core;
 
 import cn.micro.neural.limiter.LimiterConfig;
-import cn.micro.neural.limiter.LimiterContext;
-import cn.micro.neural.limiter.OriginalCall;
 import cn.micro.neural.limiter.event.EventListener;
 import cn.neural.common.extension.SPI;
+import cn.neural.common.function.OriginalCall;
+import cn.neural.common.function.OriginalContext;
 
 import java.util.Map;
 
@@ -42,12 +42,12 @@ public interface ILimiter {
     /**
      * The process original call.
      *
-     * @param limiterContext {@link LimiterContext}
-     * @param originalCall   {@link OriginalCall}
+     * @param originalContext {@link OriginalContext}
+     * @param originalCall    {@link OriginalCall}
      * @return The object of OriginalCall
      * @throws Throwable The Exception is execute doOriginalCall
      */
-    Object wrapperCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable;
+    Object wrapperCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable;
 
     /**
      * The collect metric(get and reset)

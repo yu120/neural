@@ -1,10 +1,10 @@
 package cn.micro.neural.circuitbreaker.core;
 
 import cn.micro.neural.circuitbreaker.CircuitBreakerConfig;
-import cn.micro.neural.circuitbreaker.CircuitBreakerContext;
 import cn.micro.neural.circuitbreaker.CircuitBreakerState;
-import cn.micro.neural.circuitbreaker.OriginalCall;
 import cn.micro.neural.circuitbreaker.exception.CircuitBreakerOpenException;
+import cn.neural.common.function.OriginalCall;
+import cn.neural.common.function.OriginalContext;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,41 +26,41 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
     /**
      * The process of original call
      *
-     * @param circuitBreakerContext {@link CircuitBreakerContext}
-     * @param originalCall          {@link OriginalCall}
+     * @param originalContext {@link OriginalContext}
+     * @param originalCall    {@link OriginalCall}
      * @return original call return result
      * @throws Throwable throw exception
      */
     @Override
-    public Object originalCall(final CircuitBreakerContext circuitBreakerContext, final OriginalCall originalCall) throws Throwable {
-        CircuitBreakerContext.set(circuitBreakerContext);
+    public Object originalCall(final OriginalContext originalContext, final OriginalCall originalCall) throws Throwable {
+        OriginalContext.set(originalContext);
 
         try {
             if (CircuitBreakerState.CLOSED == getState()) {
-                return processClose(circuitBreakerContext, originalCall);
+                return processClose(originalContext, originalCall);
             } else if (CircuitBreakerState.OPEN == getState()) {
-                return processOpen(circuitBreakerContext, originalCall);
+                return processOpen(originalContext, originalCall);
             } else if (CircuitBreakerState.HALF_OPEN == getState()) {
-                return processHalfOpen(circuitBreakerContext, originalCall);
+                return processHalfOpen(originalContext, originalCall);
             } else {
                 throw new IllegalArgumentException("Illegal circuit-breaker state");
             }
         } finally {
-            CircuitBreakerContext.remove();
+            OriginalContext.remove();
         }
     }
 
     /**
      * Close state processing
      *
-     * @param circuitBreakerContext {@link CircuitBreakerContext}
-     * @param originalCall          {@link OriginalCall}
+     * @param originalContext {@link OriginalContext}
+     * @param originalCall    {@link OriginalCall}
      * @return original call return result
      * @throws Throwable throw exception
      */
-    private Object processClose(CircuitBreakerContext circuitBreakerContext, OriginalCall originalCall) throws Throwable {
+    private Object processClose(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         try {
-            Object result = originalCall.call(circuitBreakerContext);
+            Object result = originalCall.call(originalContext);
             // Reset the state and data to prevent accidents
             close();
             return result;
@@ -88,12 +88,12 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
     /**
      * Open state processing
      *
-     * @param circuitBreakerContext {@link CircuitBreakerContext}
-     * @param originalCall          {@link OriginalCall}
+     * @param originalContext {@link OriginalContext}
+     * @param originalCall    {@link OriginalCall}
      * @return original call return result
      * @throws Throwable throw exception
      */
-    private Object processOpen(CircuitBreakerContext circuitBreakerContext, OriginalCall originalCall) throws Throwable {
+    private Object processOpen(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         // Check if you should enter the half open state
         if (isOpen2HalfOpenTimeout()) {
             log.debug("[{}] into half open", circuitBreakerConfig.getIdentity());
@@ -102,7 +102,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
             openHalf();
 
             // process half open
-            return processHalfOpen(circuitBreakerContext, originalCall);
+            return processHalfOpen(originalContext, originalCall);
         }
 
         throw new CircuitBreakerOpenException(circuitBreakerConfig.getIdentity());
@@ -111,15 +111,15 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
     /**
      * Half-open state processing
      *
-     * @param circuitBreakerContext {@link CircuitBreakerContext}
-     * @param originalCall          {@link OriginalCall}
+     * @param originalContext {@link OriginalContext}
+     * @param originalCall    {@link OriginalCall}
      * @return original call return result
      * @throws Throwable throw exception
      */
-    private Object processHalfOpen(CircuitBreakerContext circuitBreakerContext, OriginalCall originalCall) throws Throwable {
+    private Object processHalfOpen(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         try {
             // try to release the request
-            Object result = originalCall.call(circuitBreakerContext);
+            Object result = originalCall.call(originalContext);
 
             // Record the number of consecutive successes in the half-open state, and failures are immediately cleared
             incrConsecutiveSuccessCounter();

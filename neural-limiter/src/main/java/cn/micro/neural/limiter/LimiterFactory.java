@@ -5,6 +5,8 @@ import cn.micro.neural.limiter.event.EventListener;
 import cn.micro.neural.limiter.event.EventType;
 import cn.neural.common.extension.Extension;
 import cn.neural.common.extension.ExtensionLoader;
+import cn.neural.common.function.OriginalCall;
+import cn.neural.common.function.OriginalContext;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -104,31 +106,30 @@ public class LimiterFactory implements EventListener {
      * @throws Throwable throw exception
      */
     public Object originalCall(String identity, OriginalCall originalCall) throws Throwable {
-        return originalCall(new LimiterContext(), identity, originalCall);
+        return originalCall(new OriginalContext(), identity, originalCall);
     }
 
     /**
      * The process of original call
      *
-     * @param limiterContext {@link LimiterContext}
+     * @param originalContext {@link OriginalContext}
      * @param identity       {@link LimiterConfig#identity()}
      * @param originalCall   {@link OriginalCall}
      * @return invoke return object
      * @throws Throwable throw exception
      */
-    public Object originalCall(final LimiterContext limiterContext, String identity, OriginalCall originalCall) throws Throwable {
+    public Object originalCall(final OriginalContext originalContext, String identity, OriginalCall originalCall) throws Throwable {
         try {
-            LimiterContext.set(limiterContext);
+            OriginalContext.set(originalContext);
             // The check limiter object
             if (null == identity || !limiters.containsKey(identity)) {
-                return originalCall.call(limiterContext);
+                return originalCall.call(originalContext);
             }
 
             ILimiter limiter = limiters.get(identity);
-            limiterContext.setLimiterConfig(limiter.getConfig());
-            return limiter.wrapperCall(limiterContext, originalCall);
+            return limiter.wrapperCall(originalContext, originalCall);
         } finally {
-            LimiterContext.remove();
+            OriginalContext.remove();
         }
     }
 

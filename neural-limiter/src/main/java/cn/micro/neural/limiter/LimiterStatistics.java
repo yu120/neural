@@ -3,6 +3,8 @@ package cn.micro.neural.limiter;
 import cn.micro.neural.limiter.event.EventType;
 import cn.micro.neural.limiter.exception.LimiterExceedException;
 import cn.micro.neural.limiter.exception.LimiterException;
+import cn.neural.common.function.OriginalCall;
+import cn.neural.common.function.OriginalContext;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,7 +93,7 @@ public class LimiterStatistics implements Serializable {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    public Object wrapperOriginalCall(final LimiterContext limiterContext, final OriginalCall originalCall) throws Throwable {
+    public Object wrapperOriginalCall(final OriginalContext originalContext, final OriginalCall originalCall) throws Throwable {
         final long startTime = System.currentTimeMillis();
 
         try {
@@ -100,7 +102,7 @@ public class LimiterStatistics implements Serializable {
             maxConcurrentAccumulator.accumulate(concurrentCounter.incrementAndGet());
 
             // original call
-            Object result = originalCall.call(limiterContext);
+            Object result = originalCall.call(originalContext);
 
             // Step 2: success traffic
             successCounter.increment();
@@ -139,7 +141,7 @@ public class LimiterStatistics implements Serializable {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    public Object doStrategyProcess(LimiterContext limiterContext, EventType eventType,
+    public Object doStrategyProcess(OriginalContext originalContext, EventType eventType,
                                     LimiterConfig.Strategy strategy, OriginalCall originalCall) throws Throwable {
         log.warn("The limiter exceed[{}]", eventType);
 
@@ -162,11 +164,11 @@ public class LimiterStatistics implements Serializable {
         switch (strategy) {
             case FALLBACK:
                 fallbackCounter.increment();
-                return originalCall.fallback(limiterContext);
+                return originalCall.fallback(originalContext);
             case EXCEPTION:
                 throw new LimiterExceedException(eventType.name());
             case IGNORE:
-                return wrapperOriginalCall(limiterContext, originalCall);
+                return wrapperOriginalCall(originalContext, originalCall);
             default:
                 throw new LimiterException("Illegal strategy type");
         }

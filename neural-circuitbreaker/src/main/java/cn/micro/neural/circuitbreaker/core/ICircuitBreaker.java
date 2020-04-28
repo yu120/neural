@@ -1,9 +1,9 @@
 package cn.micro.neural.circuitbreaker.core;
 
-import cn.micro.neural.circuitbreaker.CircuitBreakerContext;
 import cn.micro.neural.circuitbreaker.CircuitBreakerState;
-import cn.micro.neural.circuitbreaker.OriginalCall;
 import cn.neural.common.extension.SPI;
+import cn.neural.common.function.OriginalCall;
+import cn.neural.common.function.OriginalContext;
 
 /**
  * ICircuitBreaker
@@ -79,11 +79,11 @@ public interface ICircuitBreaker {
     /**
      * The process of original call
      *
-     * @param circuitBreakerContext {@link CircuitBreakerContext}
-     * @param originalCall          {@link OriginalCall}
+     * @param originalContext {@link OriginalContext}
+     * @param originalCall    {@link OriginalCall}
      * @return original call return result
      * @throws Throwable throw exception
      */
-    Object originalCall(final CircuitBreakerContext circuitBreakerContext, final OriginalCall originalCall) throws Throwable;
+    Object originalCall(final OriginalContext originalContext, final OriginalCall originalCall) throws Throwable;
 
 }

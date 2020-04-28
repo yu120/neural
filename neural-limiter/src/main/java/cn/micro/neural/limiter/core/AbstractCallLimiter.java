@@ -1,12 +1,12 @@
 package cn.micro.neural.limiter.core;
 
 import cn.micro.neural.limiter.LimiterConfig;
-import cn.micro.neural.limiter.LimiterContext;
 import cn.micro.neural.limiter.LimiterStatistics;
-import cn.micro.neural.limiter.OriginalCall;
 import cn.micro.neural.limiter.event.EventListener;
 import cn.micro.neural.limiter.event.EventType;
 import cn.micro.neural.limiter.exception.LimiterException;
+import cn.neural.common.function.OriginalCall;
+import cn.neural.common.function.OriginalContext;
 import cn.neural.common.utils.BeanUtils;
 import cn.neural.common.utils.CloneUtils;
 import lombok.AllArgsConstructor;
@@ -78,27 +78,28 @@ public abstract class AbstractCallLimiter implements ILimiter {
     }
 
     @Override
-    public Object wrapperCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
+    public Object wrapperCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         // the don't need limiting
         if (null == config || LimiterConfig.Switch.OFF == config.getEnable()) {
-            return originalCall.call(limiterContext);
+            return originalCall.call(originalContext);
         }
 
         // the concurrent limiter and original call
-        return doConcurrentOriginalCall(limiterContext, originalCall);
+        return doConcurrentOriginalCall(originalContext, originalCall);
     }
 
     /**
      * The concurrent limiter and original call
      *
-     * @param originalCall The original call interface
+     * @param originalContext {@link OriginalContext}
+     * @param originalCall    The original call interface
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doConcurrentOriginalCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
+    private Object doConcurrentOriginalCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         // if the concurrent limiter switch is closed, then continue to execute
         if (LimiterConfig.Switch.OFF == config.getConcurrent().getEnable()) {
-            return doRateOriginalCall(limiterContext, originalCall);
+            return doRateOriginalCall(originalContext, originalCall);
         }
 
         // try acquire concurrent
@@ -106,12 +107,12 @@ public abstract class AbstractCallLimiter implements ILimiter {
             case FAILURE:
                 // try acquire concurrent exceed
                 this.collectEvent(EventType.CONCURRENT_EXCEED, statistics.getStatisticsData());
-                return statistics.doStrategyProcess(limiterContext, EventType.CONCURRENT_EXCEED,
+                return statistics.doStrategyProcess(originalContext, EventType.CONCURRENT_EXCEED,
                         config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
                 // try acquire concurrent success
                 try {
-                    return doRateOriginalCall(limiterContext, originalCall);
+                    return doRateOriginalCall(originalContext, originalCall);
                 } finally {
                     // only need to be released after success
                     releaseConcurrent();
@@ -119,7 +120,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
             case EXCEPTION:
                 // try acquire concurrent exceptions
                 this.collectEvent(EventType.CONCURRENT_EXCEPTION);
-                return doRateOriginalCall(limiterContext, originalCall);
+                return doRateOriginalCall(originalContext, originalCall);
             default:
                 // illegal concurrent strategy type
                 throw new LimiterException("Illegal concurrent strategy type");
@@ -133,10 +134,10 @@ public abstract class AbstractCallLimiter implements ILimiter {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doRateOriginalCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
+    private Object doRateOriginalCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         // if the rate limiter switch is closed, then continue to execute
         if (LimiterConfig.Switch.OFF == config.getRate().getEnable()) {
-            return doCounterOriginalCall(limiterContext, originalCall);
+            return doCounterOriginalCall(originalContext, originalCall);
         }
 
         // try acquire rate
@@ -144,15 +145,15 @@ public abstract class AbstractCallLimiter implements ILimiter {
             case FAILURE:
                 // try acquire rate exceed
                 this.collectEvent(EventType.RATE_EXCEED, statistics.getStatisticsData());
-                return statistics.doStrategyProcess(limiterContext, EventType.RATE_EXCEED,
+                return statistics.doStrategyProcess(originalContext, EventType.RATE_EXCEED,
                         config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
                 // try acquire rate success
-                return doCounterOriginalCall(limiterContext, originalCall);
+                return doCounterOriginalCall(originalContext, originalCall);
             case EXCEPTION:
                 // try acquire rate exception
                 this.collectEvent(EventType.RATE_EXCEPTION);
-                return doCounterOriginalCall(limiterContext, originalCall);
+                return doCounterOriginalCall(originalContext, originalCall);
             default:
                 // illegal rate strategy type
                 throw new LimiterException("Illegal rate strategy type");
@@ -166,10 +167,10 @@ public abstract class AbstractCallLimiter implements ILimiter {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    private Object doCounterOriginalCall(LimiterContext limiterContext, OriginalCall originalCall) throws Throwable {
+    private Object doCounterOriginalCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         // if the counter limiter switch is closed, then continue to execute
         if (LimiterConfig.Switch.OFF == config.getCounter().getEnable()) {
-            return statistics.wrapperOriginalCall(limiterContext, originalCall);
+            return statistics.wrapperOriginalCall(originalContext, originalCall);
         }
 
         // try acquire counter
@@ -177,15 +178,15 @@ public abstract class AbstractCallLimiter implements ILimiter {
             case FAILURE:
                 // try acquire counter exceed
                 this.collectEvent(EventType.COUNTER_EXCEED, statistics.getStatisticsData());
-                return statistics.doStrategyProcess(limiterContext, EventType.COUNTER_EXCEED,
+                return statistics.doStrategyProcess(originalContext, EventType.COUNTER_EXCEED,
                         config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
                 // try acquire counter success
-                return statistics.wrapperOriginalCall(limiterContext, originalCall);
+                return statistics.wrapperOriginalCall(originalContext, originalCall);
             case EXCEPTION:
                 // try acquire counter exception
                 this.collectEvent(EventType.COUNTER_EXCEPTION);
-                return statistics.wrapperOriginalCall(limiterContext, originalCall);
+                return statistics.wrapperOriginalCall(originalContext, originalCall);
             default:
                 // illegal counter strategy type
                 throw new LimiterException("Illegal counter strategy type");
