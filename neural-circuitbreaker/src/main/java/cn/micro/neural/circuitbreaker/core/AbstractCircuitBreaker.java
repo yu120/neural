@@ -167,8 +167,14 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
         return false;
     }
 
+    /**
+     * 增量增加失败次数
+     */
     protected abstract void incrFailCounter();
 
+    /**
+     * 增量增加连续成功次数
+     */
     protected abstract void incrConsecutiveSuccessCounter();
 
 }
