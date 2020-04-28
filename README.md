@@ -190,6 +190,7 @@ https://www.jianshu.com/p/a3d068f2586d
 
 ## 3 熔断（CircuitBreaker）
 在分布式架构中，熔断的场景主要分为两种：injvm模式和cluster模式。
+![CircuitBreaker](https://martinfowler.com/bliki/images/circuitBreaker/state.png)
 
 ### 3.1事件统计熔断器（EventCountCircuitBreaker）
 在指定时间周期内根据事件发生的次数来实现精简版熔断器。如10秒之内触发5次事件，则进行熔断。
