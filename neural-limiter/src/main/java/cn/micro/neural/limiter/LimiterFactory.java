@@ -5,8 +5,8 @@ import cn.micro.neural.limiter.event.EventListener;
 import cn.micro.neural.limiter.event.EventType;
 import cn.neural.common.extension.Extension;
 import cn.neural.common.extension.ExtensionLoader;
-import cn.neural.common.function.OriginalCall;
-import cn.neural.common.function.OriginalContext;
+import cn.micro.neural.storage.OriginalCall;
+import cn.micro.neural.storage.OriginalContext;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

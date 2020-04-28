@@ -3,8 +3,8 @@ package cn.micro.neural.circuitbreaker.core;
 import cn.micro.neural.circuitbreaker.CircuitBreakerConfig;
 import cn.micro.neural.circuitbreaker.CircuitBreakerState;
 import cn.micro.neural.circuitbreaker.exception.CircuitBreakerOpenException;
-import cn.neural.common.function.OriginalCall;
-import cn.neural.common.function.OriginalContext;
+import cn.micro.neural.storage.OriginalCall;
+import cn.micro.neural.storage.OriginalContext;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

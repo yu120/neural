@@ -3,8 +3,8 @@ package cn.micro.neural.limiter.core;
 import cn.micro.neural.limiter.LimiterConfig;
 import cn.micro.neural.limiter.event.EventListener;
 import cn.neural.common.extension.SPI;
-import cn.neural.common.function.OriginalCall;
-import cn.neural.common.function.OriginalContext;
+import cn.micro.neural.storage.OriginalCall;
+import cn.micro.neural.storage.OriginalContext;
 
 import java.util.Map;
 

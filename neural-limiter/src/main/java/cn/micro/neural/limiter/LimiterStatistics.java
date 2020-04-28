@@ -3,8 +3,8 @@ package cn.micro.neural.limiter;
 import cn.micro.neural.limiter.event.EventType;
 import cn.micro.neural.limiter.exception.LimiterExceedException;
 import cn.micro.neural.limiter.exception.LimiterException;
-import cn.neural.common.function.OriginalCall;
-import cn.neural.common.function.OriginalContext;
+import cn.micro.neural.storage.OriginalCall;
+import cn.micro.neural.storage.OriginalContext;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 

@@ -2,8 +2,8 @@ package cn.micro.neural.circuitbreaker.core;
 
 import cn.micro.neural.circuitbreaker.CircuitBreakerState;
 import cn.neural.common.extension.SPI;
-import cn.neural.common.function.OriginalCall;
-import cn.neural.common.function.OriginalContext;
+import cn.micro.neural.storage.OriginalCall;
+import cn.micro.neural.storage.OriginalContext;
 
 /**
  * ICircuitBreaker
