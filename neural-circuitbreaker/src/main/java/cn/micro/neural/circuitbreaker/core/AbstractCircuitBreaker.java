@@ -23,16 +23,8 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
         this.circuitBreakerConfig = circuitBreakerConfig;
     }
 
-    /**
-     * The process of original call
-     *
-     * @param originalContext {@link OriginalContext}
-     * @param originalCall    {@link OriginalCall}
-     * @return original call return result
-     * @throws Throwable throw exception
-     */
     @Override
-    public Object originalCall(final OriginalContext originalContext, final OriginalCall originalCall) throws Throwable {
+    public Object originalCall(final OriginalCall originalCall, final OriginalContext originalContext) throws Throwable {
         OriginalContext.set(originalContext);
 
         try {

@@ -3,6 +3,7 @@ package cn.micro.neural.limiter;
 import cn.micro.neural.limiter.core.ILimiter;
 import cn.micro.neural.limiter.event.EventListener;
 import cn.micro.neural.limiter.event.EventType;
+import cn.micro.neural.storage.Neural;
 import cn.neural.common.extension.Extension;
 import cn.neural.common.extension.ExtensionLoader;
 import cn.micro.neural.storage.OriginalCall;
@@ -23,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 @Slf4j
 @Getter
 @Extension(LimiterFactory.IDENTITY)
-public class LimiterFactory implements EventListener {
+public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
 
     public static final String IDENTITY = "limiter";
 
@@ -42,7 +43,8 @@ public class LimiterFactory implements EventListener {
      * @param group {@link LimiterConfig#getGroup()}
      * @param tag   {@link LimiterConfig#getTag()} ()}
      */
-    public LimiterConfig getLimiterConfig(String group, String tag) {
+    @Override
+    public LimiterConfig getConfig(String group, String tag) {
         return rules.containsKey(group) ? rules.get(group).get(tag) : null;
     }
 
@@ -51,7 +53,8 @@ public class LimiterFactory implements EventListener {
      *
      * @param limiterConfig {@link LimiterConfig}
      */
-    public void addLimiter(LimiterConfig limiterConfig) {
+    @Override
+    public void addConfig(LimiterConfig limiterConfig) {
         LimiterConfig.Mode mode = limiterConfig.getMode();
         ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(mode.getValue());
         limiter.addListener(this);
@@ -66,9 +69,10 @@ public class LimiterFactory implements EventListener {
      *
      * @param limiterConfig {@link LimiterConfig}
      */
-    public void checkAndAddLimiter(LimiterConfig limiterConfig) {
+    @Override
+    public void checkAndAddConfig(LimiterConfig limiterConfig) {
         if (!limiters.containsKey(limiterConfig.identity())) {
-            addLimiter(limiterConfig);
+            addConfig(limiterConfig);
         }
     }
 
@@ -83,6 +87,7 @@ public class LimiterFactory implements EventListener {
      * @param limiterConfig {@link LimiterConfig}
      * @throws Exception exception
      */
+    @Override
     public void notify(LimiterConfig limiterConfig) throws Exception {
         ILimiter limiter = limiters.get(limiterConfig.identity());
         if (null == limiter) {
@@ -105,20 +110,22 @@ public class LimiterFactory implements EventListener {
      * @return invoke return object
      * @throws Throwable throw exception
      */
+    @Override
     public Object originalCall(String identity, OriginalCall originalCall) throws Throwable {
-        return originalCall(new OriginalContext(), identity, originalCall);
+        return originalCall(identity, originalCall, new OriginalContext());
     }
 
     /**
      * The process of original call
      *
+     * @param identity        {@link LimiterConfig#identity()}
+     * @param originalCall    {@link OriginalCall}
      * @param originalContext {@link OriginalContext}
-     * @param identity       {@link LimiterConfig#identity()}
-     * @param originalCall   {@link OriginalCall}
      * @return invoke return object
      * @throws Throwable throw exception
      */
-    public Object originalCall(final OriginalContext originalContext, String identity, OriginalCall originalCall) throws Throwable {
+    @Override
+    public Object originalCall(String identity, OriginalCall originalCall, final OriginalContext originalContext) throws Throwable {
         try {
             OriginalContext.set(originalContext);
             // The check limiter object
@@ -138,6 +145,7 @@ public class LimiterFactory implements EventListener {
      *
      * @return statistics data
      */
+    @Override
     public Map<String, Map<String, Long>> collect() {
         final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
         limiters.forEach((identity, limiter) -> {
@@ -155,6 +163,7 @@ public class LimiterFactory implements EventListener {
      *
      * @return statistics data
      */
+    @Override
     public Map<String, Map<String, Long>> statistics() {
         final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
         limiters.forEach((identity, limiter) -> {

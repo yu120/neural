@@ -90,7 +90,7 @@ public class LimiterInterceptor implements ApplicationContextAware {
                 limiterConfig.setRate(ruleConfig.getRate());
                 limiterConfig.setCounter(ruleConfig.getRequest());
                 limiterConfig.setConcurrent(ruleConfig.getConcurrent());
-                limiterFactory.addLimiter(limiterConfig);
+                limiterFactory.addConfig(limiterConfig);
             }
         }
     }
@@ -103,7 +103,7 @@ public class LimiterInterceptor implements ApplicationContextAware {
 
         // 根据限流类型获取不同的key ,如果不传我们会以方法名作为key
         String tag = neuralLimiter.value().length() != 0 ? neuralLimiter.value() : method.getName().toUpperCase();
-        LimiterConfig limiterConfig = limiterFactory.getLimiterConfig(neuralLimiter.group(), tag);
+        LimiterConfig limiterConfig = limiterFactory.getConfig(neuralLimiter.group(), tag);
         if (limiterConfig == null) {
             return pjp.proceed();
         }
@@ -118,7 +118,7 @@ public class LimiterInterceptor implements ApplicationContextAware {
         // 校验新的限流器,不存在则自动创建
         LimiterConfig tempLimiterConfig = CloneUtils.clone(limiterConfig);
         tempLimiterConfig.setTag(tempTag);
-        limiterFactory.checkAndAddLimiter(tempLimiterConfig);
+        limiterFactory.checkAndAddConfig(tempLimiterConfig);
 
         // 使用限流器包装调用
         return limiterFactory.originalCall(limiterConfig.identity(), pjp::proceed);
