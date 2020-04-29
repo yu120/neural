@@ -43,7 +43,9 @@ public interface Neural<C> {
      * @return invoke return object
      * @throws Throwable throw exception
      */
-    Object originalCall(String identity, OriginalCall originalCall) throws Throwable;
+    default Object originalCall(String identity, OriginalCall originalCall) throws Throwable{
+        return originalCall(identity, originalCall, new OriginalContext());
+    }
 
     /**
      * The process of original call

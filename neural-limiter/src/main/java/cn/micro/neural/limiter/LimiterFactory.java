@@ -37,22 +37,11 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
      */
     private final ConcurrentMap<String, ConcurrentMap<String, LimiterConfig>> rules = new ConcurrentHashMap<>();
 
-    /**
-     * The add limiter
-     *
-     * @param group {@link LimiterConfig#getGroup()}
-     * @param tag   {@link LimiterConfig#getTag()} ()}
-     */
     @Override
     public LimiterConfig getConfig(String group, String tag) {
         return rules.containsKey(group) ? rules.get(group).get(tag) : null;
     }
 
-    /**
-     * The add limiter
-     *
-     * @param limiterConfig {@link LimiterConfig}
-     */
     @Override
     public void addConfig(LimiterConfig limiterConfig) {
         LimiterConfig.Mode mode = limiterConfig.getMode();
@@ -64,11 +53,6 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
                 k -> new ConcurrentHashMap<>()).put(limiterConfig.getTag(), limiterConfig);
     }
 
-    /**
-     * The check and add limiter
-     *
-     * @param limiterConfig {@link LimiterConfig}
-     */
     @Override
     public void checkAndAddConfig(LimiterConfig limiterConfig) {
         if (!limiters.containsKey(limiterConfig.identity())) {
@@ -81,12 +65,6 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
         log.info("Receive event[{}]", eventType);
     }
 
-    /**
-     * The notify of changed config
-     *
-     * @param limiterConfig {@link LimiterConfig}
-     * @throws Exception exception
-     */
     @Override
     public void notify(LimiterConfig limiterConfig) throws Exception {
         ILimiter limiter = limiters.get(limiterConfig.identity());
@@ -102,28 +80,6 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
         log.warn("The limiter config refresh failure: {}", limiterConfig);
     }
 
-    /**
-     * The process of original call
-     *
-     * @param identity     {@link LimiterConfig#identity()}
-     * @param originalCall {@link OriginalCall}
-     * @return invoke return object
-     * @throws Throwable throw exception
-     */
-    @Override
-    public Object originalCall(String identity, OriginalCall originalCall) throws Throwable {
-        return originalCall(identity, originalCall, new OriginalContext());
-    }
-
-    /**
-     * The process of original call
-     *
-     * @param identity        {@link LimiterConfig#identity()}
-     * @param originalCall    {@link OriginalCall}
-     * @param originalContext {@link OriginalContext}
-     * @return invoke return object
-     * @throws Throwable throw exception
-     */
     @Override
     public Object originalCall(String identity, OriginalCall originalCall, final OriginalContext originalContext) throws Throwable {
         try {
@@ -140,11 +96,6 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
         }
     }
 
-    /**
-     * The collect of get and reset statistics data
-     *
-     * @return statistics data
-     */
     @Override
     public Map<String, Map<String, Long>> collect() {
         final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
@@ -158,11 +109,6 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
         return dataMap;
     }
 
-    /**
-     * The get statistics data
-     *
-     * @return statistics data
-     */
     @Override
     public Map<String, Map<String, Long>> statistics() {
         final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();

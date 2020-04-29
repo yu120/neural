@@ -79,11 +79,11 @@ public interface ICircuitBreaker {
     /**
      * The process of original call
      *
-     * @param originalCall    {@link OriginalCall}
      * @param originalContext {@link OriginalContext}
+     * @param originalCall    {@link OriginalCall}
      * @return original call return result
      * @throws Throwable throw exception
      */
-    Object originalCall(final OriginalCall originalCall, final OriginalContext originalContext) throws Throwable;
+    Object wrapperCall(final OriginalContext originalContext, final OriginalCall originalCall) throws Throwable;
 
 }

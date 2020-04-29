@@ -24,7 +24,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
     }
 
     @Override
-    public Object originalCall(final OriginalCall originalCall, final OriginalContext originalContext) throws Throwable {
+    public Object wrapperCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         OriginalContext.set(originalContext);
 
         try {
@@ -68,9 +68,9 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
             // Check if you should go from ‘close’ to ‘open’
             if (isCloseFailThresholdReached()) {
                 // Trigger threshold, open fuse
-                log.debug("[{}] reached fail threshold, circuit-breaker open.", circuitBreakerConfig.getIdentity());
+                log.debug("[{}] reached fail threshold, circuit-breaker open.", circuitBreakerConfig.identity());
                 open();
-                throw new CircuitBreakerOpenException(circuitBreakerConfig.getIdentity());
+                throw new CircuitBreakerOpenException(circuitBreakerConfig.identity());
             }
 
             throw t;
@@ -88,7 +88,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
     private Object processOpen(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         // Check if you should enter the half open state
         if (isOpen2HalfOpenTimeout()) {
-            log.debug("[{}] into half open", circuitBreakerConfig.getIdentity());
+            log.debug("[{}] into half open", circuitBreakerConfig.identity());
 
             // Enter half open state
             openHalf();
@@ -97,7 +97,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
             return processHalfOpen(originalContext, originalCall);
         }
 
-        throw new CircuitBreakerOpenException(circuitBreakerConfig.getIdentity());
+        throw new CircuitBreakerOpenException(circuitBreakerConfig.identity());
     }
 
     /**
@@ -133,7 +133,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
                 throw t;
             } else {
                 open();
-                throw new CircuitBreakerOpenException(circuitBreakerConfig.getIdentity(), t);
+                throw new CircuitBreakerOpenException(circuitBreakerConfig.identity(), t);
             }
         }
     }

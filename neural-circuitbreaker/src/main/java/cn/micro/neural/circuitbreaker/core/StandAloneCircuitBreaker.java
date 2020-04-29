@@ -78,14 +78,14 @@ public class StandAloneCircuitBreaker extends AbstractCircuitBreaker {
     public void open() {
         lastOpenedTime = new AtomicLong(System.currentTimeMillis());
         state = CircuitBreakerState.OPEN;
-        log.debug("Circuit-breaker[{}] open", circuitBreakerConfig.getIdentity());
+        log.debug("Circuit-breaker[{}] open", circuitBreakerConfig.identity());
     }
 
     @Override
     public void openHalf() {
         consecutiveSuccessCounter.set(0);
         state = CircuitBreakerState.HALF_OPEN;
-        log.debug("Circuit-beaker[{}] open-half", circuitBreakerConfig.getIdentity());
+        log.debug("Circuit-beaker[{}] open-half", circuitBreakerConfig.identity());
     }
 
     @Override
@@ -93,7 +93,7 @@ public class StandAloneCircuitBreaker extends AbstractCircuitBreaker {
         // 重置失败次数统计器
         failCounter.set(0);
         state = CircuitBreakerState.CLOSED;
-        log.debug("Circuit-breaker[{}] close", circuitBreakerConfig.getIdentity());
+        log.debug("Circuit-breaker[{}] close", circuitBreakerConfig.identity());
     }
 
     // === 判断熔断状态是否该转移(即判断是否达到了转移的阈值)
