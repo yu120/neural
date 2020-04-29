@@ -62,18 +62,26 @@ public class CircuitBreakerStatistics implements Serializable {
      */
     public Object wrapperOriginalCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         try {
-            // Step 1: increment traffic
-            requestCounter.increment();
+            try {
+                // Step 1: increment traffic
+                requestCounter.increment();
+            } catch (Exception e) {
+                log.error("Total increment traffic exception", e);
+            }
 
             // original call
             Object result = originalCall.call(originalContext);
 
-            // Step 2: success traffic
-            successCounter.increment();
+            try {
+                // Step 2: success traffic
+                successCounter.increment();
+            } catch (Exception e) {
+                log.error("Total success traffic exception", e);
+            }
             return result;
         } catch (Throwable t) {
-            // Step 3: exception traffic
             try {
+                // Step 3: exception traffic
                 failureCounter.increment();
                 if (t instanceof TimeoutException) {
                     timeoutCounter.increment();
