@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.LongAccumulator;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * The statistics of Limiter.
+ * LimiterStatistics
  *
  * @author lry
  */
@@ -55,7 +55,8 @@ public class LimiterStatistics implements Serializable {
      */
     private final LongAdder fallbackCounter = new LongAdder();
 
-    // === elapsed/maxElapsed/concurrent/maxConcurrent/concurrentExceed/rateExceed
+
+    // === avgElapsed/maxElapsed/concurrent/maxConcurrent
 
     /**
      * The total elapsed counter in the current time window
@@ -73,6 +74,9 @@ public class LimiterStatistics implements Serializable {
      * The max concurrent counter in the current time window
      */
     private final LongAccumulator maxConcurrentAccumulator = new LongAccumulator(Long::max, 0);
+
+    // === rateExceed/counterExceed/concurrentExceed
+
     /**
      * The total rate exceed counter in the current time window
      */
@@ -93,7 +97,7 @@ public class LimiterStatistics implements Serializable {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    public Object wrapperOriginalCall(final OriginalContext originalContext, final OriginalCall originalCall) throws Throwable {
+    public Object wrapperOriginalCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         final long startTime = System.currentTimeMillis();
 
         try {
@@ -185,6 +189,7 @@ public class LimiterStatistics implements Serializable {
     public static final String MAX_ELAPSED_KEY = "max_elapsed";
     public static final String CONCURRENT_KEY = "concurrent";
     public static final String MAX_CONCURRENT_KEY = "max_concurrent";
+
     public static final String RATE_EXCEED_KEY = "rate_exceed";
     public static final String COUNTER_EXCEED_KEY = "counter_exceed";
     public static final String CONCURRENT_EXCEED_KEY = "concurrent_exceed";
@@ -208,6 +213,7 @@ public class LimiterStatistics implements Serializable {
         long maxElapsed = maxElapsedAccumulator.getThenReset();
         long concurrent = concurrentCounter.get();
         long maxConcurrent = maxConcurrentAccumulator.getThenReset();
+
         long rateExceed = rateExceedCounter.sumThenReset();
         long counterExceed = counterExceedCounter.sumThenReset();
         long concurrentExceed = concurrentExceedCounter.sumThenReset();
@@ -227,6 +233,7 @@ public class LimiterStatistics implements Serializable {
         map.put(MAX_ELAPSED_KEY, maxElapsed);
         map.put(CONCURRENT_KEY, concurrent);
         map.put(MAX_CONCURRENT_KEY, maxConcurrent);
+
         map.put(RATE_EXCEED_KEY, rateExceed);
         map.put(COUNTER_EXCEED_KEY, counterExceed);
         map.put(CONCURRENT_EXCEED_KEY, concurrentExceed);
@@ -252,6 +259,7 @@ public class LimiterStatistics implements Serializable {
         map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.get());
         map.put(CONCURRENT_KEY, concurrentCounter.get());
         map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.get());
+
         map.put(RATE_EXCEED_KEY, rateExceedCounter.sum());
         map.put(COUNTER_EXCEED_KEY, counterExceedCounter.sum());
         map.put(CONCURRENT_EXCEED_KEY, concurrentExceedCounter.sum());

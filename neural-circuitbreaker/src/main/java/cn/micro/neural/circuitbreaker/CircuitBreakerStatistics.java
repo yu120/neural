@@ -10,12 +10,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.LongAccumulator;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * The statistics of Limiter.
+ * CircuitBreakerStatistics
  *
  * @author lry
  */
@@ -52,24 +50,8 @@ public class CircuitBreakerStatistics implements Serializable {
      */
     private final LongAdder fallbackCounter = new LongAdder();
 
-    // === elapsed/maxElapsed/concurrent/maxConcurrent/concurrentExceed/rateExceed
+    // === request/success/failure/timeout/rejection
 
-    /**
-     * The total elapsed counter in the current time window
-     */
-    private final LongAccumulator totalElapsedAccumulator = new LongAccumulator(Long::sum, 0);
-    /**
-     * The max elapsed counter in the current time window
-     */
-    private final LongAccumulator maxElapsedAccumulator = new LongAccumulator(Long::max, 0);
-    /**
-     * The total concurrent exceed counter in the current time window
-     */
-    private final AtomicLong concurrentCounter = new AtomicLong(0);
-    /**
-     * The max concurrent counter in the current time window
-     */
-    private final LongAccumulator maxConcurrentAccumulator = new LongAccumulator(Long::max, 0);
 
     /**
      * The wrapper of original call
@@ -78,13 +60,10 @@ public class CircuitBreakerStatistics implements Serializable {
      * @return The original call result
      * @throws Throwable throw original call exception
      */
-    public Object wrapperOriginalCall(final OriginalContext originalContext, final OriginalCall originalCall) throws Throwable {
-        final long startTime = System.currentTimeMillis();
-
+    public Object wrapperOriginalCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         try {
             // Step 1: increment traffic
             requestCounter.increment();
-            maxConcurrentAccumulator.accumulate(concurrentCounter.incrementAndGet());
 
             // original call
             Object result = originalCall.call(originalContext);
@@ -106,15 +85,6 @@ public class CircuitBreakerStatistics implements Serializable {
             }
 
             throw t;
-        } finally {
-            try {
-                // Step 4: decrement traffic
-                long elapsed = System.currentTimeMillis() - startTime;
-                totalElapsedAccumulator.accumulate(elapsed);
-                maxElapsedAccumulator.accumulate(elapsed);
-            } catch (Exception e) {
-                log.error("Total decrement traffic exception", e);
-            }
         }
     }
 
@@ -145,11 +115,6 @@ public class CircuitBreakerStatistics implements Serializable {
         long timeout = timeoutCounter.sumThenReset();
         long rejected = rejectedCounter.sumThenReset();
         long fallback = fallbackCounter.sumThenReset();
-
-        long avgElapsed = success < 1 ? 0 : (totalElapsedAccumulator.getThenReset() / success);
-        long maxElapsed = maxElapsedAccumulator.getThenReset();
-        long concurrent = concurrentCounter.get();
-        long maxConcurrent = maxConcurrentAccumulator.getThenReset();
         if (request < 1) {
             return map;
         }
@@ -161,11 +126,6 @@ public class CircuitBreakerStatistics implements Serializable {
         map.put(TIMEOUT_KEY, timeout);
         map.put(REJECTED_KEY, rejected);
         map.put(FALLBACK_KEY, fallback);
-
-        map.put(AVG_ELAPSED_KEY, avgElapsed);
-        map.put(MAX_ELAPSED_KEY, maxElapsed);
-        map.put(CONCURRENT_KEY, concurrent);
-        map.put(MAX_CONCURRENT_KEY, maxConcurrent);
         return map;
     }
 
@@ -183,11 +143,6 @@ public class CircuitBreakerStatistics implements Serializable {
         map.put(TIMEOUT_KEY, timeoutCounter.sum());
         map.put(REJECTED_KEY, rejectedCounter.sum());
         map.put(FALLBACK_KEY, fallbackCounter.sum());
-
-        map.put(AVG_ELAPSED_KEY, success < 1 ? 0 : (totalElapsedAccumulator.get() / success));
-        map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.get());
-        map.put(CONCURRENT_KEY, concurrentCounter.get());
-        map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.get());
         return map;
     }
 
