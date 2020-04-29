@@ -101,19 +101,28 @@ public class LimiterStatistics implements Serializable {
         final long startTime = System.currentTimeMillis();
 
         try {
-            // Step 1: increment traffic
-            requestCounter.increment();
-            maxConcurrentAccumulator.accumulate(concurrentCounter.incrementAndGet());
+            try {
+                // Step 1: increment traffic
+                requestCounter.increment();
+                maxConcurrentAccumulator.accumulate(concurrentCounter.incrementAndGet());
+            } catch (Exception e) {
+                log.error("Total increment traffic exception", e);
+            }
 
-            // original call
+            // Step 2: original call
             Object result = originalCall.call(originalContext);
 
-            // Step 2: success traffic
-            successCounter.increment();
+            try {
+                // Step 3: success traffic
+                successCounter.increment();
+            } catch (Exception e) {
+                log.error("Total success traffic exception", e);
+            }
+
             return result;
         } catch (Throwable t) {
-            // Step 3: exception traffic
             try {
+                // Step 4: exception traffic
                 failureCounter.increment();
                 if (t instanceof TimeoutException) {
                     timeoutCounter.increment();
@@ -127,7 +136,7 @@ public class LimiterStatistics implements Serializable {
             throw t;
         } finally {
             try {
-                // Step 4: decrement traffic
+                // Step 5: decrement traffic
                 long elapsed = System.currentTimeMillis() - startTime;
                 totalElapsedAccumulator.accumulate(elapsed);
                 maxElapsedAccumulator.accumulate(elapsed);
