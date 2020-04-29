@@ -194,23 +194,23 @@ public abstract class AbstractCallLimiter implements ILimiter {
     }
 
     @Override
-    public Map<String, Long> statistics() {
-        try {
-            return statistics.getStatisticsData();
-        } catch (Exception e) {
-            this.collectEvent(EventType.STATISTICS_EXCEPTION);
-            log.error("The limiter[{}] statistics exception", config.identity(), e);
-            return Collections.emptyMap();
-        }
-    }
-
-    @Override
     public Map<String, Long> collect() {
         try {
             return statistics.collectThenReset();
         } catch (Exception e) {
             this.collectEvent(EventType.COLLECT_EXCEPTION);
             log.error("The limiter[{}] collect exception", config.identity(), e);
+            return Collections.emptyMap();
+        }
+    }
+
+    @Override
+    public Map<String, Long> statistics() {
+        try {
+            return statistics.getStatisticsData();
+        } catch (Exception e) {
+            this.collectEvent(EventType.STATISTICS_EXCEPTION);
+            log.error("The limiter[{}] statistics exception", config.identity(), e);
             return Collections.emptyMap();
         }
     }

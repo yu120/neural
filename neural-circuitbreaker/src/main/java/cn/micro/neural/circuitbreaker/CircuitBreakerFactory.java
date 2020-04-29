@@ -1,6 +1,8 @@
 package cn.micro.neural.circuitbreaker;
 
 import cn.micro.neural.circuitbreaker.core.ICircuitBreaker;
+import cn.micro.neural.circuitbreaker.event.EventListener;
+import cn.micro.neural.circuitbreaker.event.EventType;
 import cn.micro.neural.storage.Neural;
 import cn.micro.neural.storage.OriginalCall;
 import cn.micro.neural.storage.OriginalContext;
@@ -9,6 +11,7 @@ import cn.neural.common.extension.ExtensionLoader;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,9 +24,10 @@ import java.util.concurrent.ConcurrentMap;
 @Slf4j
 @Getter
 @Extension(CircuitBreakerFactory.IDENTITY)
-public class CircuitBreakerFactory implements Neural<CircuitBreakerConfig> {
+public class CircuitBreakerFactory implements EventListener, Neural<CircuitBreakerConfig> {
 
     public static final String IDENTITY = "circuit_breaker";
+
     /**
      * Map<key=ICircuitBreaker#identity(), ICircuitBreaker>
      */
@@ -42,7 +46,7 @@ public class CircuitBreakerFactory implements Neural<CircuitBreakerConfig> {
     public void addConfig(CircuitBreakerConfig config) {
         CircuitBreakerConfig.Mode mode = config.getMode();
         ICircuitBreaker circuitBreaker = ExtensionLoader.getLoader(ICircuitBreaker.class).getExtension(mode.getValue());
-        // circuitBreaker.addListener(this);
+        circuitBreaker.addListener(this);
 
         circuitBreakers.put(config.identity(), circuitBreaker);
         rules.computeIfAbsent(config.getGroup(),
@@ -57,8 +61,23 @@ public class CircuitBreakerFactory implements Neural<CircuitBreakerConfig> {
     }
 
     @Override
-    public void notify(CircuitBreakerConfig config) throws Exception {
+    public void onEvent(CircuitBreakerConfig config, EventType eventType, Object... args) {
+        log.info("Receive event[{}]", eventType);
+    }
 
+    @Override
+    public void notify(CircuitBreakerConfig config) throws Exception {
+        ICircuitBreaker circuitBreaker = circuitBreakers.get(config.identity());
+        if (null == circuitBreaker) {
+            log.warn("Notfound circuit-breaker, identity={}", config.identity());
+            return;
+        }
+        if (circuitBreaker.refresh(config)) {
+            log.info("The circuit-breaker config refresh success: {}", config);
+            return;
+        }
+
+        log.warn("The circuit-breaker config refresh failure: {}", config);
     }
 
     @Override
@@ -79,12 +98,28 @@ public class CircuitBreakerFactory implements Neural<CircuitBreakerConfig> {
 
     @Override
     public Map<String, Map<String, Long>> collect() {
-        return null;
+        final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
+        circuitBreakers.forEach((identity, circuitBreaker) -> {
+            Map<String, Long> tempMap = circuitBreaker.collect();
+            if (!tempMap.isEmpty()) {
+                dataMap.put(identity, tempMap);
+            }
+        });
+
+        return dataMap;
     }
 
     @Override
     public Map<String, Map<String, Long>> statistics() {
-        return null;
+        final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
+        circuitBreakers.forEach((identity, circuitBreaker) -> {
+            Map<String, Long> tempMap = circuitBreaker.statistics();
+            if (!tempMap.isEmpty()) {
+                dataMap.put(identity, tempMap);
+            }
+        });
+
+        return dataMap;
     }
 
 }

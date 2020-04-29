@@ -1,9 +1,13 @@
 package cn.micro.neural.circuitbreaker.core;
 
+import cn.micro.neural.circuitbreaker.CircuitBreakerConfig;
 import cn.micro.neural.circuitbreaker.CircuitBreakerState;
+import cn.micro.neural.circuitbreaker.event.EventListener;
 import cn.neural.common.extension.SPI;
 import cn.micro.neural.storage.OriginalCall;
 import cn.micro.neural.storage.OriginalContext;
+
+import java.util.Map;
 
 /**
  * ICircuitBreaker
@@ -12,6 +16,38 @@ import cn.micro.neural.storage.OriginalContext;
  */
 @SPI("stand-alone")
 public interface ICircuitBreaker {
+
+    /**
+     * The add event listener
+     *
+     * @param eventListeners {@link EventListener}
+     */
+    void addListener(EventListener... eventListeners);
+
+    /**
+     * The refresh in-memory data.
+     *
+     * @param config {@link CircuitBreakerConfig}
+     * @return true is success
+     * @throws Exception The Exception is execute refresh LimiterConfig
+     */
+    boolean refresh(CircuitBreakerConfig config) throws Exception;
+
+    /**
+     * The collect metric(get and reset)
+     *
+     * @return key={@link CircuitBreakerConfig#identity()}, subKey=metric key
+     */
+    Map<String, Long> collect();
+
+    /**
+     * The statistics metric(get)
+     *
+     * @return key={@link CircuitBreakerConfig#identity()}, subKey=metric key
+     */
+    Map<String, Long> statistics();
+
+    // === 获取熔断状态
 
     /**
      * 获取熔断状态

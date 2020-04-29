@@ -2,11 +2,21 @@ package cn.micro.neural.circuitbreaker.core;
 
 import cn.micro.neural.circuitbreaker.CircuitBreakerConfig;
 import cn.micro.neural.circuitbreaker.CircuitBreakerState;
+import cn.micro.neural.circuitbreaker.CircuitBreakerStatistics;
+import cn.micro.neural.circuitbreaker.event.EventListener;
+import cn.micro.neural.circuitbreaker.event.EventType;
 import cn.micro.neural.circuitbreaker.exception.CircuitBreakerOpenException;
 import cn.micro.neural.storage.OriginalCall;
 import cn.micro.neural.storage.OriginalContext;
+import cn.neural.common.utils.BeanUtils;
+import cn.neural.common.utils.CloneUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * AbstractCircuitBreaker
@@ -17,10 +27,51 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
 
-    protected CircuitBreakerConfig circuitBreakerConfig;
+    private final Set<EventListener> listeners = new LinkedHashSet<>();
+    private final CircuitBreakerStatistics statistics = new CircuitBreakerStatistics();
+    protected CircuitBreakerConfig config;
 
-    public AbstractCircuitBreaker(CircuitBreakerConfig circuitBreakerConfig) {
-        this.circuitBreakerConfig = circuitBreakerConfig;
+    public AbstractCircuitBreaker(CircuitBreakerConfig config) {
+        this.config = config;
+    }
+
+    @Override
+    public void addListener(EventListener... eventListeners) {
+        Collections.addAll(listeners, eventListeners);
+    }
+
+    @Override
+    public synchronized boolean refresh(CircuitBreakerConfig config) throws Exception {
+        try {
+            log.info("Refresh the current circuit-breaker config: {}", config);
+            if (null == config || this.config.equals(config)) {
+                return false;
+            }
+
+            // Copy properties attributes after deep copy
+            BeanUtils.copyProperties(CloneUtils.clone(config), this.config);
+
+            return tryRefresh(config);
+        } catch (Exception e) {
+            this.collectEvent(EventType.REFRESH_EXCEPTION);
+            throw e;
+        }
+    }
+
+    /**
+     * The collect event
+     *
+     * @param eventType {@link EventType}
+     * @param args      attachment parameters
+     */
+    private void collectEvent(EventType eventType, Object... args) {
+        for (EventListener eventListener : listeners) {
+            try {
+                eventListener.onEvent(config, eventType, args);
+            } catch (Exception e) {
+                log.error("The collect event exception", e);
+            }
+        }
     }
 
     @Override
@@ -39,6 +90,28 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
             }
         } finally {
             OriginalContext.remove();
+        }
+    }
+
+    @Override
+    public Map<String, Long> collect() {
+        try {
+            return statistics.collectThenReset();
+        } catch (Exception e) {
+            this.collectEvent(EventType.COLLECT_EXCEPTION);
+            log.error("The limiter[{}] collect exception", config.identity(), e);
+            return Collections.emptyMap();
+        }
+    }
+
+    @Override
+    public Map<String, Long> statistics() {
+        try {
+            return statistics.getStatisticsData();
+        } catch (Exception e) {
+            this.collectEvent(EventType.STATISTICS_EXCEPTION);
+            log.error("The limiter[{}] statistics exception", config.identity(), e);
+            return Collections.emptyMap();
         }
     }
 
@@ -68,9 +141,9 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
             // Check if you should go from ‘close’ to ‘open’
             if (isCloseFailThresholdReached()) {
                 // Trigger threshold, open fuse
-                log.debug("[{}] reached fail threshold, circuit-breaker open.", circuitBreakerConfig.identity());
+                log.debug("[{}] reached fail threshold, circuit-breaker open.", config.identity());
                 open();
-                throw new CircuitBreakerOpenException(circuitBreakerConfig.identity());
+                throw new CircuitBreakerOpenException(config.identity());
             }
 
             throw t;
@@ -88,7 +161,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
     private Object processOpen(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         // Check if you should enter the half open state
         if (isOpen2HalfOpenTimeout()) {
-            log.debug("[{}] into half open", circuitBreakerConfig.identity());
+            log.debug("[{}] into half open", config.identity());
 
             // Enter half open state
             openHalf();
@@ -97,7 +170,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
             return processHalfOpen(originalContext, originalCall);
         }
 
-        throw new CircuitBreakerOpenException(circuitBreakerConfig.identity());
+        throw new CircuitBreakerOpenException(config.identity());
     }
 
     /**
@@ -133,7 +206,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
                 throw t;
             } else {
                 open();
-                throw new CircuitBreakerOpenException(circuitBreakerConfig.identity(), t);
+                throw new CircuitBreakerOpenException(config.identity(), t);
             }
         }
     }
@@ -145,11 +218,11 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
      * @return true表示需要忽略
      */
     private boolean isIgnoreException(Throwable t) {
-        if (circuitBreakerConfig.getIgnoreExceptions().size() == 0) {
+        if (config.getIgnoreExceptions().size() == 0) {
             return false;
         }
 
-        for (String exceptionClassName : circuitBreakerConfig.getIgnoreExceptions()) {
+        for (String exceptionClassName : config.getIgnoreExceptions()) {
             if (exceptionClassName.equals(t.getClass().getName())
                     || exceptionClassName.equals(t.getCause().getClass().getName())) {
                 return true;
@@ -158,6 +231,14 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
 
         return false;
     }
+
+    /**
+     * The do refresh
+     *
+     * @param config {@link CircuitBreakerConfig}
+     * @return true is success
+     */
+    protected abstract boolean tryRefresh(CircuitBreakerConfig config);
 
     /**
      * 增量增加失败次数
