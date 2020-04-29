@@ -62,22 +62,22 @@ public class CircuitBreakerFactory implements EventListener, Neural<CircuitBreak
 
     @Override
     public void onEvent(CircuitBreakerConfig config, EventType eventType, Object... args) {
-        log.info("Receive event[{}]", eventType);
+        log.info("Receive circuit-breaker[{}] event[{}]", config.identity(), eventType);
     }
 
     @Override
     public void notify(CircuitBreakerConfig config) throws Exception {
         ICircuitBreaker circuitBreaker = circuitBreakers.get(config.identity());
         if (null == circuitBreaker) {
-            log.warn("Notfound circuit-breaker, identity={}", config.identity());
+            log.warn("Notfound circuit-breaker[{}]", config.identity());
             return;
         }
         if (circuitBreaker.refresh(config)) {
-            log.info("The circuit-breaker config refresh success: {}", config);
+            log.info("Circuit-breaker[{}] config refresh success: {}", config.identity(), config);
             return;
         }
 
-        log.warn("The circuit-breaker config refresh failure: {}", config);
+        log.warn("Circuit-breaker[{}] config refresh failure: {}", config.identity(), config);
     }
 
     @Override

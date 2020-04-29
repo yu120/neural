@@ -61,23 +61,23 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
     }
 
     @Override
-    public void onEvent(LimiterConfig limiterConfig, EventType eventType, Object... args) {
-        log.info("Receive event[{}]", eventType);
+    public void onEvent(LimiterConfig config, EventType eventType, Object... args) {
+        log.info("Receive limiter[{}] event[{}]", config.identity(), eventType);
     }
 
     @Override
-    public void notify(LimiterConfig limiterConfig) throws Exception {
-        ILimiter limiter = limiters.get(limiterConfig.identity());
+    public void notify(LimiterConfig config) throws Exception {
+        ILimiter limiter = limiters.get(config.identity());
         if (null == limiter) {
-            log.warn("Notfound limiter, identity={}", limiterConfig.identity());
+            log.warn("Notfound limiter[{}]", config.identity());
             return;
         }
-        if (limiter.refresh(limiterConfig)) {
-            log.info("The limiter config refresh success: {}", limiterConfig);
+        if (limiter.refresh(config)) {
+            log.info("Limiter[{}] config refresh success: {}", config.identity(), config);
             return;
         }
 
-        log.warn("The limiter config refresh failure: {}", limiterConfig);
+        log.warn("Limiter[{}] config refresh failure: {}", config.identity(), config);
     }
 
     @Override

@@ -125,7 +125,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
      */
     private Object processClose(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         try {
-            return originalCall.call(originalContext);
+            return statistics.wrapperOriginalCall(originalContext, originalCall);
         } catch (Throwable t) {
             if (isIgnoreException(t)) {
                 // Skip ignored exceptions, do not count
@@ -183,7 +183,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
     private Object processHalfOpen(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         try {
             // try to release the request
-            Object result = originalCall.call(originalContext);
+            Object result = statistics.wrapperOriginalCall(originalContext, originalCall);
 
             // Record the number of consecutive successes in the half-open state, and failures are immediately cleared
             incrConsecutiveSuccessCounter();

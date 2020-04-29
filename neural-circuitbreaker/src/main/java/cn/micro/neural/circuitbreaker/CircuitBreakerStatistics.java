@@ -70,18 +70,6 @@ public class CircuitBreakerStatistics implements Serializable {
      * The max concurrent counter in the current time window
      */
     private final LongAccumulator maxConcurrentAccumulator = new LongAccumulator(Long::max, 0);
-    /**
-     * The total rate exceed counter in the current time window
-     */
-    private final LongAdder rateExceedCounter = new LongAdder();
-    /**
-     * The total counter exceed counter in the current time window
-     */
-    private final LongAdder counterExceedCounter = new LongAdder();
-    /**
-     * The total concurrent exceed counter in the current time window
-     */
-    private final LongAdder concurrentExceedCounter = new LongAdder();
 
     /**
      * The wrapper of original call
@@ -142,9 +130,6 @@ public class CircuitBreakerStatistics implements Serializable {
     public static final String MAX_ELAPSED_KEY = "max_elapsed";
     public static final String CONCURRENT_KEY = "concurrent";
     public static final String MAX_CONCURRENT_KEY = "max_concurrent";
-    public static final String RATE_EXCEED_KEY = "rate_exceed";
-    public static final String COUNTER_EXCEED_KEY = "counter_exceed";
-    public static final String CONCURRENT_EXCEED_KEY = "concurrent_exceed";
 
     /**
      * Collect then reset statistics
@@ -165,9 +150,6 @@ public class CircuitBreakerStatistics implements Serializable {
         long maxElapsed = maxElapsedAccumulator.getThenReset();
         long concurrent = concurrentCounter.get();
         long maxConcurrent = maxConcurrentAccumulator.getThenReset();
-        long rateExceed = rateExceedCounter.sumThenReset();
-        long counterExceed = counterExceedCounter.sumThenReset();
-        long concurrentExceed = concurrentExceedCounter.sumThenReset();
         if (request < 1) {
             return map;
         }
@@ -184,9 +166,6 @@ public class CircuitBreakerStatistics implements Serializable {
         map.put(MAX_ELAPSED_KEY, maxElapsed);
         map.put(CONCURRENT_KEY, concurrent);
         map.put(MAX_CONCURRENT_KEY, maxConcurrent);
-        map.put(RATE_EXCEED_KEY, rateExceed);
-        map.put(COUNTER_EXCEED_KEY, counterExceed);
-        map.put(CONCURRENT_EXCEED_KEY, concurrentExceed);
         return map;
     }
 
@@ -209,9 +188,6 @@ public class CircuitBreakerStatistics implements Serializable {
         map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.get());
         map.put(CONCURRENT_KEY, concurrentCounter.get());
         map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.get());
-        map.put(RATE_EXCEED_KEY, rateExceedCounter.sum());
-        map.put(COUNTER_EXCEED_KEY, counterExceedCounter.sum());
-        map.put(CONCURRENT_EXCEED_KEY, concurrentExceedCounter.sum());
         return map;
     }
 
