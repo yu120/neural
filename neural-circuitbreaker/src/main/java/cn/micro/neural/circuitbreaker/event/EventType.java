@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * The Limiter Type.
+ * The circuit-breaker event type.
  *
  * @author lry
  **/
@@ -13,38 +13,20 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum EventType {
 
-    // === rate limiter
+    // === circuit-breaker state
 
     /**
-     * The rate exceed
+     * The circuit-breaker closed
      */
-    RATE_EXCEED(CircuitBreakerFactory.IDENTITY, "The rate exceed"),
+    CIRCUIT_BREAKER_CLOSED(CircuitBreakerFactory.IDENTITY, "The circuit-breaker closed"),
     /**
-     * The rate exception
+     * The circuit-breaker half-open
      */
-    RATE_EXCEPTION(CircuitBreakerFactory.IDENTITY, "The rate exception"),
-
-    // === concurrent limiter
-
+    CIRCUIT_BREAKER_HALF_OPEN(CircuitBreakerFactory.IDENTITY, "The circuit-breaker half-open"),
     /**
-     * The concurrent exceed
+     * The circuit-breaker open
      */
-    CONCURRENT_EXCEED(CircuitBreakerFactory.IDENTITY, "The concurrent exceed"),
-    /**
-     * The concurrent exception
-     */
-    CONCURRENT_EXCEPTION(CircuitBreakerFactory.IDENTITY, "The concurrent exception"),
-
-    // === counter limiter
-
-    /**
-     * The counter exceed
-     */
-    COUNTER_EXCEED(CircuitBreakerFactory.IDENTITY, "The counter exceed"),
-    /**
-     * The counter exception
-     */
-    COUNTER_EXCEPTION(CircuitBreakerFactory.IDENTITY, "The counter exception"),
+    CIRCUIT_BREAKER_OPEN(CircuitBreakerFactory.IDENTITY, "The circuit-breaker open"),
 
     // === other
 

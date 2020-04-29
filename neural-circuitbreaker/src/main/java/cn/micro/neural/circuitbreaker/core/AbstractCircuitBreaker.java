@@ -125,10 +125,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
      */
     private Object processClose(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
         try {
-            Object result = originalCall.call(originalContext);
-            // Reset the state and data to prevent accidents
-            close();
-            return result;
+            return originalCall.call(originalContext);
         } catch (Throwable t) {
             if (isIgnoreException(t)) {
                 // Skip ignored exceptions, do not count
@@ -143,6 +140,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
                 // Trigger threshold, open fuse
                 log.debug("[{}] reached fail threshold, circuit-breaker open.", config.identity());
                 open();
+                this.collectEvent(EventType.CIRCUIT_BREAKER_OPEN);
                 throw new CircuitBreakerOpenException(config.identity());
             }
 
@@ -165,6 +163,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
 
             // Enter half open state
             openHalf();
+            this.collectEvent(EventType.CIRCUIT_BREAKER_HALF_OPEN);
 
             // process half open
             return processHalfOpen(originalContext, originalCall);
@@ -193,6 +192,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
             if (isConsecutiveSuccessThresholdReached()) {
                 // If the call is successful, it will enter the close state
                 close();
+                this.collectEvent(EventType.CIRCUIT_BREAKER_CLOSED);
             }
 
             return result;
@@ -206,6 +206,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
                 throw t;
             } else {
                 open();
+                this.collectEvent(EventType.CIRCUIT_BREAKER_OPEN);
                 throw new CircuitBreakerOpenException(config.identity(), t);
             }
         }
