@@ -20,7 +20,7 @@ public class LimiterConfig implements Serializable {
 
     private static final long serialVersionUID = -2617753757420740743L;
 
-    public static final String DELIMITER = ":";
+    public static String DELIMITER = ":";
     public static final String DEFAULT_NODE = "limiter";
     public static final String DEFAULT_APPLICATION = "micro";
     public static final String DEFAULT_GROUP = "neural";

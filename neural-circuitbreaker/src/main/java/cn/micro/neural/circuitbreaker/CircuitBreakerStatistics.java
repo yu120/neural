@@ -117,23 +117,18 @@ public class CircuitBreakerStatistics implements Serializable {
     public Map<String, Long> collectThenReset() {
         final Map<String, Long> map = new LinkedHashMap<>();
         // reset number
-        long success = successCounter.sumThenReset();
         long request = requestCounter.sumThenReset();
-        long failure = failureCounter.sumThenReset();
-        long timeout = timeoutCounter.sumThenReset();
-        long rejected = rejectedCounter.sumThenReset();
-        long fallback = fallbackCounter.sumThenReset();
         if (request < 1) {
             return map;
         }
 
         // statistics number
-        map.put(SUCCESS_KEY, success);
         map.put(REQUEST_KEY, request);
-        map.put(FAILURE_KEY, failure);
-        map.put(TIMEOUT_KEY, timeout);
-        map.put(REJECTED_KEY, rejected);
-        map.put(FALLBACK_KEY, fallback);
+        map.put(SUCCESS_KEY, successCounter.sumThenReset());
+        map.put(FAILURE_KEY, failureCounter.sumThenReset());
+        map.put(TIMEOUT_KEY, timeoutCounter.sumThenReset());
+        map.put(REJECTED_KEY, rejectedCounter.sumThenReset());
+        map.put(FALLBACK_KEY, fallbackCounter.sumThenReset());
         return map;
     }
 

@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 @Data
 public class CircuitBreakerConfig implements Serializable {
 
-    public static final String DELIMITER = ":";
+    public static String DELIMITER = ":";
     public static final String DEFAULT_NODE = "circuit_breaker";
     public static final String DEFAULT_APPLICATION = "micro";
     public static final String DEFAULT_GROUP = "neural";

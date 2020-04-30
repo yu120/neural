@@ -213,19 +213,6 @@ public class LimiterStatistics implements Serializable {
         // reset number
         long success = successCounter.sumThenReset();
         long request = requestCounter.sumThenReset();
-        long failure = failureCounter.sumThenReset();
-        long timeout = timeoutCounter.sumThenReset();
-        long rejected = rejectedCounter.sumThenReset();
-        long fallback = fallbackCounter.sumThenReset();
-
-        long avgElapsed = success < 1 ? 0 : (totalElapsedAccumulator.getThenReset() / success);
-        long maxElapsed = maxElapsedAccumulator.getThenReset();
-        long concurrent = concurrentCounter.get();
-        long maxConcurrent = maxConcurrentAccumulator.getThenReset();
-
-        long rateExceed = rateExceedCounter.sumThenReset();
-        long counterExceed = counterExceedCounter.sumThenReset();
-        long concurrentExceed = concurrentExceedCounter.sumThenReset();
         if (request < 1) {
             return map;
         }
@@ -233,19 +220,19 @@ public class LimiterStatistics implements Serializable {
         // statistics number
         map.put(SUCCESS_KEY, success);
         map.put(REQUEST_KEY, request);
-        map.put(FAILURE_KEY, failure);
-        map.put(TIMEOUT_KEY, timeout);
-        map.put(REJECTED_KEY, rejected);
-        map.put(FALLBACK_KEY, fallback);
+        map.put(FAILURE_KEY, failureCounter.sumThenReset());
+        map.put(TIMEOUT_KEY, timeoutCounter.sumThenReset());
+        map.put(REJECTED_KEY, rejectedCounter.sumThenReset());
+        map.put(FALLBACK_KEY, fallbackCounter.sumThenReset());
 
-        map.put(AVG_ELAPSED_KEY, avgElapsed);
-        map.put(MAX_ELAPSED_KEY, maxElapsed);
-        map.put(CONCURRENT_KEY, concurrent);
-        map.put(MAX_CONCURRENT_KEY, maxConcurrent);
+        map.put(AVG_ELAPSED_KEY, success < 1 ? 0 : (totalElapsedAccumulator.getThenReset() / success));
+        map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.getThenReset());
+        map.put(CONCURRENT_KEY, concurrentCounter.get());
+        map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.getThenReset());
 
-        map.put(RATE_EXCEED_KEY, rateExceed);
-        map.put(COUNTER_EXCEED_KEY, counterExceed);
-        map.put(CONCURRENT_EXCEED_KEY, concurrentExceed);
+        map.put(RATE_EXCEED_KEY, rateExceedCounter.sumThenReset());
+        map.put(COUNTER_EXCEED_KEY, counterExceedCounter.sumThenReset());
+        map.put(CONCURRENT_EXCEED_KEY, concurrentExceedCounter.sumThenReset());
         return map;
     }
 
