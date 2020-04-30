@@ -38,41 +38,41 @@ public abstract class AbstractCallLimiter implements ILimiter {
     }
 
     @Override
-    public synchronized boolean refresh(LimiterConfig limiterConfig) throws Exception {
+    public synchronized boolean refresh(LimiterConfig config) throws Exception {
         try {
-            log.info("Refresh the current limiter config: {}", limiterConfig);
-            if (null == limiterConfig || this.config.equals(limiterConfig)) {
+            log.info("Refresh the current limiter config: {}", config);
+            if (null == config || this.config.equals(config)) {
                 return false;
             }
 
             // check concurrent limiter config
-            LimiterConfig.ConcurrentLimiterConfig concurrent = limiterConfig.getConcurrent();
+            LimiterConfig.ConcurrentLimiterConfig concurrent = config.getConcurrent();
             if (concurrent.getPermitUnit() < 1 || concurrent.getMaxPermit() < 1
                     || concurrent.getMaxPermit() <= concurrent.getPermitUnit()) {
-                log.warn("Illegal concurrent limiter config: {}", limiterConfig);
+                log.warn("Illegal concurrent limiter config: {}", config);
                 return false;
             }
             // check rate limiter config
-            LimiterConfig.RateLimiterConfig rate = limiterConfig.getRate();
+            LimiterConfig.RateLimiterConfig rate = config.getRate();
             if (rate.getRateUnit() < 1 || rate.getMaxRate() < 1
                     || rate.getMaxRate() <= rate.getRateUnit()) {
-                log.warn("Illegal rate limiter config: {}", limiterConfig);
+                log.warn("Illegal rate limiter config: {}", config);
                 return false;
             }
             // check counter limiter config
-            LimiterConfig.CounterLimiterConfig counter = limiterConfig.getCounter();
+            LimiterConfig.CounterLimiterConfig counter = config.getCounter();
             if (counter.getCountUnit() < 1 || counter.getMaxCount() < 1
                     || counter.getMaxCount() <= counter.getCountUnit()) {
-                log.warn("Illegal counter limiter config: {}", limiterConfig);
+                log.warn("Illegal counter limiter config: {}", config);
                 return false;
             }
 
             // Copy properties attributes after deep copy
-            BeanUtils.copyProperties(CloneUtils.clone(limiterConfig), this.config);
+            BeanUtils.copyProperties(CloneUtils.clone(config), this.config);
 
-            return tryRefresh(limiterConfig);
+            return tryRefresh(config);
         } catch (Exception e) {
-            this.collectEvent(EventType.REFRESH_EXCEPTION);
+            this.collectEvent(EventType.REFRESH_EXCEPTION, config);
             throw e;
         }
     }

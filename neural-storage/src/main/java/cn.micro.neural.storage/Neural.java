@@ -43,7 +43,7 @@ public interface Neural<C> {
      * @return invoke return object
      * @throws Throwable throw exception
      */
-    default Object originalCall(String identity, OriginalCall originalCall) throws Throwable{
+    default Object originalCall(final String identity, final OriginalCall originalCall) throws Throwable {
         return originalCall(identity, originalCall, new OriginalContext());
     }
 
@@ -56,7 +56,7 @@ public interface Neural<C> {
      * @return invoke return object
      * @throws Throwable throw exception
      */
-    Object originalCall(String identity, OriginalCall originalCall, final OriginalContext originalContext) throws Throwable;
+    Object originalCall(final String identity, final OriginalCall originalCall, final OriginalContext originalContext) throws Throwable;
 
     /**
      * The collect of get and reset statistics data

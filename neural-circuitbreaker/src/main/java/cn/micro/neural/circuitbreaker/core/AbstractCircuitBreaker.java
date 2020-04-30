@@ -53,24 +53,8 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
 
             return tryRefresh(config);
         } catch (Exception e) {
-            this.collectEvent(EventType.REFRESH_EXCEPTION);
+            this.collectEvent(EventType.REFRESH_EXCEPTION, config);
             throw e;
-        }
-    }
-
-    /**
-     * The collect event
-     *
-     * @param eventType {@link EventType}
-     * @param args      attachment parameters
-     */
-    private void collectEvent(EventType eventType, Object... args) {
-        for (EventListener eventListener : listeners) {
-            try {
-                eventListener.onEvent(config, eventType, args);
-            } catch (Exception e) {
-                log.error("The collect event exception", e);
-            }
         }
     }
 
@@ -101,6 +85,22 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
             this.collectEvent(EventType.COLLECT_EXCEPTION);
             log.error("The limiter[{}] collect exception", config.identity(), e);
             return Collections.emptyMap();
+        }
+    }
+
+    /**
+     * The collect event
+     *
+     * @param eventType {@link EventType}
+     * @param args      attachment parameters
+     */
+    private void collectEvent(EventType eventType, Object... args) {
+        for (EventListener eventListener : listeners) {
+            try {
+                eventListener.onEvent(config, eventType, args);
+            } catch (Exception e) {
+                log.error("The collect event exception", e);
+            }
         }
     }
 

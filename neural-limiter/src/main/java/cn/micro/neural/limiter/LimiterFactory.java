@@ -43,19 +43,18 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
     }
 
     @Override
-    public void addConfig(LimiterConfig limiterConfig) {
-        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(limiterConfig.getMode().getValue());
+    public void addConfig(LimiterConfig config) {
+        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(config.getMode().getValue());
         limiter.addListener(this);
 
-        limiters.put(limiterConfig.identity(), limiter);
-        rules.computeIfAbsent(limiterConfig.getGroup(),
-                k -> new ConcurrentHashMap<>()).put(limiterConfig.getTag(), limiterConfig);
+        limiters.put(config.identity(), limiter);
+        rules.computeIfAbsent(config.getGroup(), k -> new ConcurrentHashMap<>()).put(config.getTag(), config);
     }
 
     @Override
-    public void checkAndAddConfig(LimiterConfig limiterConfig) {
-        if (!limiters.containsKey(limiterConfig.identity())) {
-            addConfig(limiterConfig);
+    public void checkAndAddConfig(LimiterConfig config) {
+        if (!limiters.containsKey(config.identity())) {
+            addConfig(config);
         }
     }
 

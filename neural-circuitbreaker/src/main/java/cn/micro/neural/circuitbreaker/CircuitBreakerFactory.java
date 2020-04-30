@@ -48,8 +48,7 @@ public class CircuitBreakerFactory implements EventListener, Neural<CircuitBreak
         circuitBreaker.addListener(this);
 
         circuitBreakers.put(config.identity(), circuitBreaker);
-        rules.computeIfAbsent(config.getGroup(),
-                k -> new ConcurrentHashMap<>()).put(config.getTag(), config);
+        rules.computeIfAbsent(config.getGroup(), k -> new ConcurrentHashMap<>()).put(config.getTag(), config);
     }
 
     @Override
