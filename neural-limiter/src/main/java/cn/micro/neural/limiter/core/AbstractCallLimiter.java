@@ -106,7 +106,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
         switch (tryAcquireConcurrent()) {
             case FAILURE:
                 // try acquire concurrent exceed
-                this.collectEvent(EventType.CONCURRENT_EXCEED, statistics.getStatisticsData());
+                this.collectEvent(EventType.CONCURRENT_EXCEED);
                 return statistics.doStrategyProcess(originalContext, EventType.CONCURRENT_EXCEED,
                         config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
@@ -144,7 +144,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
         switch (tryAcquireRate()) {
             case FAILURE:
                 // try acquire rate exceed
-                this.collectEvent(EventType.RATE_EXCEED, statistics.getStatisticsData());
+                this.collectEvent(EventType.RATE_EXCEED);
                 return statistics.doStrategyProcess(originalContext, EventType.RATE_EXCEED,
                         config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
@@ -177,7 +177,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
         switch (tryAcquireCounter()) {
             case FAILURE:
                 // try acquire counter exceed
-                this.collectEvent(EventType.COUNTER_EXCEED, statistics.getStatisticsData());
+                this.collectEvent(EventType.COUNTER_EXCEED);
                 return statistics.doStrategyProcess(originalContext, EventType.COUNTER_EXCEED,
                         config.getConcurrent().getStrategy(), originalCall);
             case SUCCESS:
@@ -200,17 +200,6 @@ public abstract class AbstractCallLimiter implements ILimiter {
         } catch (Exception e) {
             this.collectEvent(EventType.COLLECT_EXCEPTION);
             log.error("The limiter[{}] collect exception", config.identity(), e);
-            return Collections.emptyMap();
-        }
-    }
-
-    @Override
-    public Map<String, Long> statistics() {
-        try {
-            return statistics.getStatisticsData();
-        } catch (Exception e) {
-            this.collectEvent(EventType.STATISTICS_EXCEPTION);
-            log.error("The limiter[{}] statistics exception", config.identity(), e);
             return Collections.emptyMap();
         }
     }

@@ -137,21 +137,4 @@ public class CircuitBreakerStatistics implements Serializable {
         return map;
     }
 
-    /**
-     * Statistical data
-     *
-     * @return statistics data map
-     */
-    public Map<String, Long> getStatisticsData() {
-        final Map<String, Long> map = new LinkedHashMap<>();
-        long success = successCounter.sum();
-        map.put(SUCCESS_KEY, success);
-        map.put(REQUEST_KEY, requestCounter.sum());
-        map.put(FAILURE_KEY, failureCounter.sum());
-        map.put(TIMEOUT_KEY, timeoutCounter.sum());
-        map.put(REJECTED_KEY, rejectedCounter.sum());
-        map.put(FALLBACK_KEY, fallbackCounter.sum());
-        return map;
-    }
-
 }

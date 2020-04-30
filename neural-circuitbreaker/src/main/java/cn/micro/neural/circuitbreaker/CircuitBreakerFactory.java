@@ -33,7 +33,7 @@ public class CircuitBreakerFactory implements EventListener, Neural<CircuitBreak
      */
     private final ConcurrentMap<String, ICircuitBreaker> circuitBreakers = new ConcurrentHashMap<>();
     /**
-     * Map<key=group, subKey=tag, value=CircuitBreakerConfig>
+     * Map<key=CircuitBreakerConfig#getGroup(), subKey=CircuitBreakerConfig#getTag(), value=CircuitBreakerConfig>
      */
     private final ConcurrentMap<String, ConcurrentMap<String, CircuitBreakerConfig>> rules = new ConcurrentHashMap<>();
 
@@ -44,8 +44,7 @@ public class CircuitBreakerFactory implements EventListener, Neural<CircuitBreak
 
     @Override
     public void addConfig(CircuitBreakerConfig config) {
-        CircuitBreakerConfig.Mode mode = config.getMode();
-        ICircuitBreaker circuitBreaker = ExtensionLoader.getLoader(ICircuitBreaker.class).getExtension(mode.getValue());
+        ICircuitBreaker circuitBreaker = ExtensionLoader.getLoader(ICircuitBreaker.class).getExtension(config.getMode().getValue());
         circuitBreaker.addListener(this);
 
         circuitBreakers.put(config.identity(), circuitBreaker);
@@ -84,7 +83,6 @@ public class CircuitBreakerFactory implements EventListener, Neural<CircuitBreak
     public Object originalCall(String identity, OriginalCall originalCall, OriginalContext originalContext) throws Throwable {
         try {
             OriginalContext.set(originalContext);
-            // The check circuit-breaker object
             if (null == identity || !circuitBreakers.containsKey(identity)) {
                 return originalCall.call(originalContext);
             }
@@ -99,25 +97,12 @@ public class CircuitBreakerFactory implements EventListener, Neural<CircuitBreak
     @Override
     public Map<String, Map<String, Long>> collect() {
         final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
-        circuitBreakers.forEach((identity, circuitBreaker) -> {
-            Map<String, Long> tempMap = circuitBreaker.collect();
+        for (Map.Entry<String, ICircuitBreaker> entry : circuitBreakers.entrySet()) {
+            Map<String, Long> tempMap = entry.getValue().collect();
             if (!tempMap.isEmpty()) {
-                dataMap.put(identity, tempMap);
+                dataMap.put(entry.getKey(), tempMap);
             }
-        });
-
-        return dataMap;
-    }
-
-    @Override
-    public Map<String, Map<String, Long>> statistics() {
-        final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
-        circuitBreakers.forEach((identity, circuitBreaker) -> {
-            Map<String, Long> tempMap = circuitBreaker.statistics();
-            if (!tempMap.isEmpty()) {
-                dataMap.put(identity, tempMap);
-            }
-        });
+        }
 
         return dataMap;
     }

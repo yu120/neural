@@ -33,7 +33,7 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
      */
     private final ConcurrentMap<String, ILimiter> limiters = new ConcurrentHashMap<>();
     /**
-     * Map<key=group, subKey=tag, value=LimiterConfig>
+     * Map<key=LimiterConfig#getGroup(), subKey=LimiterConfig#getTag(), value=LimiterConfig>
      */
     private final ConcurrentMap<String, ConcurrentMap<String, LimiterConfig>> rules = new ConcurrentHashMap<>();
 
@@ -44,8 +44,7 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
 
     @Override
     public void addConfig(LimiterConfig limiterConfig) {
-        LimiterConfig.Mode mode = limiterConfig.getMode();
-        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(mode.getValue());
+        ILimiter limiter = ExtensionLoader.getLoader(ILimiter.class).getExtension(limiterConfig.getMode().getValue());
         limiter.addListener(this);
 
         limiters.put(limiterConfig.identity(), limiter);
@@ -84,7 +83,6 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
     public Object originalCall(String identity, OriginalCall originalCall, final OriginalContext originalContext) throws Throwable {
         try {
             OriginalContext.set(originalContext);
-            // The check limiter object
             if (null == identity || !limiters.containsKey(identity)) {
                 return originalCall.call(originalContext);
             }
@@ -99,25 +97,12 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
     @Override
     public Map<String, Map<String, Long>> collect() {
         final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
-        limiters.forEach((identity, limiter) -> {
-            Map<String, Long> tempMap = limiter.collect();
+        for (Map.Entry<String, ILimiter> entry : limiters.entrySet()) {
+            Map<String, Long> tempMap = entry.getValue().collect();
             if (!tempMap.isEmpty()) {
-                dataMap.put(identity, tempMap);
+                dataMap.put(entry.getKey(), tempMap);
             }
-        });
-
-        return dataMap;
-    }
-
-    @Override
-    public Map<String, Map<String, Long>> statistics() {
-        final Map<String, Map<String, Long>> dataMap = new LinkedHashMap<>();
-        limiters.forEach((identity, limiter) -> {
-            Map<String, Long> tempMap = limiter.statistics();
-            if (!tempMap.isEmpty()) {
-                dataMap.put(identity, tempMap);
-            }
-        });
+        }
 
         return dataMap;
     }

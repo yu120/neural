@@ -56,11 +56,4 @@ public interface ILimiter {
      */
     Map<String, Long> collect();
 
-    /**
-     * The statistics metric(get)
-     *
-     * @return key={@link LimiterConfig#identity()}, subKey=metric key
-     */
-    Map<String, Long> statistics();
-
 }

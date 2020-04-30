@@ -249,30 +249,4 @@ public class LimiterStatistics implements Serializable {
         return map;
     }
 
-    /**
-     * Statistical data
-     *
-     * @return statistics data map
-     */
-    public Map<String, Long> getStatisticsData() {
-        final Map<String, Long> map = new LinkedHashMap<>();
-        long success = successCounter.sum();
-        map.put(SUCCESS_KEY, success);
-        map.put(REQUEST_KEY, requestCounter.sum());
-        map.put(FAILURE_KEY, failureCounter.sum());
-        map.put(TIMEOUT_KEY, timeoutCounter.sum());
-        map.put(REJECTED_KEY, rejectedCounter.sum());
-        map.put(FALLBACK_KEY, fallbackCounter.sum());
-
-        map.put(AVG_ELAPSED_KEY, success < 1 ? 0 : (totalElapsedAccumulator.get() / success));
-        map.put(MAX_ELAPSED_KEY, maxElapsedAccumulator.get());
-        map.put(CONCURRENT_KEY, concurrentCounter.get());
-        map.put(MAX_CONCURRENT_KEY, maxConcurrentAccumulator.get());
-
-        map.put(RATE_EXCEED_KEY, rateExceedCounter.sum());
-        map.put(COUNTER_EXCEED_KEY, counterExceedCounter.sum());
-        map.put(CONCURRENT_EXCEED_KEY, concurrentExceedCounter.sum());
-        return map;
-    }
-
 }

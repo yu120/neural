@@ -65,11 +65,4 @@ public interface Neural<C> {
      */
     Map<String, Map<String, Long>> collect();
 
-    /**
-     * The get statistics data
-     *
-     * @return statistics data
-     */
-    Map<String, Map<String, Long>> statistics();
-
 }

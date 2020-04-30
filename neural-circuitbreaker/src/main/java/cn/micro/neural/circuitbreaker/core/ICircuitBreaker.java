@@ -40,13 +40,6 @@ public interface ICircuitBreaker {
      */
     Map<String, Long> collect();
 
-    /**
-     * The statistics metric(get)
-     *
-     * @return key={@link CircuitBreakerConfig#identity()}, subKey=metric key
-     */
-    Map<String, Long> statistics();
-
     // === 获取熔断状态
 
     /**

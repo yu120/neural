@@ -104,17 +104,6 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
         }
     }
 
-    @Override
-    public Map<String, Long> statistics() {
-        try {
-            return statistics.getStatisticsData();
-        } catch (Exception e) {
-            this.collectEvent(EventType.STATISTICS_EXCEPTION);
-            log.error("The limiter[{}] statistics exception", config.identity(), e);
-            return Collections.emptyMap();
-        }
-    }
-
     /**
      * Close state processing
      *
