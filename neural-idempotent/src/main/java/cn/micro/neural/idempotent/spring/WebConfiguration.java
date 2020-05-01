@@ -1,4 +1,4 @@
-package cn.micro.neural.idempotent;
+package cn.micro.neural.idempotent.spring;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;

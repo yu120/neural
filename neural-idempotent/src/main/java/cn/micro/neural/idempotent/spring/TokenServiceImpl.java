@@ -1,4 +1,4 @@
-package cn.micro.neural.idempotent;
+package cn.micro.neural.idempotent.spring;
 
 import cn.micro.neural.storage.FactoryStorage;
 import org.springframework.stereotype.Service;

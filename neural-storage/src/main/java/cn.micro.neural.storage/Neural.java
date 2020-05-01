@@ -2,6 +2,12 @@ package cn.micro.neural.storage;
 
 import java.util.Map;
 
+/**
+ * Neural
+ *
+ * @param <C>
+ * @author lry
+ */
 public interface Neural<C> {
 
     /**
@@ -61,7 +67,7 @@ public interface Neural<C> {
     /**
      * The collect of get and reset statistics data
      *
-     * @return statistics data
+     * @return key=identity(), subKey=metric key, value=metric value
      */
     Map<String, Map<String, Long>> collect();
 

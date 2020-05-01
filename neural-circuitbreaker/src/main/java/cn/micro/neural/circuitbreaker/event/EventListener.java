@@ -12,9 +12,9 @@ public interface EventListener {
     /**
      * The notify event
      *
-     * @param config {@link CircuitBreakerConfig}
-     * @param eventType     {@link EventType}
-     * @param args          attachment parameters
+     * @param config    configuration
+     * @param eventType event type
+     * @param args      attachment parameters
      */
     void onEvent(CircuitBreakerConfig config, EventType eventType, Object... args);
 

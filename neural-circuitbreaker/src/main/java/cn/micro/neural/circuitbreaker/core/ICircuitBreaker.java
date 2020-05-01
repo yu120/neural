@@ -20,14 +20,14 @@ public interface ICircuitBreaker {
     /**
      * The add event listener
      *
-     * @param eventListeners {@link EventListener}
+     * @param eventListeners event listeners
      */
     void addListener(EventListener... eventListeners);
 
     /**
      * The refresh in-memory data.
      *
-     * @param config {@link CircuitBreakerConfig}
+     * @param config configuration
      * @return true is success
      * @throws Exception The Exception is execute refresh LimiterConfig
      */
@@ -36,7 +36,7 @@ public interface ICircuitBreaker {
     /**
      * The collect metric(get and reset)
      *
-     * @return key={@link CircuitBreakerConfig#identity()}, subKey=metric key
+     * @return key=metric key, value=metric value
      */
     Map<String, Long> collect();
 

@@ -37,18 +37,12 @@ public class StandAloneCircuitBreaker extends AbstractCircuitBreaker {
     /**
      * 开始时间
      */
-    private AtomicLong failStartTime;
+    private AtomicLong failStartTime = new AtomicLong(System.currentTimeMillis());
     /**
      * 当前失败计数器
      */
-    private AtomicLong failCounter;
+    private AtomicLong failCounter = new AtomicLong(0);
 
-
-    public StandAloneCircuitBreaker(CircuitBreakerConfig circuitBreakerConfig) {
-        super(circuitBreakerConfig);
-        this.failStartTime = new AtomicLong(System.currentTimeMillis());
-        this.failCounter = new AtomicLong(0);
-    }
 
     @Override
     protected boolean tryRefresh(CircuitBreakerConfig config) {

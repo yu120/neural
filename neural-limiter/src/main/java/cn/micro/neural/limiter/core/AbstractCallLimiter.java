@@ -41,7 +41,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
     public synchronized boolean refresh(LimiterConfig config) throws Exception {
         try {
             log.info("Refresh the current limiter config: {}", config);
-            if (null == config || this.config.equals(config)) {
+            if (null == config || config.equals(this.config)) {
                 return false;
             }
 
@@ -78,7 +78,7 @@ public abstract class AbstractCallLimiter implements ILimiter {
     }
 
     @Override
-    public Object wrapperCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable {
+    public Object wrapperCall(final OriginalContext originalContext, final OriginalCall originalCall) throws Throwable {
         // the don't need limiting
         if (null == config || LimiterConfig.Switch.OFF == config.getEnable()) {
             return originalCall.call(originalContext);
@@ -223,10 +223,10 @@ public abstract class AbstractCallLimiter implements ILimiter {
     /**
      * The do refresh
      *
-     * @param limiterConfig {@link LimiterConfig}
+     * @param config configuration
      * @return true is success
      */
-    protected abstract boolean tryRefresh(LimiterConfig limiterConfig);
+    protected abstract boolean tryRefresh(LimiterConfig config);
 
     /**
      * The try acquire and increment of concurrent limiter.

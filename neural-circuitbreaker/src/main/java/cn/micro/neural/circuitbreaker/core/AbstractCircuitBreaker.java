@@ -31,10 +31,6 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
     private final CircuitBreakerStatistics statistics = new CircuitBreakerStatistics();
     protected CircuitBreakerConfig config;
 
-    public AbstractCircuitBreaker(CircuitBreakerConfig config) {
-        this.config = config;
-    }
-
     @Override
     public void addListener(EventListener... eventListeners) {
         Collections.addAll(listeners, eventListeners);
@@ -44,7 +40,7 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
     public synchronized boolean refresh(CircuitBreakerConfig config) throws Exception {
         try {
             log.info("Refresh the current circuit-breaker config: {}", config);
-            if (null == config || this.config.equals(config)) {
+            if (null == config || config.equals(this.config)) {
                 return false;
             }
 

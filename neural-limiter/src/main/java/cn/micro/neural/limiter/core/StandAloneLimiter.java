@@ -39,21 +39,21 @@ public class StandAloneLimiter extends AbstractCallLimiter {
     private LoadingCache<Long, AtomicLong> counter;
 
     @Override
-    protected boolean tryRefresh(LimiterConfig limiterConfig) {
+    protected boolean tryRefresh(LimiterConfig config) {
         // rate limiter
-        this.rateLimiter = AdjustableRateLimiter.create(limiterConfig.getRate().getMaxRate());
+        this.rateLimiter = AdjustableRateLimiter.create(config.getRate().getMaxRate());
         // concurrent limiter
-        this.semaphore = new AdjustableSemaphore(limiterConfig.getConcurrent().getMaxPermit(), true);
+        this.semaphore = new AdjustableSemaphore(config.getConcurrent().getMaxPermit(), true);
         // counter limiter
         // request limiter
         CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-        cacheBuilder.expireAfterWrite(limiterConfig.getCounter().getTimeout(), TimeUnit.MILLISECONDS);
+        cacheBuilder.expireAfterWrite(config.getCounter().getTimeout(), TimeUnit.MILLISECONDS);
         this.counter = cacheBuilder.build(CacheLoader.from(() -> new AtomicLong(0)));
 
         // the refresh rateLimiter
-        rateLimiter.setRate(limiterConfig.getRate().getRateUnit());
+        rateLimiter.setRate(config.getRate().getRateUnit());
         // the refresh semaphore
-        semaphore.setMaxPermits(limiterConfig.getConcurrent().getMaxPermit());
+        semaphore.setMaxPermits(config.getConcurrent().getMaxPermit());
         return true;
     }
 

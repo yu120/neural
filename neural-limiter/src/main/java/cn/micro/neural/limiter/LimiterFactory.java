@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * The Limiter.
+ * LimiterFactory
  *
  * @author lry
  **/
@@ -29,7 +29,7 @@ public class LimiterFactory implements EventListener, Neural<LimiterConfig> {
     public static final String IDENTITY = "limiter";
 
     /**
-     * Map<key=ILimiter#identity(), ILimiter>
+     * Map<key=IdempotentConfig#identity(), ILimiter>
      */
     private final ConcurrentMap<String, ILimiter> limiters = new ConcurrentHashMap<>();
     /**

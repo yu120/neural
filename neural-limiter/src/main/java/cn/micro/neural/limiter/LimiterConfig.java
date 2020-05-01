@@ -84,12 +84,9 @@ public class LimiterConfig implements Serializable {
     private ConcurrentLimiterConfig concurrent = new ConcurrentLimiterConfig();
 
     /**
-     * Config identity key
+     * Get config identity key
      *
-     * @return identity = {@link LimiterConfig#getNode()} + {@link LimiterConfig#DELIMITER}
-     * + {@link LimiterConfig#getApplication()} + {@link LimiterConfig#DELIMITER}
-     * + {@link LimiterConfig#getGroup()} + {@link LimiterConfig#DELIMITER}
-     * + {@link LimiterConfig#getTag()}
+     * @return config identity key
      */
     public String identity() {
         if (Stream.of(node, application, group, tag).anyMatch(s -> s.contains(DELIMITER))) {

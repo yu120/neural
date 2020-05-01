@@ -28,7 +28,7 @@ public class ClusterLimiter extends AbstractCallLimiter {
     private static String RATE_SCRIPT = StreamUtils.loadScript("rate_limiter.lua");
 
     @Override
-    protected boolean tryRefresh(LimiterConfig limiterConfig) {
+    protected boolean tryRefresh(LimiterConfig config) {
         return true;
     }
 

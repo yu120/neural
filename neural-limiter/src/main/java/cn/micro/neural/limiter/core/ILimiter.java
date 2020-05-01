@@ -47,12 +47,12 @@ public interface ILimiter {
      * @return The object of OriginalCall
      * @throws Throwable The Exception is execute doOriginalCall
      */
-    Object wrapperCall(OriginalContext originalContext, OriginalCall originalCall) throws Throwable;
+    Object wrapperCall(final OriginalContext originalContext, final OriginalCall originalCall) throws Throwable;
 
     /**
      * The collect metric(get and reset)
      *
-     * @return key={@link LimiterConfig#identity()}, subKey=metric key
+     * @return key=metric key, value=metric value
      */
     Map<String, Long> collect();
 

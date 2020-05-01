@@ -1,4 +1,4 @@
-package cn.micro.neural.idempotent;
+package cn.micro.neural.idempotent.spring;
 
 import java.lang.annotation.*;
 
