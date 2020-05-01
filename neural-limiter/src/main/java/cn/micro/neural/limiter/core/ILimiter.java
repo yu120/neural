@@ -19,7 +19,7 @@ public interface ILimiter {
     /**
      * The get limiter config
      *
-     * @return {@link LimiterConfig}
+     * @return configuration
      */
     LimiterConfig getConfig();
 
