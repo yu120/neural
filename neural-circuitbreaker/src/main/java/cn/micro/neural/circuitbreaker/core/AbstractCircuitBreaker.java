@@ -204,15 +204,21 @@ public abstract class AbstractCircuitBreaker implements ICircuitBreaker {
      * @return true表示需要忽略
      */
     private boolean isIgnoreException(Throwable t) {
-        if (config.getIgnoreExceptions().size() == 0) {
-            return false;
-        }
-
-        for (String exceptionClassName : config.getIgnoreExceptions()) {
-            if (exceptionClassName.equals(t.getClass().getName())
-                    || exceptionClassName.equals(t.getCause().getClass().getName())) {
+        Throwable cause = t.getCause();
+        if (config.getExcludeExceptions().size() > 0) {
+            if (config.getExcludeExceptions().contains(t.getClass().getName())) {
                 return true;
             }
+            if (cause != null && config.getExcludeExceptions().contains(cause.getClass().getName())) {
+                return true;
+            }
+        }
+        if (config.getIncludeExceptions().size() > 0) {
+            if (!config.getIncludeExceptions().contains(t.getClass().getName())) {
+                return true;
+            }
+
+            return cause != null && !config.getIncludeExceptions().contains(cause.getClass().getName());
         }
 
         return false;

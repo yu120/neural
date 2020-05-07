@@ -89,9 +89,13 @@ public class CircuitBreakerConfig implements Serializable {
      */
     private int consecutiveSuccessThreshold = 5;
     /**
-     * 忽略的异常的ClassName全称
+     * 排除的异常的ClassName全称
      */
-    private List<String> ignoreExceptions;
+    private List<String> excludeExceptions = new ArrayList<>();
+    /**
+     * 包含的异常的ClassName全称
+     */
+    private List<String> includeExceptions = new ArrayList<>();
 
     /**
      * Config identity key
