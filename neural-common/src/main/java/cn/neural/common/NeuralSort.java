@@ -3,12 +3,19 @@ package cn.neural.common;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+/**
+ * 排序算法
+ *
+ * @author lry
+ */
 public class NeuralSort {
 
     /**
      * 冒泡排序
+     * <p>
+     * 每次选出单轮中最大的数值,并移动到最后(最右边)
      *
-     * @param data
+     * @param data 待排序数组
      */
     public static void bubbleSort(int[] data) {
         if (data.length <= 1) {
@@ -16,6 +23,7 @@ public class NeuralSort {
         }
 
         for (int i = 0; i < data.length - 1; i++) {
+            // 用于标记单轮比较是否有交换操作,无交换操作则表示已排好序
             boolean flag = false;
             // 把最大的找出来，放至最后
             for (int j = 0; j < data.length - 1 - i; j++) {
@@ -27,7 +35,7 @@ public class NeuralSort {
                     flag = true;
                 }
             }
-            // 没有需要交换的，则表示已排好顺
+            // 没有需要交换的，则表示已排好序
             if (!flag) {
                 return;
             }
@@ -36,8 +44,10 @@ public class NeuralSort {
 
     /**
      * 选择排序
+     * <p>
+     * 每次选出单轮中最小数值的索引值,并移动到最前(最左边)
      *
-     * @param data
+     * @param data 待排序数组
      */
     public static void selectSort(int[] data) {
         if (data.length <= 1) {
@@ -45,19 +55,22 @@ public class NeuralSort {
         }
 
         for (int i = 0; i < data.length - 1; i++) {
-            // 每次从剩余数中筛选出最小的位置
-            int min = i;
+            // 默认第1个为本轮最小值的索引
+            int minIndex = i;
+
+            // 每次从剩余数中筛选出最小数的索引
             for (int j = i + 1; j < data.length; j++) {
-                if (data[j] < data[min]) {
-                    min = j;
+                // 当前数值小于本次最小值,则设置为最小值索引
+                if (data[j] < data[minIndex]) {
+                    minIndex = j;
                 }
             }
 
-            // 位置发生了变化，则交换
-            if (min != i) {
+            // 最小索引值发生了变化，则交换
+            if (minIndex != i) {
                 int temp = data[i];
-                data[i] = data[min];
-                data[min] = temp;
+                data[i] = data[minIndex];
+                data[minIndex] = temp;
             }
         }
     }
@@ -65,7 +78,7 @@ public class NeuralSort {
     /**
      * 插入排序
      *
-     * @param data
+     * @param data 待排序数组
      */
     public static void insertSort(int[] data) {
         if (data.length <= 1) {
@@ -73,18 +86,29 @@ public class NeuralSort {
         }
 
         // 从第一个开始计算
+//        for (int i = 1; i < data.length; i++) {
+//            // 从当前位置开始向前比较：相邻两个相互比较大小 TODO:可以采用二分法来查找有序数组
+//            for (int j = i; j > 0; j--) {
+//                // 前一个大于当前数，则交换（小往前，大往后）
+//                if (data[j - 1] > data[j]) {
+//                    int temp = data[j - 1];
+//                    data[j - 1] = data[j];
+//                    data[j] = temp;
+//                } else {
+//                    // 第一次出现前一个比后一个小，则结束
+//                    break;
+//                }
+//            }
+//        }
+
         for (int i = 1; i < data.length; i++) {
-            // 从当前位置开始向前比较：相邻两个相互比较大小 TODO:可以采用二分法来查找有序数组
-            for (int j = i; j > 0; j--) {
-                // 前一个大于当前数，则交换（小往前，大往后）
-                if (data[j - 1] > data[j]) {
-                    int temp = data[j - 1];
-                    data[j - 1] = data[j];
-                    data[j] = temp;
-                } else {
-                    // 第一次出现前一个比后一个小，则结束
-                    break;
+            if (data[i - 1] > data[i]) {
+                int temp = data[i];
+                int j;
+                for (j = i - 1; j >= 0 && data[j] > temp; j--) {
+                    data[j + 1] = data[j];
                 }
+                data[j + 1] = temp;
             }
         }
     }
@@ -92,7 +116,7 @@ public class NeuralSort {
     /**
      * 快速排序
      *
-     * @param data
+     * @param data 待排序数组
      */
     public static void quickSort(int[] data) {
         if (data.length <= 1) {
@@ -107,7 +131,7 @@ public class NeuralSort {
      *
      * @param low
      * @param high
-     * @param data
+     * @param data 待排序数组
      */
     private static void recursiveQuickSort(int low, int high, int[] data) {
         if (low < high) {
@@ -127,7 +151,7 @@ public class NeuralSort {
      *
      * @param low
      * @param high
-     * @param data
+     * @param data 待排序数组
      * @return 返回low应该在的正确索引位置
      */
     private static int getQuickSortIndex(int low, int high, int[] data) {
@@ -157,7 +181,7 @@ public class NeuralSort {
     /**
      * 计数排序
      *
-     * @param data
+     * @param data 待排序数组
      */
     public static void countingSort(int[] data) {
         if (data.length <= 1) {
@@ -198,7 +222,7 @@ public class NeuralSort {
      * 3.按照百位数分组,然后按照数组索引大小依次取出作为新数组
      * ......
      *
-     * @param data
+     * @param data 待排序数组
      */
     public static void radixSort(int[] data) {
         if (data.length <= 1) {
@@ -264,7 +288,7 @@ public class NeuralSort {
      * <p>
      * 对交换式的希尔排序进行优化->移位法
      *
-     * @param data
+     * @param data 待排序数组
      */
     public static void shellSort(int[] data) {
         // 增量gap, 并逐步的缩小增量
@@ -289,7 +313,7 @@ public class NeuralSort {
     /**
      * 堆排序
      *
-     * @param data
+     * @param data 待排序数组
      */
     public static void heapSort(int[] data) {
         if (data.length <= 1) {
@@ -331,7 +355,7 @@ public class NeuralSort {
     /**
      * 归并排序
      *
-     * @param data
+     * @param data 待排序数组
      */
     public static void mergeSort(int[] data) {
         if (data.length <= 1) {
@@ -357,7 +381,7 @@ public class NeuralSort {
     /**
      * 两路归并算法，两个排好序的子序列合并为一个子序列
      *
-     * @param data
+     * @param data  待排序数组
      * @param left
      * @param mid
      * @param right
@@ -394,7 +418,7 @@ public class NeuralSort {
     /**
      * 桶排序
      *
-     * @param data
+     * @param data 待排序数组
      */
     public static void bucketSort(int[] data) {
         if (data.length <= 1) {
@@ -406,7 +430,7 @@ public class NeuralSort {
 
     public static void main(String[] args) {
         int[] data = {49, 38, 65, 97, 23, 22, 76, 1, 5, 8, 2, 0, 22, 100, 101};
-        bucketSort(data);
+        insertSort(data);
         System.out.println(Arrays.stream(data).boxed().collect(Collectors.toList()));
     }
 
