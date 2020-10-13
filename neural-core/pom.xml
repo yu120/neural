@@ -23,7 +23,7 @@
         <commons-pool2.version>2.4.3</commons-pool2.version>
         <redisson.version>3.11.1</redisson.version>
 
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
     </properties>
 
     <!-- mvn clean source:jar install -Dmaven.test.skip=true -->
